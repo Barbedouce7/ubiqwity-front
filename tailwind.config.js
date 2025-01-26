@@ -9,6 +9,6 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["light", "dark", "sunset"], // Choisis les thèmes que tu veux activer
+    themes: ["light", "dark"], // Choisis les thèmes que tu veux activer
   },
 };
