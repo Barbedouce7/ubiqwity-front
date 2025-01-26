@@ -6,6 +6,8 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
+
+    <div className="w-full max-w-lg mx-auto text-center p-6">
 <div class="navbar bg-base-100">
   <div class="navbar-start">
     <div class="dropdown">
@@ -53,22 +55,7 @@ function App() {
   </div>
 </div>
 
-    <div className="w-full max-w-lg mx-auto text-center p-6">
-      <div className="flex justify-center gap-4">
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img
-            src={reactLogo}
-            className="logo react"
-            alt="React logo"
-          />
-        </a>
-      </div>
-      <h1 className=" text-3xl font-bold my-6">
-        Ubiqwity
-      </h1>
+
       <div className=" text-center bg-base-300 p-12">
         <button
           className="btn btn-primary w-40 mx-auto mb-6"
