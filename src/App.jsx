@@ -34,10 +34,10 @@ function App() {
       </ul>
     </div>
   </div>
-  <div class="navbar-center">
-    <a class="btn btn-ghost text-xl">Ubiqwity</a>
-  </div>
   <div class="navbar-end">
+    <div class="form-control">
+      <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto" />
+    </div>
     <button class="btn btn-ghost btn-circle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
