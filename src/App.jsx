@@ -20,7 +20,7 @@ function App() {
         </a>
       </div>
       <h1 className=" text-3xl font-bold my-6">
-        Vite vite vite
+        Ubiqwity
       </h1>
       <div className=" text-center bg-base-300 p-12">
         <button
