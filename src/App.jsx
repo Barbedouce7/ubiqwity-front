@@ -6,14 +6,14 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-<div className="w-full max-w-lg mx-auto text-center p-2">
+<div className="w-full max-w-lg mx-auto text-center p-2" data-theme="sunset">
 
 
 
 
 <div class="navbar bg-base-300 rounded-full mb-4">
     <div class="flex-1">
-    <a class=" text-xl ml-2 flex"><img src={logo} className="logo w-12 mr-4" alt="Ubiqwity logo" /> Ubiqwity</a>
+    <a href="/" class=" text-xl ml-2 flex"><img src={logo} className="logo w-12 mr-4" alt="Ubiqwity logo" /> Ubiqwity</a>
   </div>
 
   <div class="flex-none">
@@ -35,7 +35,7 @@ function App() {
       <ul
         tabindex="0"
         class="menu menu-sm dropdown-content bg-base-300 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-        <li><a>Homepage</a></li>
+        <li><a href="/">Homepage</a></li>
         <li><a>About</a></li>
       </ul>  
      </div>
@@ -61,14 +61,16 @@ function App() {
 
       <div className=" text-center bg-base-300 p-12">
         <button
-          className="btn btn-primary w-40 mx-auto mb-6"
+          className="btn btn-accent w-40 mx-auto mb-6"
           onClick={() => setCount((count) => count + 1)}
         >
           count is {count}
         </button>
         <p>
-          W.I.P
+          
         </p>
+        <button className="btn btn-primary">Test Button</button>
+
       </div>
     </div>
   );

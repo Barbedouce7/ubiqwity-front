@@ -8,4 +8,7 @@ export default {
     extend: {},
   },
   plugins: [daisyui],
+  daisyui: {
+    themes: ["light", "dark", "sunset"], // Choisis les thèmes que tu veux activer
+  },
 };
