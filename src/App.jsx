@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
+import logo from '/logo-white.svg';   
 
 function App() {
   const [count, setCount] = useState(0);
@@ -12,6 +12,10 @@ function App() {
 
 
 <div class="navbar bg-base-300 rounded-full mb-4">
+    <div class="flex-1">
+    <a class=" text-xl ml-2 flex"><img src={logo} className="logo w-12 mr-4" alt="Ubiqwity logo" /> Ubiqwity</a>
+  </div>
+
   <div class="flex-none">
     <div class="dropdown">
       <div tabindex="0" role="button" class="btn btn-ghost btn-circle mr-2">
@@ -33,12 +37,8 @@ function App() {
         class="menu menu-sm dropdown-content bg-base-300 rounded-box z-[1] mt-3 w-52 p-2 shadow">
         <li><a>Homepage</a></li>
         <li><a>About</a></li>
-      </ul>
-     
-  </div>
-  </div>
-  <div class="flex-1">
-    <a class=" text-xl">Ubiqwity</a>
+      </ul>  
+     </div>
   </div>
   <div class="flex-none">
      <button class="btn btn-ghost btn-circle">
