@@ -6,54 +6,49 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
+<div className="w-full max-w-lg mx-auto text-center p-3">
 
-    <div className="w-full max-w-lg mx-auto text-center p-6">
-<div class="navbar bg-base-100">
-  <div class="navbar-start">
-    <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h7" />
-        </svg>
-      </div>
-      <ul
-        tabindex="0"
-        class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-        <li><a>Homepage</a></li>
-        <li><a>Portfolio</a></li>
-        <li><a>About</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="navbar-end">
-    <div class="form-control">
-      <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto" />
-    </div>
-    <button class="btn btn-ghost btn-circle">
+
+
+
+<div class="navbar bg-base-300 rounded-full">
+  <div class="flex-none">
+    <button class="btn btn-square btn-ghost">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5"
         fill="none"
         viewBox="0 0 24 24"
-        stroke="currentColor">
+        class="inline-block h-5 w-5 stroke-current">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </div>
+  <div class="flex-1">
+    <a class="btn btn-ghost text-xl">daisyUI</a>
+  </div>
+  <div class="flex-none">
+    <button class="btn btn-square btn-ghost">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        class="inline-block h-5 w-5 stroke-current">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
       </svg>
     </button>
   </div>
 </div>
+
+
+
 
 
       <div className=" text-center bg-base-300 p-12">
