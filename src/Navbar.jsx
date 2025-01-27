@@ -12,14 +12,12 @@ function Navbar() {
       </div>
 
 
-      <div className="flex items-center max-w-xs gap-2">
+      <div className="flex items-center gap-2">
         {/* Input de recherche */}
         <input
           type="text"
-          className="grow input-bordered max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
-          placeholder="tx, address, poolid, etc..."
-          value={query}
-          onChange={handleInputChange}
+          className="grow input-bordered w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+          placeholder="tx, address, ..."
         />
 
         {/* Icône de recherche */}
@@ -27,8 +25,7 @@ function Navbar() {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 16 16"
           fill="currentColor"
-          className="h-8 w-8 opacity-70 mr-4 cursor-pointer"
-          onClick={handleSearchClick}
+          className="h-8 w-8 opacity-70 mr-2 cursor-pointer"
         >
           <path
             fillRule="evenodd"
