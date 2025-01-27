@@ -69,10 +69,7 @@ function App() {
           <div className="bg-gray-100 p-4 rounded shadow">
             <h3 className="text-lg font-bold mb-2">Données récupérées :</h3>
             <p>
-              <strong>Title:</strong> {data.title}
-            </p>
-            <p>
-              <strong>Body:</strong> {data.body}
+              <strong>Body:</strong> {data.last24Prices}
             </p>
           </div>
         )}
