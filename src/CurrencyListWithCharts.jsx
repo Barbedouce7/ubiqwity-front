@@ -55,7 +55,7 @@ const CurrencyListWithCharts = ({ data }) => {
         <Grid container spacing={4}>
       {uniquePairs.map((pairName) => (
         <Grid item xs={12} key={pairName}>
-          <Card className="bg-base-300 shadow-xl"> {/* Utilisation du fond sombre de DaisyUI */}
+          <Card className="bg-slate-900 shadow-xl"> {/* Utilisation du fond sombre de DaisyUI */}
             <CardContent className="flex items-center p-4 space-x-4">
               {/* Nom de la paire */}
               <Typography
