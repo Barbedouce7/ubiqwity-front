@@ -10,7 +10,8 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
-     setApiData(data);
+    const data = await response.json();
+    setApiData(data);
     };
 
     fetchData();
