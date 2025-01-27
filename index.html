@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo-white.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="img-src 'self' data: https://ubi.hiddenlabs.cc;">
+    <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://ubi.hiddenlabs.cc;
+  img-src 'self' https://ubi.hiddenlabs.cc data:;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self';
+  media-src 'self' https://ubi.hiddenlabs.cc;
+  ">
     <title>Ubiqwity</title>
   </head>
   <body>
