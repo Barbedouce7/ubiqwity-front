@@ -14,7 +14,8 @@ function Navbar() {
 
 
 <label class="flex items-center max-w-xs gap-2">
-  <input type="text" class="grow input-bordered" placeholder="tx, address, poolid, etc..." />
+  {/* <input type="text" class="grow input-bordered" placeholder="tx, address, poolid, etc..." /> */}
+
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 16 16"
