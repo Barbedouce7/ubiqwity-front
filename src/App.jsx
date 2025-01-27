@@ -26,7 +26,7 @@ function App() {
 
 
   return (
-    <div className="w-full max-w-lg mx-auto text-center p-2">
+    <div className="w-full mx-auto text-center p-2">
 
       <Navbar />
 

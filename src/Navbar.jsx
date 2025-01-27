@@ -4,7 +4,7 @@ import logo from '/logo-white.svg';
 
 function Navbar() {
   return (
-    <div className="navbar bg-slate-900 text-slate-200 border-2 border-sky-900 rounded-full mb-4">
+    <div className="navbar bg-slate-900 max-w-lg max-h-20 text-slate-200 border-2 border-sky-900 rounded-full mb-4">
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex">
           <img src={logo} className="logo w-12 mr-4" alt="Ubiqwity logo" /> Ubiqwity
