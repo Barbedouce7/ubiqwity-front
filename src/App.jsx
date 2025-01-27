@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import viteLogo from '/vite.svg';
 import Navbar from "./Navbar"; 
 import CurrencyListWithCharts from "./CurrencyListWithCharts";
+import CurrencyListWithCharts2 from "./CurrencyListWithCharts2";
 
 import logo from '/logo-white.svg';   
 
@@ -31,6 +32,7 @@ function App() {
 
     <div style={{ padding: "16px" }}>
       {apiData.length > 0 ? (
+        <CurrencyListWithCharts2 data={apiData} />
         <CurrencyListWithCharts data={apiData} />
       ) : (
         <p>Chargement des données...</p>
