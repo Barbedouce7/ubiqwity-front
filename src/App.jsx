@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import viteLogo from '/vite.svg';
 import Navbar from "./Navbar"; 
 import CurrencyListWithCharts from "./CurrencyListWithCharts";
-import CurrencyListWithCharts2 from "./CurrencyListWithCharts2";
 
 import logo from '/logo-white.svg';   
 
@@ -12,7 +11,8 @@ function App() {
     const fetchData = async () => {
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
     const data = await response.json();
-    setApiData(data);
+    const reversedData = data.reverse();
+    setApiData(reversedData);
     };
 
     fetchData();
@@ -32,7 +32,7 @@ function App() {
 
     <div style={{ padding: "16px" }}>
       {apiData.length > 0 ? (
-        <CurrencyListWithCharts2 data={apiData} />
+        <CurrencyListWithCharts data={apiData} />
       ) : (
         <p>Chargement des données...</p>
       )}

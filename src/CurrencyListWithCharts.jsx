@@ -14,7 +14,6 @@ import {
 // Configuration Chart.js
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-// Composant principal
 const CurrencyListWithCharts = ({ data }) => {
   // Fonction pour transformer les données pour chaque paire
   const prepareChartData = (priceData, pairName) => {
@@ -43,16 +42,53 @@ const CurrencyListWithCharts = ({ data }) => {
     new Set(data[0]?.price.map((item) => Object.keys(item)[0]))
   );
 
+  // Extraction du dernier prix d'une paire
+  const getLastPrice = (pairName) => {
+    for (let i = data.length - 1; i >= 0; i--) {
+      const pair = data[i].price.find((item) => Object.keys(item)[0] === pairName);
+      if (pair) return Object.values(pair)[0].toFixed(6); // Format du prix avec 6 décimales
+    }
+    return "N/A";
+  };
+
   return (
-    <Grid container spacing={2}>
+        <Grid container spacing={4}>
       {uniquePairs.map((pairName) => (
-        <Grid item xs={12} md={6} lg={4} key={pairName}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+        <Grid item xs={12} key={pairName}>
+          <Card className="bg-base-300 shadow-xl"> {/* Utilisation du fond sombre de DaisyUI */}
+            <CardContent className="flex items-center p-4 space-x-4">
+              {/* Nom de la paire */}
+              <Typography
+                variant="h6"
+                className="flex-1 text-left text-white font-semibold"
+              >
                 {pairName}
               </Typography>
-              <Line data={prepareChartData(data, pairName)} options={{ responsive: true }} />
+              {/* Dernier prix */}
+              <Typography
+                variant="h6"
+                className="flex-1 text-center text-primary font-semibold"
+              >
+                {getLastPrice(pairName)}
+              </Typography>
+              {/* Graphique */}
+              <div style={{ flex: 3, height: "200px" }}>
+                <Line
+                  data={prepareChartData(data, pairName)}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                    },
+                    scales: {
+                      x: {
+                        ticks: { display: false }, // Cacher les labels sur l'axe des X
+                      },
+                    },
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </Grid>
