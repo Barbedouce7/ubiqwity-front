@@ -33,7 +33,6 @@ function App() {
     <div style={{ padding: "16px" }}>
       {apiData.length > 0 ? (
         <CurrencyListWithCharts2 data={apiData} />
-        <CurrencyListWithCharts data={apiData} />
       ) : (
         <p>Chargement des données...</p>
       )}
