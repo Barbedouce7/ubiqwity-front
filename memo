@@ -1,5 +1,8 @@
 #!/bin/sh
 ### push /dist folder on gh-pages branch ! ( served via gh-pages)
+git add .
+git commit -m $1
+git push origin main
 yarn build
 git commit -am "Save uncommited changes (WIP)"
 git branch --delete --force gh-pages

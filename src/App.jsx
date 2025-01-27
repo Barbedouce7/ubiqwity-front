@@ -15,7 +15,7 @@ function App() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://apiubi.hiddenlabs.cc/home");
+        const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
         if (!response.ok) throw new Error("Error with API");
         const result = await response.json();
         setData(result); // Stocke les données récupérées
@@ -66,7 +66,7 @@ function App() {
         ) : error ? (
           <p className="text-red-500">Erreur : {error}</p>
         ) : (
-          <div className="bg-gray-100 p-4 rounded shadow">
+          <div className="bg-slate-900 p-4 rounded shadow">
             <h3 className="text-lg font-bold mb-2">Données récupérées :</h3>
             <p>
               {data.text}
