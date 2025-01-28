@@ -1,10 +1,23 @@
 import React from "react";
-import { Line, Bar } from "react-chartjs-2";
 import { Card, CardContent } from "@mui/material";
-import { Chart as ChartJS, LineElement, BarElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  LineElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend,
+  BarController, // Import du contrôleur Bar
+  LineController, // Import du contrôleur Line
+} from "chart.js";
 import { Chart } from "react-chartjs-2";
 
+// Enregistrer tous les modules nécessaires
 ChartJS.register(
+  LineController,
+  BarController,
   LineElement,
   BarElement,
   CategoryScale,
@@ -23,7 +36,6 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         type: "bar",
         label: "Transaction Counts",
         data: txCounts,
-        backgroundColor: "rgba(59, 130, 246, 0.5)",
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 1,
       },
@@ -32,17 +44,15 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         label: "Active Stakes (M)",
         data: activeStakes,
         borderColor: "rgba(245, 158, 11, 1)",
-        backgroundColor: "rgba(245, 158, 11, 0.5)",
         borderWidth: 2,
         tension: 0.3,
         pointRadius: 3,
-        fill: true, // Pour ajouter un effet de remplissage sous la courbe
       },
     ],
   };
 
   return (
-    <Card style={{ color: "white", borderRadius: "12px" }}>
+    <Card class="bg-slate-900 h-auto">
       <CardContent>
         <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Epoch Data Overview</h2>
         <div>
