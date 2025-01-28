@@ -1,16 +1,8 @@
 import React from "react";
 import { Line, Bar } from "react-chartjs-2";
 import { Card, CardContent } from "@mui/material";
-import {
-  Chart as ChartJS,
-  LineElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, LineElement, BarElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend } from "chart.js";
+import { Chart } from "react-chartjs-2";
 
 ChartJS.register(
   LineElement,
