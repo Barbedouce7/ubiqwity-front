@@ -57,29 +57,30 @@ function App() {
       {chainUsage && Object.keys(chainUsage).length > 0 ? (
          <ChainUsage data={chainUsage}/>
       ) : (
-        <p>Loading...</p>
+        <p>Loading ...</p>
       )}
     </div>
-    <EpochContext data={epochContext}/>
+    <div className="flex flex-col md:flex-row">
+        <EpochContext data={epochContext}/>
 
-      <div className="">
-        {epochData ? (
-          <EpochChart
-            epochLabels={epochData.epochLabels}
-            txCounts={epochData.txCounts}
-            activeStakes={epochData.activeStakes}
-          />
-        ) : (
-          <p>Loading...</p>
-        )}
-      </div>
-
+        <div className="mt-4 mb-4">
+          {epochData ? (
+            <EpochChart
+              epochLabels={epochData.epochLabels}
+              txCounts={epochData.txCounts}
+              activeStakes={epochData.activeStakes}
+            />
+          ) : (
+            <p>Loading...</p>
+          )}
+        </div>
+    </div>
 
     <div>
       {apiData.length > 0 ? (
         <CurrencyListWithCharts data={apiData} />
       ) : (
-        <p>Chargement des données...</p>
+        <p>Loading...</p>
       )}
     </div>
 

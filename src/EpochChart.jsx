@@ -11,6 +11,7 @@ import {
   Legend,
   BarController,
   LineController, 
+  Filler
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 
@@ -23,7 +24,8 @@ ChartJS.register(
   LinearScale,
   PointElement,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 
@@ -34,7 +36,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
       {
         type: "bar",
         label: "Transaction Counts",
-        data: txCounts,
+        data: (txCounts || []).map((value) => value / 1_000),
         borderColor: "rgba(59, 130, 246, 1)",
         backgroundColor: "rgba(64, 133, 222, 0.6",
         borderWidth: 1,
@@ -44,12 +46,12 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
       },
       {
         type: "line",
-        label: "Active Stakes (M)",
-        data: activeStakes,
+        label: "Active Stake",
+        data: (activeStakes || []).map((value) => value / 1_000_000_000),
         borderColor: "rgba(245, 158, 11, 1)",
         borderWidth: 2,
         tension: 0.3,
-        pointRadius: 1,
+        pointRadius: 0,
         yAxisID: "y2",
       },
     ],
@@ -69,12 +71,12 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
               },
               scales: {
                 x: { ticks: { color: "white" } },
-                y1: { // Première échelle pour les barres
+                y1: { 
                   type: "linear",
                   position: "left",
                   ticks: { color: "white" },
                 },
-                y2: { // Seconde échelle pour la ligne
+                y2: { 
                   type: "linear",
                   position: "right",
                   ticks: { color: "white" },
