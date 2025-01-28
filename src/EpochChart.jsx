@@ -1,52 +1,90 @@
 import React from "react";
-import { Chart } from "@mui/x-charts";
-import { Card, CardContent } from "@/components/ui/card";
+import { Line, Bar } from "react-chartjs-2";
+import { Card, CardContent } from "@mui/material";
+
+// Enregistrement des éléments nécessaires pour Chart.js
+import {
+  Chart as ChartJS,
+  LineElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  LineElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
+  const barData = {
+    labels: epochLabels,
+    datasets: [
+      {
+        label: "Transaction Counts",
+        data: txCounts,
+        backgroundColor: "rgba(59, 130, 246, 0.5)",
+        borderColor: "rgba(59, 130, 246, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const lineData = {
+    labels: epochLabels,
+    datasets: [
+      {
+        label: "Active Stakes (M)",
+        data: activeStakes,
+        borderColor: "rgba(245, 158, 11, 1)",
+        backgroundColor: "rgba(245, 158, 11, 0.5)",
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 3,
+      },
+    ],
+  };
+
   return (
-    <Card className="bg-gray-900 text-white shadow-lg rounded-2xl">
+    <Card style={{ backgroundColor: "#1e293b", color: "white", borderRadius: "12px" }}>
       <CardContent>
-        <h2 className="text-xl font-semibold text-center mb-4">Epoch Data Overview</h2>
-        <div className="h-96">
-          <Chart
-            series={[
-              {
-                type: "bar",
-                id: "txCounts",
-                data: txCounts,
-                xAxisKey: "epochs",
-                yAxisKey: "transactions",
-                label: "Transactions",
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Epoch Data Overview</h2>
+        <div>
+          <Bar
+            data={barData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { labels: { color: "white" } },
               },
-              {
-                type: "line",
-                id: "activeStakes",
-                data: activeStakes,
-                xAxisKey: "epochs",
-                yAxisKey: "stake",
-                label: "Active Stakes",
+              scales: {
+                x: { ticks: { color: "white" } },
+                y: { ticks: { color: "white" } },
               },
-            ]}
-            xAxis={[
-              {
-                id: "epochs",
-                data: epochLabels,
-                label: "Epoch Numbers",
+            }}
+          />
+        </div>
+        <div className="mt-8">
+          <Line
+            data={lineData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { labels: { color: "white" } },
               },
-            ]}
-            yAxis={[
-              {
-                id: "transactions",
-                label: "Transaction Counts",
+              scales: {
+                x: { ticks: { color: "white" } },
+                y: { ticks: { color: "white" } },
               },
-              {
-                id: "stake",
-                label: "Active Stake (M)",
-                position: "right",
-              },
-            ]}
-            colors={["#3b82f6", "#f59e0b"]}
-            darkMode
+            }}
           />
         </div>
       </CardContent>
@@ -55,3 +93,4 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
 };
 
 export default EpochChart;
+
