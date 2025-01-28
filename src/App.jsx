@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import viteLogo from '/vite.svg';
 import Navbar from "./Navbar"; 
 import EpochChart from "./EpochChart";
+import ChainUsage from "./ChainUsage";
 import CurrencyListWithCharts from "./CurrencyListWithCharts";
 
 import logo from '/logo-white.svg';   
@@ -9,8 +10,13 @@ import logo from '/logo-white.svg';
 function App() {
   const [apiData, setApiData] = useState([]);
   const [epochData, setEpochData] = useState([]);
+  const [chainUsage, setChainUsage] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
+    const responseChainUsage = await fetch("https://apiubi.hiddenlabs.cc/chainusage/");
+    const dataChainUsage = await responseChainUsage.json();
+    setChainUsage(dataChainUsage);
+
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
     const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
     const data = await response.json();
@@ -35,7 +41,7 @@ function App() {
 
       <Navbar />
 
-
+      <ChainUsage />
       <div className="">
         {epochData ? (
           <EpochChart
