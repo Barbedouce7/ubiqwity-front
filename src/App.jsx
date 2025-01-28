@@ -36,14 +36,17 @@ function App() {
       <Navbar />
 
 
-    <div className="p-4 bg-gray-800 min-h-screen">
-      <EpochChart
-        epochLabels={data2.epochLabels}
-        txCounts={data2.txCounts}
-        activeStakes={data2.activeStakes}
-      />
-    </div>
-
+      <div className="p-4 bg-gray-800 min-h-screen">
+        {epochData ? (
+          <EpochChart
+            epochLabels={epochData.epochLabels}
+            txCounts={epochData.txCounts}
+            activeStakes={epochData.activeStakes}
+          />
+        ) : (
+          <p className="text-white">Chargement des données...</p>
+        )}
+      </div>
 
 
     <div style={{ padding: "16px" }}>
