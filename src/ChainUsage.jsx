@@ -12,8 +12,8 @@ const ChainUsage = ({ data }) => {
   };
 
   return (
-    <Card className="bg-slate-900">
-      <CardContent>
+    <Card>
+      <CardContent className="bg-slate-900">
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
           <div>
             <Typography variant="body2" style={{ color: getColor(data.average_5min) }}>
