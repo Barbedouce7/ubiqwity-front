@@ -53,28 +53,33 @@ function App() {
 
       <Navbar />
 
+
+<div className="flex flex-col md:flex-row gap-8">
+  <div className="flex-1"> {/* Cette div prendra l'espace disponible */}
+
     <div>
       {chainUsage && Object.keys(chainUsage).length > 0 ? (
-         <ChainUsage data={chainUsage}/>
+        <ChainUsage data={chainUsage} />
       ) : (
         <p>Loading ...</p>
       )}
     </div>
-    <div className="flex flex-col md:flex-row">
-        <EpochContext data={epochContext}/>
+        <EpochContext data={epochContext} />
+  </div>
 
-        <div className="mt-4 mb-4">
-          {epochData ? (
-            <EpochChart
-              epochLabels={epochData.epochLabels}
-              txCounts={epochData.txCounts}
-              activeStakes={epochData.activeStakes}
-            />
-          ) : (
-            <p>Loading...</p>
-          )}
-        </div>
-    </div>
+  <div className="mt-4 mb-4 md:max-w-full flex-1"> {/* Cette div prend aussi l'espace disponible */}
+    {epochData ? (
+      <EpochChart
+        epochLabels={epochData.epochLabels}
+        txCounts={epochData.txCounts}
+        activeStakes={epochData.activeStakes}
+      />
+    ) : (
+      <p>Loading...</p>
+    )}
+  </div>
+</div>
+
 
     <div>
       {apiData.length > 0 ? (

@@ -33,7 +33,12 @@ const EpochContext = ({ data }) => {
     const hours = Math.floor((seconds % 86400) / 3600); // Heures restantes
     const minutes = Math.floor((seconds % 3600) / 60); // Minutes restantes
     const secs = seconds % 60; // Secondes restantes
-    return `${days}d ${hours}h ${minutes}m ${secs}s`;
+  return `${days}d ${hours}h ${minutes}m ${secs}s`; 
+  };
+
+  // Convertir en milliards et formater avec le symbole "₳"
+  const formatCirculatingSupply = (circulatingSupply) => {
+    return (circulatingSupply / 1_000_000_000).toFixed(2); // En milliards
   };
 
   return (
@@ -73,24 +78,14 @@ const EpochContext = ({ data }) => {
         </div>
       </div>
 
-      {/* Informations sur l'epoch */}
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="flex justify-between">
-          <span className="font-semibold">Transaction Count:</span>
-          <span>{formatNumber(data.tx_count)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Block Count:</span>
-          <span>{formatNumber(data.block_count)}</span>
-        </div>{/*
-        <div className="flex justify-between">
-          <span className="font-semibold">Fees:</span>
-          <span>{(data.fees / 1_000_000).toFixed(0)} ADA</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Active Stake:</span>
-          <span>{formatNumber(data.active_stake)}</span>
-        </div>*/}
+      {/* Affichage de la Circulating Supply */}
+      <div className="flex justify-between mt-4 text-sm">
+        <span>Circulating Supply:</span>
+        <span>
+          ₳ {formatCirculatingSupply(data.circulating_supply)}B (
+          {data.circulating_proportion ? data.circulating_proportion.toFixed(2) : "N/A"}%)
+        </span>
+
       </div>
     </div>
   );
