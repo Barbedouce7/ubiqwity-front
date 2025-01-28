@@ -38,6 +38,8 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 1,
         yAxisID: "y1",
+        borderRadius: 10,
+
       },
       {
         type: "line",
@@ -46,7 +48,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         borderColor: "rgba(245, 158, 11, 1)",
         borderWidth: 2,
         tension: 0.3,
-        pointRadius: 3,
+        pointRadius: 1,
         yAxisID: "y2",
       },
     ],
@@ -55,7 +57,6 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
   return (
     <Card>
       <CardContent className="bg-slate-900">
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Epoch Data Overview</h2>
         <div>
           <Chart
             type="bar"
