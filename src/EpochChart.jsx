@@ -36,6 +36,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         label: "Transaction Counts",
         data: txCounts,
         borderColor: "rgba(59, 130, 246, 1)",
+        backgroundColor: "rgba(64, 133, 222, 0.6",
         borderWidth: 1,
         yAxisID: "y1",
         borderRadius: 10,
@@ -56,7 +57,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
 
   return (
     <Card>
-      <CardContent className="bg-slate-900">
+      <CardContent className="bg-slate-950">
         <div>
           <Chart
             type="bar"

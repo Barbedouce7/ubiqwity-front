@@ -14,9 +14,11 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
     const responseChainUsage = await fetch("https://apiubi.hiddenlabs.cc/chainusage/");
-    const dataChainUsage = await responseChainUsage.json();
-    setChainUsage(dataChainUsage);
+    const dataChainUsageTableau = await responseChainUsage.json();
+    const dataChainUsage = dataChainUsageTableau[0];
     console.log(dataChainUsage);
+    setChainUsage(dataChainUsage);
+
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
     const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
     const data = await response.json();
@@ -41,7 +43,15 @@ function App() {
 
       <Navbar />
 
-      <ChainUsage data="{setChainUsage}"/>
+    <div>
+      {chainUsage && Object.keys(chainUsage).length > 0 ? (
+         <ChainUsage data={chainUsage}/>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+
+
       <div className="">
         {epochData ? (
           <EpochChart
@@ -50,12 +60,12 @@ function App() {
             activeStakes={epochData.activeStakes}
           />
         ) : (
-          <p className="text-white">Chargement des données...</p>
+          <p>Loading...</p>
         )}
       </div>
 
 
-    <div style={{ padding: "16px" }}>
+    <div>
       {apiData.length > 0 ? (
         <CurrencyListWithCharts data={apiData} />
       ) : (
