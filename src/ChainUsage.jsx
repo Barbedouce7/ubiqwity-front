@@ -1,7 +1,6 @@
 import { Card, CardContent, Typography } from "@mui/material";
 
 const ChainUsage = ({ data }) => {
-  console.log("Données reçues dans ChainUsage:", data);
   const getColor = (value) => {
     if (value <= 30) {
       return "green";

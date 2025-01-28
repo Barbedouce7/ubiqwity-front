@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import viteLogo from '/vite.svg';
+
 import Navbar from "./Navbar"; 
+import EpochContext from "./EpochContext";
 import EpochChart from "./EpochChart";
 import ChainUsage from "./ChainUsage";
 import CurrencyListWithCharts from "./CurrencyListWithCharts";
@@ -9,23 +10,32 @@ import logo from '/logo-white.svg';
 
 function App() {
   const [apiData, setApiData] = useState([]);
+  const [epochContext, setEpochContext] = useState([]);
   const [epochData, setEpochData] = useState([]);
   const [chainUsage, setChainUsage] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
     const responseChainUsage = await fetch("https://apiubi.hiddenlabs.cc/chainusage/");
     const dataChainUsageTableau = await responseChainUsage.json();
     const dataChainUsage = dataChainUsageTableau[0];
-    console.log(dataChainUsage);
     setChainUsage(dataChainUsage);
 
+    const responseEpochContext = await fetch("https://apiubi.hiddenlabs.cc/epochcontext/");
+    const dataEpochContext = await responseEpochContext.json();
+    //console.log(dataEpochContext);
+    setEpochContext(dataEpochContext);
+
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
-    const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
     const data = await response.json();
-    const data2 = await response2.json();
-    setEpochData(data2);
     const reversedData = data.reverse();
     setApiData(reversedData);
+
+
+    const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
+    const data2 = await response2.json();
+    setEpochData(data2);
+
     };
 
     fetchData();
@@ -50,7 +60,7 @@ function App() {
         <p>Loading...</p>
       )}
     </div>
-
+    <EpochContext data={epochContext}/>
 
       <div className="">
         {epochData ? (
