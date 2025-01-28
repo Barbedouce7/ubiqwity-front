@@ -1,96 +1,104 @@
 import { useState, useEffect } from 'react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
+import EpochContext from './EpochContext';
+import EpochChart from './EpochChart';
+import ChainUsage from './ChainUsage';
+import CurrencyListWithCharts from './CurrencyListWithCharts';
+import axios from 'axios';
+import TransactionPage from './TransactionPage';
+import PoolPage from './PoolPage';
+import WalletPage from './WalletPage';
 
-import Navbar from "./Navbar"; 
-import EpochContext from "./EpochContext";
-import EpochChart from "./EpochChart";
-import ChainUsage from "./ChainUsage";
-import CurrencyListWithCharts from "./CurrencyListWithCharts";
-
-import logo from '/logo-white.svg';   
+const API_BASE_URL = 'https://apiubi.hiddenlabs.cc';
 
 function App() {
   const [apiData, setApiData] = useState([]);
   const [epochContext, setEpochContext] = useState([]);
   const [epochData, setEpochData] = useState([]);
   const [chainUsage, setChainUsage] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-    const responseChainUsage = await fetch("https://apiubi.hiddenlabs.cc/chainusage/");
-    const dataChainUsageTableau = await responseChainUsage.json();
-    const dataChainUsage = dataChainUsageTableau[0];
-    setChainUsage(dataChainUsage);
+      try {
+        const responseChainUsage = await axios.get(`${API_BASE_URL}/chainusage/`);
+        setChainUsage(responseChainUsage.data[0]);
 
-    const responseEpochContext = await fetch("https://apiubi.hiddenlabs.cc/epochcontext/");
-    const dataEpochContext = await responseEpochContext.json();
-    //console.log(dataEpochContext);
-    setEpochContext(dataEpochContext);
+        const responseEpochContext = await axios.get(`${API_BASE_URL}/epochcontext/`);
+        setEpochContext(responseEpochContext.data);
 
-    const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
-    const data = await response.json();
-    const reversedData = data.reverse();
-    setApiData(reversedData);
+        const response = await axios.get(`${API_BASE_URL}/last24prices/`);
+        const reversedData = response.data.reverse();
+        setApiData(reversedData);
 
-
-    const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
-    const data2 = await response2.json();
-    setEpochData(data2);
-
+        const response2 = await axios.get(`${API_BASE_URL}/epochdata/`);
+        setEpochData(response2.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
-
     fetchData();
   }, []);
 
+  const handleSearch = async (searchTerm) => {
+    let searchUrl = '', data;
 
+    if (searchTerm.length === 56) {
+      searchUrl = `/pool/${searchTerm}`;
+    } else if (searchTerm.length === 64) {
+      searchUrl = `/tx/${searchTerm}`;
+    } else {
+      searchUrl = `/wallet/${searchTerm}`;
+    }
 
-
-
-
-
+    try {
+      const response = await axios.get(`${API_BASE_URL}${searchUrl}`);
+      data = response.data;
+      navigate(searchUrl, { state: { data } });  // Pass data via state
+    } catch (error) {
+      console.error("Erreur de recherche:", error);
+    }
+  };
 
   return (
     <div className="w-full mx-auto text-center p-2">
+      <Navbar handleSearch={handleSearch} setSearchInput={setSearchInput} searchInput={searchInput} />
 
-      <Navbar />
+      <Routes>
+        <Route path="/" element={
+          <>
 
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="flex-1">
+                {chainUsage && Object.keys(chainUsage).length > 0 ? (
+                  <ChainUsage data={chainUsage} />
+                ) : (
+                  <p>Loading ...</p>
+                )}
+                <EpochContext data={epochContext} />
+              </div>
 
-<div className="flex flex-col md:flex-row gap-8">
-  <div className="flex-1"> {/* Cette div prendra l'espace disponible */}
-
-    <div>
-      {chainUsage && Object.keys(chainUsage).length > 0 ? (
-        <ChainUsage data={chainUsage} />
-      ) : (
-        <p>Loading ...</p>
-      )}
-    </div>
-        <EpochContext data={epochContext} />
-  </div>
-
-  <div className="mt-4 mb-4 md:max-w-full flex-1"> {/* Cette div prend aussi l'espace disponible */}
-    {epochData ? (
-      <EpochChart
-        epochLabels={epochData.epochLabels}
-        txCounts={epochData.txCounts}
-        activeStakes={epochData.activeStakes}
-      />
-    ) : (
-      <p>Loading...</p>
-    )}
-  </div>
-</div>
-
-
-    <div>
-      {apiData.length > 0 ? (
-        <CurrencyListWithCharts data={apiData} />
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
-
-
-
+              <div className="mt-4 mb-4 md:max-w-full flex-1">
+                {epochData ? (
+                  <EpochChart epochLabels={epochData.epochLabels} txCounts={epochData.txCounts} activeStakes={epochData.activeStakes} />
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+                        {apiData.length > 0 ? (
+              <CurrencyListWithCharts data={apiData} />
+            ) : (
+              <p>Loading...</p>
+            )}
+          </>
+        } />
+        <Route path="/tx/:txId" element={<TransactionPage />} />
+        <Route path="/pool/:poolId" element={<PoolPage />} />
+        <Route path="/wallet/:walletAddress" element={<WalletPage />} />
+      </Routes>
     </div>
   );
 }
