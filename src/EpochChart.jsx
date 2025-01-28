@@ -9,12 +9,11 @@ import {
   PointElement,
   Tooltip,
   Legend,
-  BarController, // Import du contrôleur Bar
-  LineController, // Import du contrôleur Line
+  BarController,
+  LineController, 
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 
-// Enregistrer tous les modules nécessaires
 ChartJS.register(
   LineController,
   BarController,
@@ -38,6 +37,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         data: txCounts,
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 1,
+        yAxisID: "y1",
       },
       {
         type: "line",
@@ -47,6 +47,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         borderWidth: 2,
         tension: 0.3,
         pointRadius: 3,
+        yAxisID: "y2",
       },
     ],
   };
@@ -66,7 +67,16 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
               },
               scales: {
                 x: { ticks: { color: "white" } },
-                y: { ticks: { color: "white" } },
+                y1: { // Première échelle pour les barres
+                  type: "linear",
+                  position: "left",
+                  ticks: { color: "white" },
+                },
+                y2: { // Seconde échelle pour la ligne
+                  type: "linear",
+                  position: "right",
+                  ticks: { color: "white" },
+                },
               },
             }}
           />
