@@ -12,22 +12,22 @@ const ChainUsage = ({ data }) => {
   };
 
   return (
-    <Card>
+    <Card className="bg-slate-900">
       <CardContent>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
           <div>
             <Typography variant="body2" style={{ color: getColor(data.average_5min) }}>
-              <strong>5 Min :</strong> {data.average_5min}%
+              5 Min : {data.average_5min}%
             </Typography>
           </div>
           <div>
             <Typography variant="body2" style={{ color: getColor(data.average_1h) }}>
-              <strong>1 Hour :</strong> {data.average_1h}%
+              1 Hour : {data.average_1h}%
             </Typography>
           </div>
           <div>
             <Typography variant="body2" style={{ color: getColor(data.average_24h) }}>
-              <strong>24 Hour :</strong> {data.average_24h}%
+              24 Hour : {data.average_24h}%
             </Typography>
           </div>
         </div>

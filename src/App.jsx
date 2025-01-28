@@ -16,7 +16,7 @@ function App() {
     const responseChainUsage = await fetch("https://apiubi.hiddenlabs.cc/chainusage/");
     const dataChainUsage = await responseChainUsage.json();
     setChainUsage(dataChainUsage);
-
+    console.log(dataChainUsage);
     const response = await fetch("https://apiubi.hiddenlabs.cc/last24prices/");
     const response2 = await fetch("https://apiubi.hiddenlabs.cc/epochdata/");
     const data = await response.json();
