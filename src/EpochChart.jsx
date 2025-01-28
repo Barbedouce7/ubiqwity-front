@@ -53,7 +53,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
   };
 
   return (
-    <Card className="h-auto">
+    <Card className="h-auto bg-slate-900">
       <CardContent>
         <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Epoch Data Overview</h2>
         <div>

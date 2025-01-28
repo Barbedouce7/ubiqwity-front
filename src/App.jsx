@@ -41,7 +41,7 @@ function App() {
 
       <Navbar />
 
-      <ChainUsage />
+      <ChainUsage data="{setChainUsage}"/>
       <div className="">
         {epochData ? (
           <EpochChart
