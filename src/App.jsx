@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import viteLogo from '/vite.svg';
 import Navbar from "./Navbar"; 
+import EpochChart from "./EpochChart";
 import CurrencyListWithCharts from "./CurrencyListWithCharts";
 
 import logo from '/logo-white.svg';   
