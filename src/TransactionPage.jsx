@@ -51,9 +51,6 @@ function TransactionPage() {
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-2">
-            <strong>Block Number:</strong> {data.block.height}
-          </p>
-          <p className="mb-2">
             <strong>Block Hash:</strong> 
             <button 
               className="btn btn-xs btn-primary ml-2" 
@@ -63,6 +60,10 @@ function TransactionPage() {
             </button>
             <span className="line-clamp-3 ml-2">{data.block.hash}</span>
           </p>
+          <p className="mb-2">
+            <strong>Block Number:</strong> {data.block.height}
+          </p>
+          <p><strong>Date:</strong> {new Date(data.block.time).toLocaleString()}</p>
         </div>
         <div>
           <p className="mb-2">
@@ -75,9 +76,9 @@ function TransactionPage() {
             </button>
             <span className="line-clamp-3 ml-2">{data.transaction}</span>
           </p>
-          <p className="mb-2"><strong>Fees:</strong> {convertLovelaceToAda(data.fees)}</p>
+          <p className="mb-2"><strong>Fees:</strong> {data.fees} ADA</p>
           <p className="mb-2"><strong>Size:</strong> {data.size} bytes</p>
-          <p><strong>Date:</strong> {new Date(data.block.time).toLocaleString()}</p>
+
         </div>
       </div>
 
