@@ -55,11 +55,11 @@ setApiData(reversedData);
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}${searchUrl}`);
+      const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
       data = response.data;
       navigate(searchUrl, { state: { data } });  // Pass data via state
     } catch (error) {
-      console.error("Erreur de recherche:", error);
+      console.error("Nothing here... ", error);
     }
   };
 
