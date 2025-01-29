@@ -83,11 +83,12 @@ function TransactionPage() {
       </div>
 
       <div className="tabs mb-4">
-        <a className={`tab tab-bordered ${activeTab === 'utxo' ? 'tab-active' : ''}`} onClick={() => setActiveTab('utxo')}>UTXO</a> 
+        <a className={`tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a> 
         <a className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>
+        <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
       </div>
 
-      {activeTab === 'utxo' ? (
+      {activeTab === 'eutxo' ? (
         <div>
           <h2 className="text-xl font-bold mb-2">Inputs</h2>
           {data.utxos.inputs.map((input, index) => (
@@ -155,8 +156,10 @@ function TransactionPage() {
             </div>
           ))}
         </div>
+  ) : activeTab === 'diagram' ? (
+        <div className="text-center text-lg font-semibold">Diagram</div>
       ) : (
-        <pre className="p-4 rounded-lg overflow-auto bg-base-200">
+        <pre className="p-4 rounded-lg overflow-auto bg-gray-900 text-green-400">
           {JSON.stringify(data, null, 2)}
         </pre>
       )}
