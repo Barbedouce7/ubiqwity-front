@@ -6,6 +6,8 @@
   <title>404 Not Found</title>
 </head>
 <body>
-  <script>window.location.replace('/')</script>
+  <script>
+    window.location.replace(window.location.pathname + window.location.search);
+  </script>
 </body>
 </html>
