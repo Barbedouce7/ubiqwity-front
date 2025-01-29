@@ -9,8 +9,8 @@ import axios from 'axios';
 import TransactionPage from './TransactionPage';
 import PoolPage from './PoolPage';
 import WalletPage from './WalletPage';
+import { API_CONFIG } from './apiConfig';
 
-const API_BASE_URL = 'https://apiubi.hiddenlabs.cc';
 
 function App() {
   const [apiData, setApiData] = useState([]);
@@ -23,17 +23,18 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseChainUsage = await axios.get(`${API_BASE_URL}/chainusage/`);
+        const responseChainUsage = await axios.get(`${API_CONFIG.baseUrl}chainusage/`);
         setChainUsage(responseChainUsage.data[0]);
 
-        const responseEpochContext = await axios.get(`${API_BASE_URL}/epochcontext/`);
+        const responseEpochContext = await axios.get(`${API_CONFIG.baseUrl}epochcontext/`);
         setEpochContext(responseEpochContext.data);
 
-        const response = await axios.get(`${API_BASE_URL}/last24prices/`);
-        const reversedData = response.data.reverse();
-        setApiData(reversedData);
+  const response = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
+const dataArray = Object.values(response.data); // Convertir l'objet en tableau
+const reversedData = dataArray.reverse();
+setApiData(reversedData);
 
-        const response2 = await axios.get(`${API_BASE_URL}/epochdata/`);
+        const response2 = await axios.get(`${API_CONFIG.baseUrl}epochdata/`);
         setEpochData(response2.data);
       } catch (error) {
         console.error("Error fetching data:", error);
