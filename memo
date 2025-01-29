@@ -5,22 +5,7 @@ git commit -m ','
 
 git push origin main
 yarn build
-echo '<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 Not Found</title>
-  <script>
-    function redirectToHome() {
-      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      window.location.href = "/";
-    }
-  </script>
-</head>
-<body onload="redirectToHome()">
-</body>
-</html>' > dist/404.html
+
 git commit -am "Save uncommited changes (WIP)"
 git branch --delete --force gh-pages
 git checkout --orphan gh-pages
