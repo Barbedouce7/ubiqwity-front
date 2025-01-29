@@ -1,13 +1,13 @@
 import './index.css'
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom'; // Change BrowserRouter en HashRouter
+import { BrowserRouter } from 'react-router-dom'; // Importer BrowserRouter
 import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <HashRouter>  {/* Utiliser HashRouter */}
+  <BrowserRouter>  {/* Envelopper ton app avec BrowserRouter */}
     <App />
-  </HashRouter>
+  </BrowserRouter>
 );
