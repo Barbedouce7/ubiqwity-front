@@ -13,7 +13,7 @@ echo '<!DOCTYPE html>
   <title>404 Not Found</title>
   <script>
     function redirectToHome() {
-      window.history.replaceState({}, document.title, window.location.pathname);
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
       window.location.href = "/";
     }
   </script>

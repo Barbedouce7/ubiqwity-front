@@ -46,12 +46,10 @@ function App() {
 
   // Effect for handling 404 redirect
   useEffect(() => {
-    if (location.pathname === '/') {
-      if (location.state && location.state.from404) {
+      if (location.pathname === '/' && location.state && location.state.from404) {
         navigate(location.state.from404, { replace: true });
       }
-    }
-  }, [location, navigate]);
+    }, [location, navigate]);
 
   const handleSearch = async (searchTerm) => {
     let searchUrl = '', data;
