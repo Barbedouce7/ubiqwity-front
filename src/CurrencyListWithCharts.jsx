@@ -1,18 +1,16 @@
 import React from "react";
 import { Line } from "react-chartjs-2";
-import { Card, CardContent, Typography, Grid } from "@mui/material";
-import {
+import { 
   Chart as ChartJS,
   LineElement,
   CategoryScale,
   LinearScale,
   PointElement,
   Tooltip,
-  Legend,
 } from "chart.js";
 
 // Configuration Chart.js
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip);
 
 const CurrencyListWithCharts = ({ data }) => {
   // Fonction pour transformer les données pour chaque paire
@@ -27,11 +25,10 @@ const CurrencyListWithCharts = ({ data }) => {
       labels: timestamps,
       datasets: [
         {
-          label: `(${pairName})`,
           data: values,
           borderColor: "#1976d2",
-          backgroundColor: "rgba(25, 118, 210, 0.2)",
-          fill: true,
+          fill: false,
+          tension: 0.1,
         },
       ],
     };
@@ -42,59 +39,81 @@ const CurrencyListWithCharts = ({ data }) => {
     new Set(data[0]?.price.map((item) => Object.keys(item)[0]))
   );
 
-  // Extraction du dernier prix d'une paire
-  const getLastPrice = (pairName) => {
+  // Extraction du dernier prix d'une paire et calcul du pourcentage de changement sur 24h
+  const getLastPriceAndChange = (pairName) => {
+    let lastPrice, previousPrice;
     for (let i = data.length - 1; i >= 0; i--) {
       const pair = data[i].price.find((item) => Object.keys(item)[0] === pairName);
-      if (pair) return Object.values(pair)[0].toFixed(6); // Format du prix avec 6 décimales
+      if (pair) {
+        if (lastPrice === undefined) {
+          lastPrice = Object.values(pair)[0];
+        } else {
+          previousPrice = Object.values(pair)[0];
+          break;
+        }
+      }
     }
-    return "N/A";
+
+    if (lastPrice && previousPrice) {
+      const priceChange = lastPrice - previousPrice;
+      const percentageChange = ((priceChange / previousPrice) * 100).toFixed(2);
+      return {
+        price: lastPrice.toFixed(6),
+        change: percentageChange,
+        color: priceChange >= 0 ? 'green' : (priceChange < 0 ? 'red' : 'gray')
+      };
+    }
+    return { price: "N/A", change: "0.00", color: 'gray' };
   };
 
   return (
-        <Grid container spacing={4}>
-      {uniquePairs.map((pairName) => (
-        <Grid item xs={12} key={pairName}>
-          <Card className="shadow-xl"> 
-            <CardContent className="bg-slate-900 flex items-center p-4 space-x-4">
-             
-              <Typography
-                variant="h6"
-                className="flex-1 text-left text-white font-semibold"
-              >
-                {pairName}
-              </Typography>
-            
-              {/* Dernier prix */}
-              <Typography
-                variant="h6"
-                className="flex-1 text-center text-primary font-semibold"
-              >
-                {getLastPrice(pairName)}
-              </Typography>
-              {/* Graphique */}
-              <div style={{ flex: 3, height: "200px" }}>
-                <Line
-                  data={prepareChartData(data, pairName)}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false },
-                    },
-                    scales: {
-                      x: {
-                        ticks: { display: false }, // Cacher les labels sur l'axe des X
+    <div className="grid grid-cols-1 gap-4">
+      {uniquePairs.map((pairName) => {
+        const { price, change, color } = getLastPriceAndChange(pairName);
+        return (
+          <div key={pairName} className="col-span-1">
+            <div className="card shadow-xl bg-slate-900">
+              <div className="card-body flex flex-row items-center p-4">
+                <div className="flex-1 text-left text-white font-semibold">
+                  {pairName}
+                </div>
+                <div className="flex-1 text-center font-semibold">
+                  {price}
+                  <p className={`text-${color}-400 text-center`}>
+                    {change}%
+                  </p>
+                </div>
+                <div className="flex-3 h-[144px]">
+                  <Line
+                    data={prepareChartData(data, pairName)}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false },
                       },
-                    },
-                  }}
-                />
+                      scales: {
+                        x: {
+                          ticks: { display: false },
+                        },
+                        y: {
+                          ticks: { display: false },
+                        }
+                      },
+                      elements: {
+                        point: {
+                          radius: 0
+                        }
+                      }
+                    }}
+                  />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
