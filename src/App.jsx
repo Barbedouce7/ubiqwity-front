@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import EpochContext from './EpochContext';
 import EpochChart from './EpochChart';
@@ -11,7 +11,6 @@ import PoolPage from './PoolPage';
 import WalletPage from './WalletPage';
 import { API_CONFIG } from './apiConfig';
 
-
 function App() {
   const [apiData, setApiData] = useState([]);
   const [epochContext, setEpochContext] = useState([]);
@@ -19,7 +18,9 @@ function App() {
   const [chainUsage, setChainUsage] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Effect for fetching data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -29,10 +30,10 @@ function App() {
         const responseEpochContext = await axios.get(`${API_CONFIG.baseUrl}epochcontext/`);
         setEpochContext(responseEpochContext.data);
 
-  const response = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
-const dataArray = Object.values(response.data); // Convertir l'objet en tableau
-const reversedData = dataArray.reverse();
-setApiData(reversedData);
+        const response = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
+        const dataArray = Object.values(response.data); // Convertir l'objet en tableau
+        const reversedData = dataArray.reverse();
+        setApiData(reversedData);
 
         const response2 = await axios.get(`${API_CONFIG.baseUrl}epochdata/`);
         setEpochData(response2.data);
@@ -42,6 +43,15 @@ setApiData(reversedData);
     };
     fetchData();
   }, []);
+
+  // Effect for handling 404 redirect
+  useEffect(() => {
+    if (location.pathname === '/') {
+      if (location.state && location.state.from404) {
+        navigate(location.state.from404, { replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   const handleSearch = async (searchTerm) => {
     let searchUrl = '', data;
@@ -57,9 +67,11 @@ setApiData(reversedData);
     try {
       const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
       data = response.data;
-      navigate(searchUrl, { state: { data } });  // Pass data via state
+      navigate(searchUrl, { state: { data, from404: searchUrl } });  
     } catch (error) {
       console.error("Nothing here... ", error);
+      // Optionally, navigate to a 404 page within your app or back to home
+      navigate('/', { state: { from404: searchUrl } });
     }
   };
 
@@ -70,7 +82,6 @@ setApiData(reversedData);
       <Routes>
         <Route path="/" element={
           <>
-
             <div className="flex flex-col md:flex-row gap-8">
               <div className="flex-1">
                 {chainUsage && Object.keys(chainUsage).length > 0 ? (
@@ -89,7 +100,7 @@ setApiData(reversedData);
                 )}
               </div>
             </div>
-                        {apiData.length > 0 ? (
+            {apiData.length > 0 ? (
               <CurrencyListWithCharts data={apiData} />
             ) : (
               <p>Loading...</p>
