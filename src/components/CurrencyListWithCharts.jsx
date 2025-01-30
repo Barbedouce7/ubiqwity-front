@@ -83,7 +83,7 @@ const CurrencyListWithCharts = ({ data }) => {
                     {change}%
                   </p>
                 </div>
-                <div className="flex-3 h-[144px]">
+                <div className="flex-3 h-[144px] w-[144px]">
                   <Line
                     data={prepareChartData(data, pairName)}
                     options={{

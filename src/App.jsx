@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
-import EpochContext from './EpochContext';
-import EpochChart from './EpochChart';
-import ChainUsage from './ChainUsage';
-import CurrencyListWithCharts from './CurrencyListWithCharts';
+import EpochContext from './components/EpochContext';
+import EpochChart from './components/EpochChart';
+import ChainUsage from './components/ChainUsage';
+import CurrencyListWithCharts from './components/CurrencyListWithCharts';
 import axios from 'axios';
-import TransactionPage from './TransactionPage';
-import PoolPage from './PoolPage';
-import WalletPage from './WalletPage';
-import { API_CONFIG } from './apiConfig';
+import TransactionPage from './pages/TransactionPage';
+import PoolPage from './pages/PoolPage';
+import WalletPage from './pages/WalletPage';
+import { API_CONFIG } from './utils/apiConfig';
+import { TokenProvider } from "./utils/TokenContext"; // stock les metadonnées des tokens
+
 
 function App() {
   const [apiData, setApiData] = useState([]);
