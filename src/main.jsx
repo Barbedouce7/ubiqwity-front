@@ -1,16 +1,20 @@
 import './index.css'
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom'; // Change BrowserRouter en HashRouter
+import { HashRouter } from 'react-router-dom'; 
 import App from './App';
 import { TokenProvider } from "./utils/TokenContext"; 
+import ErrorBoundary from './utils/ErrorBoundary';  
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <HashRouter>  {/* Utiliser HashRouter au lieu de BrowserRouter */}
+  <HashRouter> 
     <TokenProvider>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </TokenProvider>
   </HashRouter>
 );

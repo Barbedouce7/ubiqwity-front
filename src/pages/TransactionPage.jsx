@@ -1,97 +1,108 @@
-import React, { useState, useEffect } from 'react';
-import { Bar, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { API_CONFIG } from '../utils/apiConfig';
+import { copyToClipboard } from '../utils/utils';
+import EUTXOTab from '../components/EUTXOTab';
+import DiagramTab from '../components/DiagramTab';
+import JSONTab from '../components/JSONTab';
+import { TokenContext } from '../utils/TokenContext';
 
-// Enregistrement des composants de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+function TransactionPage() {
+  const { txId } = useParams();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('eutxo');
+  const [resolvedAmounts, setResolvedAmounts] = useState({});
+  const [tokenUnits, setTokenUnits] = useState([]);
+  const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
-function PoolPage({ data }) {
-  // Utilisation de useState pour gérer les données localement
-  const [poolData, setPoolData] = useState({});
-
-  useEffect(() => {
-    // Si les données sont passées via les props, on les met à jour dans le state local
-    if (data) {
-      setPoolData(data);
-    }
-  }, [data]);
-
-  // Préparation des données pour les graphiques
-  const epochs = poolData.history ? poolData.history.map(item => item.epoch) : [];
-  const activeStake = poolData.history ? poolData.history.map(item => item.activeStake) : [];
-  const delegatorsCount = poolData.history ? poolData.history.map(item => item.delegatorsCount) : [];
-
-  const lineData = {
-    labels: epochs,
-    datasets: [
-      {
-        label: 'Active Stake',
-        data: activeStake,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-      },
-      {
-        label: 'Delegators Count',
-        data: delegatorsCount,
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-    ],
-  };
-
-  const barData = {
-    labels: poolData.delegators ? poolData.delegators.map(d => d.address) : [],
-    datasets: [
-      {
-        label: 'Live Stake',
-        data: poolData.delegators ? poolData.delegators.map(d => d.liveStake) : [],
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Pool Performance Over Time',
-      },
-    },
-  };
-
-  return (
-    <div className="container mx-auto p-4 text-white bg-gray-800 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">{poolData.metadata?.name || "Pool Details"}</h1>
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_CONFIG.baseUrl}tx/${txId}`);
       
-      <div className="mb-6">
-        <h2 className="text-xl mb-2">Pool Stats</h2>
-        <p>Pool ID: {poolData.metadata?.pool_id}</p>
-        <p>Delegators: {poolData.stats?.delegators}</p>
-        <p>Saturation: {poolData.stats?.saturationPercentage}%</p>
-        <p>Margin: {poolData.stats?.marginPercentage}</p>
-        <p>Fixed Cost: {poolData.stats?.fixedCost}</p>
+      const newResolvedAmounts = {};
+      const unitsToFetch = new Set();
+
+      const checkToken = async (unit) => {
+        const tokenData = await fetchTokenData(unit);
+        return tokenData !== undefined && tokenData !== null;
+      };
+
+      for (let io of [...response.data.utxos.inputs, ...response.data.utxos.outputs]) {
+        const ioType = response.data.utxos.inputs.includes(io) ? 'input' : 'output';
+
+        const amounts = await Promise.all(io.amount.map(async (a) => {
+          if (a.unit !== 'lovelace') {
+            if (!(await checkToken(a.unit))) {
+              unitsToFetch.add(a.unit);
+            }
+          }
+          return { ...a };
+        }));
+
+        // Utiliser une valeur par défaut pour io.index s'il est undefined
+        const index = io.index ?? 'unknown';  // Valeur par défaut si index est undefined
+        newResolvedAmounts[`${ioType}-${index}`] = amounts;
+      }
+
+      setTokenUnits([...unitsToFetch]);
+      setData(response.data);
+      setResolvedAmounts(newResolvedAmounts);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('An error occurred while fetching data');
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [txId, fetchTokenData]);
+
+   if (loading) return <div className="text-center mt-10">Loading...</div>;
+  if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
+  if (!data) return null;
+
+console.log(resolvedAmounts);
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Transaction Details</h1>
+       <div className="mb-4">
+        <div className="mb-2">
+          <div className="mb-2"><strong>Transaction Hash:</strong> {data.transaction}</div>
+          <strong>Block Hash:</strong> 
+          <button 
+            className="btn btn-xs ml-2" 
+            onClick={() => copyToClipboard(data.block.hash)}
+          >
+            Copy
+          </button>
+          <span className="line-clamp-3 ml-2">{data.block.hash}</span>
+        </div>
+        <div className="mb-2">
+          <strong>Block Number:</strong> {data.block.height}
+        </div>
+        <div><strong>Date:</strong> {new Date(data.block.time).toLocaleString()}</div>
+
+        <div className="mb-2"><strong>Fees:</strong> {data.fees} ADA</div>
+        <div className="mb-2"><strong>Size:</strong> {data.size} bytes</div>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-xl mb-2">Stake and Delegators History</h2>
-        <Line data={lineData} options={options} />
+      <div className="tabs mb-4">
+        <a className={`tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a> 
+        <a className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>
+        <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
       </div>
 
-      <div>
-        <h2 className="text-xl mb-2">Delegators Live Stake</h2>
-        <Bar data={barData} options={options} />
-      </div>
-
-      {/* Affichage JSON brut pour débogage ou information complète */}
-      <pre className="bg-gray-900 text-white p-4 rounded-lg overflow-auto">
-        {JSON.stringify(poolData, null, 2)}
-      </pre>
+      {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
+      {activeTab === 'diagram' && <DiagramTab />}
+      {activeTab === 'json' && <JSONTab data={data} />}
     </div>
   );
 }
 
-export default PoolPage;
+export default TransactionPage;

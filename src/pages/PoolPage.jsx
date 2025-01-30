@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig'; // Assure-toi d'avoir correctement configuré ton fichier API_CONFIG
+import GetHandle from '../components/GetHandle';
+import CopyButton from '../components/CopyButton';
 import { useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -77,6 +79,21 @@ function PoolPage() {
     ],
   };
 
+const sortedDelegators = data?.delegators.map((delegator, index) => {
+  const stakeKey = delegator.address; // Assure que la variable reste bien une stakekey
+
+  return (
+    <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
+      {/* Affichage du handle sans affecter la clé 
+      <GetHandle stakekey={stakeKey} />*/}
+      <p className="text-lg">
+        Address: <CopyButton text={stakeKey} /> {stakeKey}
+      </p>
+      <p className="text-sm">Live Stake: {delegator.liveStake} ₳</p>
+    </div>
+  );
+});
+
   // Calcul de la couleur de la barre de progression en fonction du pourcentage de saturation
   const saturationPercentage = parseFloat(data?.stats.saturationPercentage || 0);
   const progressBarColor = saturationPercentage < 80 ? 'bg-green-500' : 'bg-orange-500';
@@ -100,8 +117,8 @@ function PoolPage() {
       </div>
 
       {/* Barre de progression pour la saturation */}
-      <div className="mb-6">
-        <div className="relative pt-1">
+      <div className="mb-4">
+        <div className="relative pt-1 max-w-lg mx-auto">
           <div className="flex mb-2 items-center justify-between">
             <span className="text-xs font-semibold inline-block py-1 px-2 mx-auto uppercase rounded-full text-teal-600 dark:text-teal-300">
               {saturationPercentage}% Saturation
@@ -120,50 +137,32 @@ function PoolPage() {
 
       {/* Onglets */}
       <div className="tabs mb-6">
-        <a
-          className={`tab ${activeTab === 'diagram' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-        >
-          Stats
-        </a>
-        <a
-          className={`tab ${activeTab === 'relays' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('relays')}
-        >
-          Relays
-        </a>
-        <a
-          className={`tab ${activeTab === 'json' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('json')}
-        >
-          JSON
-        </a>
+        <a className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('stats')}>Stats </a>
+        <a className={`tab tab-bordered ${activeTab === 'relays' ? 'tab-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
+        <a className={`tab tab-bordered ${activeTab === 'delegators' ? 'tab-active' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators </a>
+        <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
       </div>
 
-      {/* Onglet Diagram */}
       {activeTab === 'diagram' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Historique de la Pool</h2>
           
-          {/* Graphiques séparés */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold">Active Stake (₳)</h3>
-            <Line data={historyChartData} options={{ responsive: true }} />
+            <Line key={activeTab} data={historyChartData} options={{ responsive: true }} />
           </div>
 
           <div className="mb-6">
             <h3 className="text-xl font-semibold">Rewards (₳)</h3>
-            <Line data={rewardsChartData} options={{ responsive: true }} />
+            <Line key={activeTab} data={rewardsChartData} options={{ responsive: true }} />
           </div>
 
           <div className="mb-6">
             <h3 className="text-xl font-semibold">Delegators Count</h3>
-            <Line data={delegatorsChartData} options={{ responsive: true }} />
+            <Line key={activeTab} data={delegatorsChartData} options={{ responsive: true }} />
           </div>
         </div>
       )}
 
-      {/* Onglet Relays */}
       {activeTab === 'relays' && (
         <div>
           <h2 className="text-xl font-semibold text-sky-500 mb-4">Relays</h2>
@@ -182,10 +181,13 @@ function PoolPage() {
           )}
         </div>
       )}
-
-      {/* Onglet JSON */}
+      {activeTab === 'delegators' && (
+        <pre className="p-4 rounded-lg overflow-auto text-left">
+         {sortedDelegators}
+        </pre>
+      )}
       {activeTab === 'json' && (
-        <pre className="p-4 rounded-lg overflow-auto text-left bg-gray-900 text-green-400">
+        <pre className="p-4 rounded-lg overflow-auto text-left bg-gray-900">
          {JSON.stringify(data, null, 2)}
         </pre>
       )}
