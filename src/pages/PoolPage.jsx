@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
-import GetHandle from '../components/GetHandle';
-import CopyButton from '../components/CopyButton';
-import { useParams } from 'react-router-dom';
 import PoolCharts from '../components/PoolCharts';
 import DiagramTab from '../components/DiagramTab';
 import JSONTab from '../components/JSONTab';
+import PoolDelegatorsTab from '../components/PoolDelegatorsTab'; // New component for delegators
 import { TokenContext } from '../utils/TokenContext';
+import { useParams } from 'react-router-dom'; // Add this line
+
 
 function PoolPage() {
   const { poolId } = useParams();
@@ -36,20 +36,6 @@ function PoolPage() {
   const saturationPercentage = parseFloat(data?.stats.saturationPercentage || 0);
   const progressBarColor = saturationPercentage < 80 ? 'bg-green-500' : 'bg-orange-500';
 
-  const sortedDelegators = data?.delegators.map((delegator, index) => {
-    const stakeKey = delegator.address;
-    return (
-      <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
-        <GetHandle stakekey={stakeKey} />
-        <p className="text-lg">
-          Address: <CopyButton text={stakeKey} /> {stakeKey}
-        </p>
-        <p className="text-sm">Live Stake: {delegator.liveStake} ₳</p>
-      </div>
-    );
-  });
-
-  // New function to render owners and reward account
   const renderOwnersAndReward = () => {
     const owners = data?.owners || [];
     const rewardAccount = data?.rewardAccount;
@@ -86,6 +72,10 @@ function PoolPage() {
         <p className="text-lg text-gray-700 dark:text-gray-300">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span></p>
         <p className="text-lg">Saturation: <span className="font-bold">{data.stats.saturationPercentage}%</span></p>
         <p className="text-lg">Fixed Cost: <span className="font-bold">{data.stats.fixedCost} ₳</span></p>
+        <p className="text-lg">Margin Cost: <span className="font-bold">{data.stats.marginPercentage}</span></p>
+        <p className="text-lg">Live Stake: <span className="font-bold">{data.stats.pledge.live} ₳</span></p>
+        <p className="text-lg">Pledge: <span className="font-bold">{data.stats.pledge.declared} ₳</span></p>
+        <p className="text-lg">Delegators: <span className="font-bold">{data.stats.delegators}</span></p>
       </div>
 
       <div className="mb-4">
@@ -120,7 +110,7 @@ function PoolPage() {
           <h2 className="text-xl font-semibold text-sky-500 mb-4">Relays</h2>
           {data.relays && data.relays.length > 0 ? (
             data.relays.map((relay, index) => (
-              <div key={index} className="mb-4">
+              <div key={index} className="mb-4 rounded-lg bg-slate-900">
                 <p className="text-lg">Relay #{relay.relay}</p>
                 <p className="text-sm">IP: {relay.data.ipInfo.ip}</p>
                 <p className="text-sm">Hostname: {relay.data.ipInfo.hostname}</p>
@@ -133,12 +123,7 @@ function PoolPage() {
           )}
         </div>
       )}
-      {activeTab === 'delegators' && (
-        <pre className="p-4 rounded-lg overflow-auto text-left">
-          50 top delegators :
-          {sortedDelegators}
-        </pre>
-      )}
+      {activeTab === 'delegators' && <PoolDelegatorsTab delegators={data?.delegators || []} />}
       {activeTab === 'owner' && renderOwnersAndReward()}
       {activeTab === 'json' && (
         <pre className="p-4 rounded-lg overflow-auto text-left bg-gray-900">
