@@ -33,8 +33,8 @@ function GetHandle({ stakekey }) {
     fetchHandle();
   }, [stakekey]);
 
-  if (loading) return <p className="text-sm text-gray-500">Chargement...</p>;
-  if (error) return <p className="text-sm text-red-500">{error}</p>;
+  if (loading) return <p className="text-sm text-gray-500">Handle Loading...</p>;
+
 
   return (
     <p className="text-lg">
@@ -44,7 +44,7 @@ function GetHandle({ stakekey }) {
           {defaultHandle}
         </>
       ) : (
-        <span className="text-gray-500">Aucun handle</span>
+        <span className="text-gray-500"></span>
       )}
     </p>
   );

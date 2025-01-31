@@ -32,13 +32,18 @@ function App() {
         const responseEpochContext = await axios.get(`${API_CONFIG.baseUrl}epochcontext/`);
         setEpochContext(responseEpochContext.data);
 
+
+        const response2 = await axios.get(`${API_CONFIG.baseUrl}epochdata/`);
+        setEpochData(response2.data);
+
+
+
         const response = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
         const dataArray = Object.values(response.data); // Convertir l'objet en tableau
         const reversedData = dataArray.reverse();
         setApiData(reversedData);
 
-        const response2 = await axios.get(`${API_CONFIG.baseUrl}epochdata/`);
-        setEpochData(response2.data);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
