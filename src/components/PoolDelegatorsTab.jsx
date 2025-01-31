@@ -1,49 +1,28 @@
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import GetHandle from './GetHandle';
 import CopyButton from './CopyButton';
 
-// Register chart.js components for the bar chart
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
 const PoolDelegatorsTab = ({ delegators }) => {
-  // Sort delegators by live stake in descending order
+  // Trier les délégateurs par live stake en ordre décroissant
   const sortedDelegators = [...delegators].sort((a, b) => b.liveStake - a.liveStake);
 
-  const liveStakeChartData = {
-    labels: sortedDelegators.map(d => d.address.slice(0, 15) + '...'), // Use first 6 characters of address for labels
-    datasets: [
-      {
-        label: 'Live Stake (₳)',
-        data: sortedDelegators.map(d => d.liveStake),
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        borderColor: 'rgb(75, 192, 192)',
-        borderWidth: 1,
-      },
-    ],
-  };
+  // Calculer le total du live stake
+  const totalStake = sortedDelegators.reduce((sum, d) => sum + d.liveStake, 0);
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Delegators Live Stake Distribution</h2>
-      <div className="mb-6">
-        <Bar data={liveStakeChartData} options={{
-          indexAxis: 'x',
-          responsive: true,
-          scales: {
-            x: {
-              beginAtZero: true
-            }
-          }
-        }} />
-      </div>
-      
       <div className="p-0">
         {sortedDelegators.map((delegator, index) => {
           const stakeKey = delegator.address;
+          const stakePercentage = totalStake > 0 ? (delegator.liveStake / totalStake) * 100 : 0;
           return (
-            <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
+            <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4 relative">
+              {/* Barre de proportion du stake */}
+              <div
+                className="absolute top-0 left-0 h-2 bg-sky-600 rounded-lg"
+                style={{ width: `${stakePercentage}%` }}
+              ></div>
               <GetHandle stakekey={stakeKey} />
               <p className="text-lg">
                 Address: <CopyButton text={stakeKey} /> {stakeKey}

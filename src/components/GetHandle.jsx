@@ -7,19 +7,36 @@ function GetHandle({ stakekey }) {
   const [defaultHandle, setDefaultHandle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const lastFetchedKey = useRef(null); // Stocke la dernière clé récupérée pour éviter des requêtes inutiles
+  const lastFetchedKey = useRef(null);
+  const requestQueue = useRef([]);
+  const isProcessing = useRef(false);
 
   useEffect(() => {
     if (!stakekey || lastFetchedKey.current === stakekey) return;
 
-    lastFetchedKey.current = stakekey; // Marque cette clé comme récupérée pour éviter les boucles
+    lastFetchedKey.current = stakekey;
+    requestQueue.current.push(stakekey);
 
-    const fetchHandle = async () => {
-      setLoading(true);
-      setError(null);
-      
+    if (!isProcessing.current) {
+      processQueue();
+    }
+  }, [stakekey]);
+
+  const processQueue = () => {
+    if (requestQueue.current.length === 0) {
+      isProcessing.current = false;
+      return;
+    }
+
+    isProcessing.current = true;
+    const nextKey = requestQueue.current.shift();
+
+    setLoading(true);
+    setError(null);
+
+    setTimeout(async () => {
       try {
-        const response = await axios.get(`${ADAHANDLE_URL}holders/${stakekey}`);
+        const response = await axios.get(`${ADAHANDLE_URL}holders/${nextKey}`);
         if (response.status === 200) {
           setDefaultHandle(response.data.default_handle || null);
         }
@@ -27,14 +44,12 @@ function GetHandle({ stakekey }) {
         setError("Erreur lors du chargement du handle");
       } finally {
         setLoading(false);
+        processQueue();
       }
-    };
+    }, 500);
+  };
 
-    fetchHandle();
-  }, [stakekey]);
-
-  if (loading) return <p className="text-sm text-gray-500">Handle Loading...</p>;
-
+  if (loading) return <span className="loading loading-spinner loading-md text-sky-500"></span>;
 
   return (
     <p className="text-lg">

@@ -6,7 +6,7 @@ import DiagramTab from '../components/DiagramTab';
 import JSONTab from '../components/JSONTab';
 import PoolDelegatorsTab from '../components/PoolDelegatorsTab'; 
 import { TokenContext } from '../utils/TokenContext';
-import { useParams } from 'react-router-dom'; 
+import { useParams, Link } from 'react-router-dom';
 import CopyButton from '../components/CopyButton';
 
 
@@ -101,30 +101,32 @@ function PoolPage() {
 
       <div className="tabs mb-6">
         <a className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
-        <a className={`tab tab-bordered ${activeTab === 'relays' ? 'tab-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
         <a className={`tab tab-bordered ${activeTab === 'delegators' ? 'tab-active' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
+        <a className={`tab tab-bordered ${activeTab === 'relays' ? 'tab-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
         <a className={`tab tab-bordered ${activeTab === 'owner' ? 'tab-active' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
         <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
       </div>
 
       {activeTab === 'diagram' && <PoolCharts data={data} />}
       {activeTab === 'relays' && (
-        <div>
-          <h2 className="text-xl font-semibold text-sky-500 mb-4">Relays</h2>
-          {data.relays && data.relays.length > 0 ? (
-            data.relays.map((relay, index) => (
-              <div key={index} className="mb-4 rounded-lg bg-slate-900">
+    <div>
+        <h2 className="text-xl font-semibold text-sky-500 mb-4">Relays</h2>
+        {data.relays && data.relays.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {data.relays.map((relay, index) => (
+              <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
                 <p className="text-lg">#{relay.relay}</p>
                 <p className="text-sm">IP: <span className="font-bold">{relay.data.ipInfo.ip}</span></p>
                 <p className="text-sm">Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span></p>
                 <p className="text-sm">City: <span className="font-bold">{relay.data.ipInfo.city}</span>, <span className="font-bold">{relay.data.ipInfo.country}</span></p>
                 <p className="text-sm">Port: <span className="font-bold">{relay.data.port}</span></p>
               </div>
-            ))
-          ) : (
-            <p>No relays available.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p>No relays available from on-chain data.</p>
+        )}
+      </div>
       )}
       {activeTab === 'delegators' && <PoolDelegatorsTab delegators={data?.delegators || []} />}
       {activeTab === 'owner' && renderOwnersAndReward()}

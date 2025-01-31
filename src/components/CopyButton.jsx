@@ -13,17 +13,17 @@ const CopyButton = ({ text }) => {
   };
 
   return (
-    <button
-      onClick={handleCopy}
-      className="inline rounded-md transition-colors 
-                 bg-gray-800 hover:bg-gray-700 text-white p-1 mt-2"
-    >
-      {copied ? (
-        <CheckIcon className="h-6 w-6 text-green-400 transition-all" />
-      ) : (
-        <ClipboardIcon className="h-6 w-6 text-gray-400 hover:text-white transition-all" />
-      )}
-    </button>
+  <button
+    onClick={handleCopy}
+    className="inline rounded-md transition-colors 
+               bg-gray-800 hover:bg-gray-700 text-white p-1 m-2"
+  >
+    {copied ? (
+      <CheckIcon className="h-4 w-4 text-green-400 transition-all" />
+    ) : (
+      <ClipboardIcon className="h-4 w-4 text-gray-400 hover:text-white transition-all" />
+    )}
+  </button>
   );
 };
 
