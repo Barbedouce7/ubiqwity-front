@@ -7,6 +7,7 @@ import JSONTab from '../components/JSONTab';
 import PoolDelegatorsTab from '../components/PoolDelegatorsTab'; // New component for delegators
 import { TokenContext } from '../utils/TokenContext';
 import { useParams } from 'react-router-dom'; // Add this line
+import CopyButton from '../components/CopyButton';
 
 
 function PoolPage() {
@@ -111,11 +112,11 @@ function PoolPage() {
           {data.relays && data.relays.length > 0 ? (
             data.relays.map((relay, index) => (
               <div key={index} className="mb-4 rounded-lg bg-slate-900">
-                <p className="text-lg">Relay #{relay.relay}</p>
-                <p className="text-sm">IP: {relay.data.ipInfo.ip}</p>
-                <p className="text-sm">Hostname: {relay.data.ipInfo.hostname}</p>
-                <p className="text-sm">City: {relay.data.ipInfo.city}, {relay.data.ipInfo.country}</p>
-                <p className="text-sm">Port: {relay.data.port}</p>
+                <p className="text-lg">#{relay.relay}</p>
+                <p className="text-sm">IP: <span className="font-bold">{relay.data.ipInfo.ip}</span></p>
+                <p className="text-sm">Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span></p>
+                <p className="text-sm">City: <span className="font-bold">{relay.data.ipInfo.city}</span>, <span className="font-bold">{relay.data.ipInfo.country}</span></p>
+                <p className="text-sm">Port: <span className="font-bold">{relay.data.port}</span></p>
               </div>
             ))
           ) : (

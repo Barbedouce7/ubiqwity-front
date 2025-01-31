@@ -12,7 +12,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
   const sortedDelegators = [...delegators].sort((a, b) => b.liveStake - a.liveStake);
 
   const liveStakeChartData = {
-    labels: sortedDelegators.map(d => d.address.slice(0, 6) + '...'), // Use first 6 characters of address for labels
+    labels: sortedDelegators.map(d => d.address.slice(0, 15) + '...'), // Use first 6 characters of address for labels
     datasets: [
       {
         label: 'Live Stake (₳)',
@@ -39,7 +39,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
         }} />
       </div>
       
-      <div className="overflow-auto max-h-96">
+      <div className="p-0">
         {sortedDelegators.map((delegator, index) => {
           const stakeKey = delegator.address;
           return (
