@@ -84,8 +84,8 @@ const sortedDelegators = data?.delegators.map((delegator, index) => {
 
   return (
     <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
-      {/* Affichage du handle sans affecter la clé 
-      <GetHandle stakekey={stakeKey} />*/}
+      {/* Affichage du handle sans affecter la clé */}
+      <GetHandle stakekey={stakeKey} />
       <p className="text-lg">
         Address: <CopyButton text={stakeKey} /> {stakeKey}
       </p>
@@ -110,6 +110,8 @@ const sortedDelegators = data?.delegators.map((delegator, index) => {
   return (
     <div className="container mx-auto p-6 dark:bg-base-800">
       <h1 className="text-3xl font-bold text-center text-sky-500 mb-6">{data.metadata.name}</h1>
+      <p className="text-lg max-w-lg mx-auto text-gray-700 dark:text-gray-300"><span className="font-bold text-sky-500">{data.metadata.description}</span></p>
+
       <div className="text-center mb-6">
         <p className="text-lg text-gray-700 dark:text-gray-300">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span></p>
         <p className="text-lg">Saturation: <span className="font-bold">{data.stats.saturationPercentage}%</span></p>
