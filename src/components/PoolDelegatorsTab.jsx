@@ -29,7 +29,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
       <h2 className="text-xl font-semibold mb-4">Delegators Live Stake Distribution</h2>
       <div className="mb-6">
         <Bar data={liveStakeChartData} options={{
-          indexAxis: 'y',
+          indexAxis: 'x',
           responsive: true,
           scales: {
             x: {
