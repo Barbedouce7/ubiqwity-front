@@ -44,16 +44,16 @@ function PoolPage() {
     return (
       <div className="p-4 rounded-lg overflow-auto text-left">
         {owners.map((owner, index) => (
-          <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
+          <div key={index} className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl  text-base-content">
             <p className="text-lg">
-              Owner: <CopyButton text={owner} /> <Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${owner}`}>{owner}</Link>
+              Owner: <CopyButton text={owner} /> <Link className="text-primary hover:text-cyan-100" to={`/wallet/${owner}`}>{owner}</Link>
             </p>
           </div>
         ))}
         {rewardAccount && (
-          <div className="mb-4 rounded-lg bg-slate-900 p-4">
+          <div className="mb-4 rounded-lg bg-base-100 p-4  text-base-content shadow-xl">
             <p className="text-lg">
-              Reward Account: <CopyButton text={rewardAccount} /><Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${rewardAccount}`}> {rewardAccount}</Link>
+              Reward Account: <CopyButton text={rewardAccount} /><Link className="text-primary hover:text-cyan-100" to={`/wallet/${rewardAccount}`}> {rewardAccount}</Link>
             </p>
           </div>
         )}
@@ -61,11 +61,11 @@ function PoolPage() {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="container mx-auto p-6 dark:bg-base-800">
+    <div className="container mx-auto p-6 p-4  text-base-content">
       <h1 className="text-3xl font-bold text-center text-sky-500 mb-6">{data.metadata.name}</h1>
       <p className="text-lg max-w-lg mx-auto text-gray-700 dark:text-gray-300"><span className="font-bold text-sky-500">{data.metadata.description}</span></p>
 
@@ -99,42 +99,43 @@ function PoolPage() {
         </div>
       </div>
 
-      <div className="tabs mb-6">
-        <a className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
-        <a className={`tab tab-bordered ${activeTab === 'delegators' ? 'tab-active' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
-        <a className={`tab tab-bordered ${activeTab === 'relays' ? 'tab-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
-        <a className={`tab tab-bordered ${activeTab === 'owner' ? 'tab-active' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
-        <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
-      </div>
+<div className="tabs mt-6 mb-6 flex justify-center items-center">
+  <div className="h-0.5 w-full bg-base-300 absolute top-0"></div> {/* Séparateur */}
+  <a className={`text-base-content tab tab-bordered ${activeTab === 'diagram' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
+  <a className={`text-base-content tab tab-bordered ${activeTab === 'delegators' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
+  <a className={`text-base-content tab tab-bordered ${activeTab === 'relays' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
+  <a className={`text-base-content tab tab-bordered ${activeTab === 'owner' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
+  <a className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
+</div>
 
-      {activeTab === 'diagram' && <PoolCharts data={data} />}
-      {activeTab === 'relays' && (
-    <div>
-        <h2 className="text-xl font-semibold text-sky-500 mb-4">Relays</h2>
-        {data.relays && data.relays.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {data.relays.map((relay, index) => (
-              <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
-                <p className="text-lg">#{relay.relay}</p>
-                <p className="text-sm">IP: <span className="font-bold">{relay.data.ipInfo.ip}</span></p>
-                <p className="text-sm">Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span></p>
-                <p className="text-sm">City: <span className="font-bold">{relay.data.ipInfo.city}</span>, <span className="font-bold">{relay.data.ipInfo.country}</span></p>
-                <p className="text-sm">Port: <span className="font-bold">{relay.data.port}</span></p>
-              </div>
-            ))}
+{activeTab === 'diagram' && <PoolCharts data={data} />}
+{activeTab === 'relays' && (
+  <div className="bg-base-400 rounded-lg p-4">
+    <h2 className="text-xl font-semibold text-primary mb-4">Relays</h2>
+    {data.relays && data.relays.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {data.relays.map((relay, index) => (
+          <div key={index} className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl">
+            <p className="text-lg">#{relay.relay}</p>
+            <p className="text-sm">IP: <span className="font-bold">{relay.data.ipInfo.ip}</span></p>
+            <p className="text-sm">Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span></p>
+            <p className="text-sm">City: <span className="font-bold">{relay.data.ipInfo.city}</span>, <span className="font-bold">{relay.data.ipInfo.country}</span></p>
+            <p className="text-sm">Port: <span className="font-bold">{relay.data.port}</span></p>
           </div>
-        ) : (
-          <p>No relays available from on-chain data.</p>
-        )}
+        ))}
       </div>
-      )}
-      {activeTab === 'delegators' && <PoolDelegatorsTab delegators={data?.delegators || []} />}
-      {activeTab === 'owner' && renderOwnersAndReward()}
-      {activeTab === 'json' && (
-        <pre className="p-4 rounded-lg overflow-auto text-left bg-gray-900">
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      )}
+    ) : (
+      <p className="text-base-content">No relays available from on-chain data.</p>
+    )}
+  </div>
+)}
+{activeTab === 'delegators' && <PoolDelegatorsTab delegators={data?.delegators || []} />}
+{activeTab === 'owner' && renderOwnersAndReward()}
+{activeTab === 'json' && (
+  <pre className="p-4 rounded-lg overflow-auto text-left bg-base-100 text-base-content shadow-xl">
+    {JSON.stringify(data, null, 2)}
+  </pre>
+)}
     </div>
   );
 }

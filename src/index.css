@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.bg-base-100 {
+  background-color: #ffffff; 
+}
+
+.dark .bg-base-100 {
+  background-color: #0a0e21; 
+}
+
+.dark .text-primary {
+  color: #f3f4f6; 
+}
+
+.bg-base-100 .text-sm {
+  @apply text-base-content;
+}
+
+.text-base-content {
+  @apply text-black dark:text-white;
+}
+
+
+
+/* Pour le mode clair (absence de la classe 'dark') */
+.tab.tab-bordered {
+  @apply border-b-2 border-sky-500;
+}
+
+.tab.tab-bordered.tab-active {
+  @apply border-b-2 border-primary;
+}
+
+/* Pour le mode sombre */
+.dark .tab.tab-bordered.tab-active {
+  @apply border-b-2 border-primary; /* Utilise la couleur primaire du thème sombre */
+}

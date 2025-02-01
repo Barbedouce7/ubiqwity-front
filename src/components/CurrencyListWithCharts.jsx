@@ -72,9 +72,9 @@ const CurrencyListWithCharts = ({ data }) => {
         const { price, change, color } = getLastPriceAndChange(pairName);
         return (
           <div key={pairName} className="col-span-1">
-            <div className="card shadow-xl bg-slate-900">
+            <div className="card bg-base-100 shadow-xl p-4 mt-6 mb-6 text-base-content">
               <div className="card-body flex flex-row items-center p-4">
-                <div className="flex-1 text-left text-white font-semibold">
+                <div className="flex-1 text-left text-white font-semibold text-base-content">
                   {pairName}
                 </div>
                 <div className="flex-1 text-center font-semibold">

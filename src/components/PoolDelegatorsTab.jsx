@@ -19,7 +19,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
           const stakeKey = delegator.address;
           const stakePercentage = totalStake > 0 ? (delegator.liveStake / totalStake) * 100 : 0;
           return (
-            <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4 relative">
+            <div key={index} className="mb-4 rounded-lg  text-base-content bg-base-100 p-4 relative shadow-lg">
               {/* Barre de proportion du stake */}
               <div
                 className="absolute top-0 left-0 h-2 bg-sky-600 rounded-lg"
@@ -27,7 +27,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
               ></div>
               <GetHandle stakekey={stakeKey} />
               <p className="text-lg">
-                Address: <CopyButton text={stakeKey} /> <Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${stakeKey}`}>{stakeKey}</Link>
+                Address: <CopyButton text={stakeKey} /> <Link className="text-primary hover:text-cyan-100" to={`/wallet/${stakeKey}`}>{stakeKey}</Link>
               </p>
               <p className="text-sm">Live Stake: {delegator.liveStake} ₳</p>
             </div>

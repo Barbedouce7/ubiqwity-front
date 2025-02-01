@@ -42,7 +42,7 @@ const EpochContext = ({ data }) => {
   };
 
   return (
-    <div className="card bg-slate-950 shadow-xl text-white p-4">
+    <div className="card bg-base-100 shadow-xl p-2 text-base-content">
       {/* Barre de progression de l'epoch */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">

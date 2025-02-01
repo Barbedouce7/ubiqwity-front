@@ -1,26 +1,41 @@
-import React, { useState } from "react";
-import logo from '/logo-white.svg';
+import React, { useState, useEffect } from 'react';
+import logow from '/logo-white.svg';
+import logob from '/logo-black.svg';
 
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    // Fonction pour mettre à jour l'état lorsque la classe 'dark' change
+    const updateTheme = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    };
+
+    // Ajouter un écouteur pour les mutations de la classe 'dark' sur l'élément html
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    // Nettoyage de l'observer lors du démontage du composant
+    return () => observer.disconnect();
+  }, []);
 
   const onSearchChange = (e) => {
     setSearchInput(e.target.value);
   };
 
   const onSearchSubmit = (e) => {
-    // Vérifie si 'e' est bien un objet d'événement avant d'appeler preventDefault
     if (e && e.preventDefault) {
       e.preventDefault();
     }
-    handleSearch(searchInput); // Appeler la fonction passée en prop pour traiter la recherche
+    handleSearch(searchInput);
   };
 
   return (
-   <div className="navbar bg-base-100 mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
+    <div className="navbar bg-base-100 shadow-xl p-2 mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
-          <img src={logo} className="logo w-10 mr-4" alt="Ubiqwity logo" /> Ubiqwity
+          <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> Ubiqwity
         </a>
       </div>
 
@@ -31,7 +46,7 @@ function Navbar({ handleSearch }) {
             type="text"
             value={searchInput}
             onChange={onSearchChange}
-            className="grow input input-bordered w-[100px] focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md "
+            className="grow input bg-base-100 border-2 shadow-xl input-bordered w-[100px] focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md "
             placeholder="tx, address, ..."
           />
           {/* Icône de recherche */}

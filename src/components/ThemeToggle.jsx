@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(null);
+  const [isDark, setIsDark] = useState(false); // Initialisation à false par défaut
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -16,28 +16,28 @@ const ThemeToggle = () => {
   }, []);
 
   const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
+    const newIsDark = !isDark;
+    if (newIsDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-    setIsDark(!isDark);
+    setIsDark(newIsDark);
   };
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      <button 
-        onClick={toggleTheme}
-        className="btn btn-circle btn-ghost"
-        aria-label="Toggle theme"
-      >
-        {isDark ? 
-          <SunIcon className="h-6 w-6 text-yellow-400" /> : 
-          <MoonIcon className="h-6 w-6 text-gray-700" />
-        }
-      </button>
+      <label className="swap swap-rotate bg-base-300 rounded-full p-1 opacity-80">
+        <input type="checkbox" checked={isDark} onChange={toggleTheme} />
+
+        {/* sun icon */}
+        <SunIcon className={`swap-on h-5 w-5 text-yellow-400`} />
+        
+        {/* moon icon */}
+        <MoonIcon className={`swap-off h-5 w-5 text-blue-400`} />
+      </label>
     </div>
   );
 };

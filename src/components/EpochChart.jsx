@@ -59,27 +59,21 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
 
   return (
     <Card>
-      <CardContent className="bg-slate-950">
+      <CardContent className="bg-base-100 shadow-xl p-2 text-base-content">
         <div>
           <Chart
             type="bar"
             data={combinedData}
             options={{
               responsive: true,
-              plugins: {
-                legend: { labels: { color: "white" } },
-              },
               scales: {
-                x: { ticks: { color: "white" } },
                 y1: { 
                   type: "linear",
                   position: "left",
-                  ticks: { color: "white" },
                 },
                 y2: { 
                   type: "linear",
                   position: "right",
-                  ticks: { color: "white" },
                 },
               },
             }}
