@@ -29,14 +29,14 @@ function WalletPage() {
     fetchData();
   }, [stakekey]);
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
+  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
   if (!data) return null;
 
   const { stakekeyInfo, transactions } = data;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       <div className="mb-4">
         <div className="mb-2">
@@ -63,11 +63,11 @@ function WalletPage() {
       </div>
 
       <div className="tabs mb-4">
-        <a className={`tab tab-bordered ${activeTab === 'hold' ? 'tab-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
-        <a className={`tab tab-bordered ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}> History</a>
-        <a className={`tab tab-bordered ${activeTab === 'friends' ? 'tab-active' : ''}`} onClick={() => setActiveTab('friends')}> Friends</a>
-        <a className={`tab tab-bordered ${activeTab === 'transactions' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('transactions')}> Transactions</a>
-        <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('json')}> JSON</a>
+        <a className={`text-base-content tab tab-bordered ${activeTab === 'hold' ? 'tab-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
+        <a className={`text-base-content tab tab-bordered ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}> History</a>
+        <a className={`text-base-content tab tab-bordered ${activeTab === 'friends' ? 'tab-active' : ''}`} onClick={() => setActiveTab('friends')}> Friends</a>
+        <a className={`text-base-content tab tab-bordered ${activeTab === 'transactions' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('transactions')}> Transactions</a>
+        <a className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('json')}> JSON</a>
       </div>
       {activeTab === 'hold' && (
         <div>
@@ -89,7 +89,7 @@ function WalletPage() {
  <div>
   <h2 className="text-lg font-bold mb-4 text-center">Transactions</h2>
   {transactions.map((tx, index) => (
-    <div key={index} className="mb-4 card bg-slate-900 text-white shadow-2xl rounded-lg overflow-hidden">
+    <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
       <div className="card-body p-4">
         <div className="flex justify-between mb-2">
           <span className="text-sm font-semibold">
@@ -100,8 +100,8 @@ function WalletPage() {
           </span>
         </div>
         <div className="text-left">
-          <strong>Hash:</strong>
-          <Link className="text-cyan-200 hover:text-cyan-100" to={`/tx/${tx.txHash}`}>
+          <strong>Hash: </strong>
+          <Link className="text-primary hover:text-cyan-100" to={`/tx/${tx.txHash}`}>
             {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-10)}
           </Link>
           <CopyButton text={tx.txHash} className="ml-2" />

@@ -63,12 +63,12 @@ function TransactionPage() {
     fetchData();
   }, [txId, fetchTokenData]);
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
+  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
   if (!data) return null;
 
 return (
-  <div className="container mx-auto p-4">
+  <div className="container mx-auto p-4  text-base-content">
     <h1 className="text-2xl font-bold mb-4">Transaction Details</h1>
     <div className="mb-4">
        <div className="mb-4">
@@ -88,19 +88,19 @@ return (
 
     <div className="tabs mb-4">
       <a 
-        className={`tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} 
+        className={`text-base-content tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} 
         onClick={() => setActiveTab('eutxo')}
       >
         eUTXO
       </a>
       <a 
-        className={`tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} 
+        className={`text-base-content tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} 
         onClick={() => setActiveTab('diagram')}
       >
         Diagram
       </a>
       <a 
-        className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} 
+        className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} 
         onClick={() => setActiveTab('json')}
       >
         JSON

@@ -44,7 +44,7 @@ function EUTXOTab({ inputs, outputs }) {
 
       <h2 className="text-xl font-bold mb-2">Inputs</h2>
       {inputs.map((input, index) => (
-        <div key={`input-${index}`} className="card bg-slate-900 shadow-xl mb-4 border border-blue-500">
+        <div key={`input-${index}`} className="card  text-base-content bg-base-100 shadow-xl mb-4 border border-blue-500">
           <div className="card-body">
             <h3 className="card-title">Input {index + 1}</h3>
             <div style={{ color: getColorForAddress(input.address) }}>
@@ -62,7 +62,7 @@ function EUTXOTab({ inputs, outputs }) {
 
       <h2 className="text-xl font-bold mb-2 mt-4">Outputs</h2>
       {outputs.map((output, index) => (
-        <div key={`output-${index}`} className="card bg-slate-900 shadow-xl mb-4 border border-orange-500">
+        <div key={`output-${index}`} className="card text-base-content bg-base-100 shadow-xl mb-4 border border-orange-500">
           <div className="card-body">
             <h3 className="card-title">Output {index + 1}</h3>
             <div style={{ color: getColorForAddress(output.address) }}>
