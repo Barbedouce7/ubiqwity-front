@@ -9,7 +9,7 @@ function WalletPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('stats');
+  const [activeTab, setActiveTab] = useState('hold');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,7 +50,7 @@ function WalletPage() {
         
         <h2 className="text-xl font-bold mt-4 mb-2">Stake Pool</h2>
         <div className="mb-2">
-          <Link to={`/pool/${stakekeyInfo.stakepool.pool_id}`}>
+          <Link className="text-sky-500" to={`/pool/${stakekeyInfo.stakepool.pool_id}`}>
             {stakekeyInfo.stakepool.ticker}
           </Link>        </div>
 
@@ -63,14 +63,25 @@ function WalletPage() {
       </div>
 
       <div className="tabs mb-4">
-        <a className={`tab tab-bordered ${activeTab === 'stats' ? 'tab-active' : ''}`} onClick={() => setActiveTab('stats')}> Stats</a>
+        <a className={`tab tab-bordered ${activeTab === 'hold' ? 'tab-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
+        <a className={`tab tab-bordered ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}> History</a>
+        <a className={`tab tab-bordered ${activeTab === 'friends' ? 'tab-active' : ''}`} onClick={() => setActiveTab('friends')}> Friends</a>
         <a className={`tab tab-bordered ${activeTab === 'transactions' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('transactions')}> Transactions</a>
         <a className={`tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('json')}> JSON</a>
       </div>
-
-      {activeTab === 'stats' && (
+      {activeTab === 'hold' && (
         <div>
-        Stats - W.I.P
+        Tokens display - W.I.P
+        </div>
+      )}     
+      {activeTab === 'history' && (
+        <div>
+        Historic display - W.I.P
+        </div>
+      )}
+      {activeTab === 'friends' && (
+        <div>
+        Friends wallet display - W.I.P
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
+import ThemeToggle from './components/ThemeToggle';
 import EpochContext from './components/EpochContext';
 import EpochChart from './components/EpochChart';
 import ChainUsage from './components/ChainUsage';
@@ -83,7 +84,7 @@ function App() {
   return (
     <div className="w-full mx-auto text-center p-2">
       <Navbar handleSearch={handleSearch} setSearchInput={setSearchInput} searchInput={searchInput} />
-
+   <ThemeToggle />
       <Routes>
         <Route path="/" element={
           <>

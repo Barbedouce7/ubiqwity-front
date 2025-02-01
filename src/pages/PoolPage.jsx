@@ -46,14 +46,14 @@ function PoolPage() {
         {owners.map((owner, index) => (
           <div key={index} className="mb-4 rounded-lg bg-slate-900 p-4">
             <p className="text-lg">
-              Owner: <CopyButton text={owner} /> {owner}
+              Owner: <CopyButton text={owner} /> <Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${owner}`}>{owner}</Link>
             </p>
           </div>
         ))}
         {rewardAccount && (
           <div className="mb-4 rounded-lg bg-slate-900 p-4">
             <p className="text-lg">
-              Reward Account: <CopyButton text={rewardAccount} /> {rewardAccount}
+              Reward Account: <CopyButton text={rewardAccount} /><Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${rewardAccount}`}> {rewardAccount}</Link>
             </p>
           </div>
         )}

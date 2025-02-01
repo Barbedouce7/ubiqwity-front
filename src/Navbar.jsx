@@ -17,10 +17,10 @@ function Navbar({ handleSearch }) {
   };
 
   return (
-    <div className="navbar bg-slate-900 mx-auto max-w-lg max-h-20 text-slate-200 border-2 border-sky-900 rounded-full mb-4">
+   <div className="navbar bg-base-100 mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">
-        <a href="/" className="text-xl ml-2 flex">
-          <img src={logo} className="logo w-12 mr-4" alt="Ubiqwity logo" /> Ubiqwity
+        <a href="/" className="text-xl ml-2 flex items-center">
+          <img src={logo} className="logo w-10 mr-4" alt="Ubiqwity logo" /> Ubiqwity
         </a>
       </div>
 
@@ -31,16 +31,16 @@ function Navbar({ handleSearch }) {
             type="text"
             value={searchInput}
             onChange={onSearchChange}
-            className="grow input-bordered w-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+            className="grow input input-bordered w-[100px] focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md "
             placeholder="tx, address, ..."
           />
           {/* Icône de recherche */}
-          <button type="submit">
+          <button type="submit" className="btn btn-ghost btn-square ">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 16 16"
               fill="currentColor"
-              className="h-8 w-8 opacity-70 mr-2 cursor-pointer"
+              className="h-6 w-6 opacity-70"
             >
               <path
                 fillRule="evenodd"

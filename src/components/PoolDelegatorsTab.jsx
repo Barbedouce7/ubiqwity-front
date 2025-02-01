@@ -1,6 +1,8 @@
 import React from 'react';
 import GetHandle from './GetHandle';
 import CopyButton from './CopyButton';
+import { useParams, Link } from 'react-router-dom';
+
 
 const PoolDelegatorsTab = ({ delegators }) => {
   // Trier les délégateurs par live stake en ordre décroissant
@@ -25,7 +27,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
               ></div>
               <GetHandle stakekey={stakeKey} />
               <p className="text-lg">
-                Address: <CopyButton text={stakeKey} /> {stakeKey}
+                Address: <CopyButton text={stakeKey} /> <Link className="text-cyan-200 hover:text-cyan-100" to={`/wallet/${stakeKey}`}>{stakeKey}</Link>
               </p>
               <p className="text-sm">Live Stake: {delegator.liveStake} ₳</p>
             </div>

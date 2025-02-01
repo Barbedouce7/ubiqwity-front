@@ -14,46 +14,46 @@ const ChainUsage = ({ data }) => {
   };
 
   return (
-    <div className="card bg-slate-950 shadow-xl p-4">
-      <div className="flex justify-between mb-4">
-        <div>
-          <div className="text-sm text-white">
-            5 Min : {data.average_5min}%
-          </div>
-          {/* Barre de chargement */}
-          <div className="w-full bg-gray-600 h-1.5 rounded-sm mt-1">
-            <div
-              className={`${getColor(data.average_5min)} h-full rounded-sm`}
-              style={{ width: getBarWidth(data.average_5min) }}
-            ></div>
-          </div>
-        </div>
-        <div>
-          <div className="text-sm text-white">
-            1 Hour : {data.average_1h}%
-          </div>
-          {/* Barre de chargement */}
-          <div className="w-full bg-gray-600 h-1.5 rounded-sm mt-1">
-            <div
-              className={`${getColor(data.average_1h)} h-full rounded-sm`}
-              style={{ width: getBarWidth(data.average_1h) }}
-            ></div>
-          </div>
-        </div>
-        <div>
-          <div className="text-sm text-white">
-            24 Hour : {data.average_24h}%
-          </div>
-          {/* Barre de chargement */}
-          <div className="w-full bg-gray-600 h-1.5 rounded-sm mt-1">
-            <div
-              className={`${getColor(data.average_24h)} h-full rounded-sm`}
-              style={{ width: getBarWidth(data.average_24h) }}
-            ></div>
-          </div>
-        </div>
+<div className="card bg-base-100 shadow-xl p-4 mt-6 mb-6">
+  <div className="flex justify-between mb-4 text-base-content">
+    <div>
+      <div className="text-sm">
+        5 Min : {data.average_5min}%
+      </div>
+      {/* Barre de chargement */}
+      <div className="w-full bg-base-300 h-1.5 rounded-sm mt-1">
+        <div
+          className={`h-full rounded-sm ${getColor(data.average_5min)}`}
+          style={{ width: getBarWidth(data.average_5min) }}
+        ></div>
       </div>
     </div>
+    <div>
+      <div className="text-sm">
+        1 Hour : {data.average_1h}%
+      </div>
+      {/* Barre de chargement */}
+      <div className="w-full bg-base-300 h-1.5 rounded-sm mt-1">
+        <div
+          className={`h-full rounded-sm ${getColor(data.average_1h)}`}
+          style={{ width: getBarWidth(data.average_1h) }}
+        ></div>
+      </div>
+    </div>
+    <div>
+      <div className="text-sm">
+        24 Hour : {data.average_24h}%
+      </div>
+      {/* Barre de chargement */}
+      <div className="w-full bg-base-300 h-1.5 rounded-sm mt-1">
+        <div
+          className={`h-full rounded-sm ${getColor(data.average_24h)}`}
+          style={{ width: getBarWidth(data.average_24h) }}
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
   );
 };
 
