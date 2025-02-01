@@ -61,13 +61,14 @@ function WalletPage() {
           </a>
         </div>
       </div>
-
-      <div className="tabs mb-4">
-        <a className={`text-base-content tab tab-bordered ${activeTab === 'hold' ? 'tab-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
-        <a className={`text-base-content tab tab-bordered ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}> History</a>
-        <a className={`text-base-content tab tab-bordered ${activeTab === 'friends' ? 'tab-active' : ''}`} onClick={() => setActiveTab('friends')}> Friends</a>
-        <a className={`text-base-content tab tab-bordered ${activeTab === 'transactions' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('transactions')}> Transactions</a>
-        <a className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`}  onClick={() => setActiveTab('json')}> JSON</a>
+      <div className="tabs mt-6 mb-6 flex justify-center items-center">
+        <div className="tabs">
+          <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
+          <a className={`tab-custom ${activeTab === 'history' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('history')}>History</a>
+          <a className={`tab-custom ${activeTab === 'friends' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('friends')}>Friends</a>
+          <a className={`tab-custom ${activeTab === 'transactions' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('transactions')}>Transactions</a>
+          <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
+        </div>
       </div>
       {activeTab === 'hold' && (
         <div>

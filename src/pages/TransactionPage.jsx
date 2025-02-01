@@ -85,28 +85,13 @@ return (
         <div className="mb-2"><strong>Size:</strong> {data.size} bytes</div>
       </div>
     </div>
-
+<div className="tabs mt-6 mb-6 flex justify-center items-center">
     <div className="tabs mb-4">
-      <a 
-        className={`text-base-content tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} 
-        onClick={() => setActiveTab('eutxo')}
-      >
-        eUTXO
-      </a>
-      <a 
-        className={`text-base-content tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} 
-        onClick={() => setActiveTab('diagram')}
-      >
-        Diagram
-      </a>
-      <a 
-        className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} 
-        onClick={() => setActiveTab('json')}
-      >
-        JSON
-      </a>
+      <a className={`text-base-content tab tab-bordered ${activeTab === 'eutxo' ? 'tab-active' : ''}`} onClick={() => setActiveTab('eutxo')}> eUTXO </a>
+      <a className={`text-base-content tab tab-bordered ${activeTab === 'diagram' ? 'tab-active' : ''}`} onClick={() => setActiveTab('diagram')}> Diagram </a>
+      <a className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active' : ''}`} onClick={() => setActiveTab('json')}> JSON </a>
     </div>
-
+</div>
     {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
     {activeTab === 'diagram' && <DiagramTab />}
     {activeTab === 'json' && <JSONTab data={data} />}

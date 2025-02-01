@@ -22,17 +22,24 @@
 }
 
 
+@layer components {
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem; /* Correspond à mb-4 */
+  }
 
-/* Pour le mode clair (absence de la classe 'dark') */
-.tab.tab-bordered {
-  @apply border-b-2 border-sky-500;
-}
+  .tab-custom {
+    @apply text-base-content border-b-2;
+    border-color: transparent;
+    padding: 0.5rem 1rem; /* Ajustez selon besoin */
+  }
 
-.tab.tab-bordered.tab-active {
-  @apply border-b-2 border-primary;
-}
+  .tab-custom-active {
+    @apply border-sky-500;
+  }
 
-/* Pour le mode sombre */
-.dark .tab.tab-bordered.tab-active {
-  @apply border-b-2 border-primary; /* Utilise la couleur primaire du thème sombre */
+  .dark .tab-custom {
+    @apply text-base-content;
+  }
 }
