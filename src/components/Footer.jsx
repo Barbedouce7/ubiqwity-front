@@ -3,16 +3,24 @@ import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
 
 const Footer = () => {
-    const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   useEffect(() => {
+    // Fonction pour mettre à jour le thème
     const updateTheme = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
+    
+    // Initialiser l'état avec le thème actuel
+    updateTheme(); 
+
+    // Observer les changements de classe pour le mode sombre
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    // Nettoyage de l'observateur lors du démontage du composant
     return () => observer.disconnect();
   }, []);
-
 
   return (
     <footer className="footer footer-center pt-10 text-base-content rounded">

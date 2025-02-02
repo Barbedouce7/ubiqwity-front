@@ -29,7 +29,7 @@ function WalletPage() {
     fetchData();
   }, [stakekey]);
 
-  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
+  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
   if (!data) return null;
 

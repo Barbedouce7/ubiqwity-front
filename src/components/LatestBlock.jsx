@@ -36,13 +36,13 @@ const LatestBlock = () => {
   const progressPercentage = Math.min((blockSize / MAX_BLOCK_SIZE) * 100, 100);
 
   return (
-    <div className="relative w-full bg-base-100 text-base-content p-0 pl-4 pr-4 pb-4">
+    <div className="relative w-full text-base-content p-0">
       {/* Barre de progression */}
-      <div className="absolute top-0 left-0 w-full h-2 rounded-lg">
+      <div className="absolute top-0 left-0 w-full h-2 rounded-lg text-right text-xs">
         <div
           className="h-full bg-sky-600 rounded-lg"
           style={{ width: `${progressPercentage}%` }}
-        ></div>
+        ></div>Size : {blockSize} bytes
       </div>
 
 
@@ -52,8 +52,8 @@ const LatestBlock = () => {
       <p className="text-sm break-all">{metadata.hash || "N/A"}</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
         <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>
-        <p><strong>Output:</strong> {metadata.output || "N/A"}</p>
-        <p><strong>Fees:</strong> {metadata.fees || "N/A"}</p>
+        <p><strong>Output:</strong> {metadata.output ? (metadata.output / 1000000).toFixed(2) : "N/A"} ₳</p>
+        <p><strong>Fees:</strong> {metadata.fees ? (metadata.fees / 1000000).toFixed(2) : "N/A"} ₳</p>
       </div>
       <p className="mt-4">
         <strong>Slot Leader:</strong>{" "}
@@ -66,12 +66,12 @@ const LatestBlock = () => {
       {/* Widget avec un tableau scrollable */}
       <div className="mt-4">
         <h3 className="text-lg font-semibold">Transactions:</h3>
-        <div className="max-h-60 overflow-y-auto border border-base-200 rounded-lg shadow-sm">
+        <div className="max-h-60 overflow-y-auto rounded-lg shadow-sm">
           <table className="w-full border-collapse">
             <tbody>
               {transactions.length > 0 ? (
                 transactions.map((tx) => (
-                  <tr key={tx} className="border-t">
+                  <tr key={tx} className="border-t border-gray-500">
                     <td className="p-2 break-all">
                       <Link to={`tx/${tx}`} className="text-sky-500">{tx}</Link>
                     </td>

@@ -64,7 +64,7 @@ return (
           <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>
         )}
       </div>
-      <div className="flex-1 card bg-base-100 shadow-xl p-4">
+      <div className="flex-1 card bg-base-100 shadow-xl">
         <LatestBlock />
       </div>
     </div>
