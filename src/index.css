@@ -24,22 +24,19 @@
 
 @layer components {
   .tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1rem; /* Correspond à mb-4 */
+    @apply flex justify-center mb-6;
   }
 
   .tab-custom {
-    @apply text-base-content border-b-2;
-    border-color: transparent;
-    padding: 0.5rem 1rem; /* Ajustez selon besoin */
+    @apply px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 ease-in-out;
+    @apply text-base-content border-gray-300 dark:border-gray-700;
   }
 
   .tab-custom-active {
-    @apply border-sky-500;
+    @apply border-sky-500 dark:border-sky-400 text-sky-600 dark:text-sky-300;
   }
 
-  .dark .tab-custom {
-    @apply text-base-content;
+  .tab-custom:hover {
+    @apply border-sky-300 dark:border-sky-600 text-sky-500 dark:text-sky-200;
   }
 }

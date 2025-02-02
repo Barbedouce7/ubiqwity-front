@@ -1,82 +1,36 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import ThemeToggle from './components/ThemeToggle';
-import EpochContext from './components/EpochContext';
-import EpochChart from './components/EpochChart';
-import ChainUsage from './components/ChainUsage';
-import CurrencyListWithCharts from './components/CurrencyListWithCharts';
-import axios from 'axios';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
 import TransactionPage from './pages/TransactionPage';
 import PoolPage from './pages/PoolPage';
 import WalletPage from './pages/WalletPage';
 import { API_CONFIG } from './utils/apiConfig';
-import { TokenProvider } from "./utils/TokenContext"; // stock les metadonnées des tokens
-
+import axios from 'axios';
 
 function App() {
-  const [apiData, setApiData] = useState([]);
-  const [epochContext, setEpochContext] = useState([]);
-  const [epochData, setEpochData] = useState([]);
-  const [chainUsage, setChainUsage] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Effect for fetching data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const responseChainUsage = await axios.get(`${API_CONFIG.baseUrl}chainusage/`);
-        setChainUsage(responseChainUsage.data[0]);
-
-        const responseEpochContext = await axios.get(`${API_CONFIG.baseUrl}epochcontext/`);
-        setEpochContext(responseEpochContext.data);
-
-
-        const response2 = await axios.get(`${API_CONFIG.baseUrl}epochdata/`);
-        setEpochData(response2.data);
-
-
-
-        const response = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
-        const dataArray = Object.values(response.data); // Convertir l'objet en tableau
-        const reversedData = dataArray.reverse();
-        setApiData(reversedData);
-
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Effect for handling 404 redirect
-  useEffect(() => {
-      if (location.pathname === '/' && location.state && location.state.from404) {
-        navigate(location.state.from404, { replace: true });
-      }
-    }, [location, navigate]);
+    if (location.pathname === '/' && location.state?.from404) {
+      navigate(location.state.from404, { replace: true });
+    }
+  }, [location, navigate]);
 
   const handleSearch = async (searchTerm) => {
-    let searchUrl = '', data;
-
-    if (searchTerm.length === 56) {
-      searchUrl = `/pool/${searchTerm}`;
-    } else if (searchTerm.length === 64) {
-      searchUrl = `/tx/${searchTerm}`;
-    } else {
-      searchUrl = `/wallet/${searchTerm}`;
-    }
+    let searchUrl = searchTerm.length === 56 ? `/pool/${searchTerm}`
+                   : searchTerm.length === 64 ? `/tx/${searchTerm}`
+                   : `/wallet/${searchTerm}`;
 
     try {
       const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
-      data = response.data;
-      navigate(searchUrl, { state: { data, from404: searchUrl } });  
+      navigate(searchUrl, { state: { data: response.data, from404: searchUrl } });
     } catch (error) {
       console.error("Nothing here... ", error);
-      // Optionally, navigate to a 404 page within your app or back to home
       navigate('/', { state: { from404: searchUrl } });
     }
   };
@@ -84,41 +38,16 @@ function App() {
   return (
     <div className="w-full mx-auto text-center p-2 min-h-screen">
       <Navbar handleSearch={handleSearch} setSearchInput={setSearchInput} searchInput={searchInput} />
-   <ThemeToggle />
+      <ThemeToggle />
       <Routes>
-        <Route path="/" element={
-          <>
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="flex-1">
-                {chainUsage && Object.keys(chainUsage).length > 0 ? (
-                  <ChainUsage data={chainUsage} />
-                ) : (
-                  <p>Loading ...</p>
-                )}
-                <EpochContext data={epochContext} />
-              </div>
-
-              <div className="mt-4 mb-4 md:max-w-full flex-1">
-                {epochData ? (
-                  <EpochChart epochLabels={epochData.epochLabels} txCounts={epochData.txCounts} activeStakes={epochData.activeStakes} />
-                ) : (
-                  <p>Loading...</p>
-                )}
-              </div>
-            </div>
-            {apiData.length > 0 ? (
-              <CurrencyListWithCharts data={apiData} />
-            ) : (
-              <p>Loading...</p>
-            )}
-          </>
-        } />
+        <Route path="/" element={<HomePage />} />
         <Route path="/tx/:txId" element={<TransactionPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
       </Routes>
+      <Footer />
     </div>
-  );
+      );
 }
 
 export default App;

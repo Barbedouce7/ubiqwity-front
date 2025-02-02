@@ -99,13 +99,14 @@ function PoolPage() {
         </div>
       </div>
 
-<div className="tabs mt-6 mb-6 flex justify-center items-center">
-  <div className="h-0.5 w-full bg-base-300 absolute top-0"></div> {/* Séparateur */}
-  <a className={`text-base-content tab tab-bordered ${activeTab === 'diagram' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
-  <a className={`text-base-content tab tab-bordered ${activeTab === 'delegators' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
-  <a className={`text-base-content tab tab-bordered ${activeTab === 'relays' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
-  <a className={`text-base-content tab tab-bordered ${activeTab === 'owner' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
-  <a className={`text-base-content tab tab-bordered ${activeTab === 'json' ? 'tab-active border-b-2' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
+<div className="tabs mt-6 mb-6 flex justify-center items-center relative">
+  <div className="tabs">
+    <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
+    <a className={`tab-custom ${activeTab === 'delegators' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
+    <a className={`tab-custom ${activeTab === 'relays' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
+    <a className={`tab-custom ${activeTab === 'owner' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
+    <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
+  </div>
 </div>
 
 {activeTab === 'diagram' && <PoolCharts data={data} />}

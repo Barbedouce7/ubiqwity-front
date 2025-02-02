@@ -14,7 +14,7 @@ const ChainUsage = ({ data }) => {
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl p-4 mt-6 mb-6">
+    <div className="bg-base-100">
       <div className="flex justify-between mb-4 text-base-content">
         {["average_5min", "average_1h", "average_24h"].map((timeframe, index) => (
           <div key={index} className="text-sm">

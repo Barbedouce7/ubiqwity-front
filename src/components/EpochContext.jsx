@@ -4,45 +4,36 @@ import { LinearProgress, Box } from "@mui/material";
 const EpochContext = ({ data }) => {
   const formatNumber = (num) => new Intl.NumberFormat("en-US").format(num);
 
-  // Constante pour la durée totale d'une epoch (en secondes)
   const EPOCH_DURATION = 432000;
-
-  // État pour le temps écoulé (live)
   const [timeElapsed, setTimeElapsed] = useState(
     Math.floor(Date.now() / 1000) - data.start_time
   );
-
-  // Mettre à jour le temps écoulé toutes les secondes
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeElapsed(Math.floor(Date.now() / 1000) - data.start_time);
     }, 1000);
 
-    return () => clearInterval(interval); // Nettoyer l'interval à la fin
+    return () => clearInterval(interval); 
   }, [data.start_time]);
 
-  // Calculer le pourcentage pour la barre de progression
   const progressPercentage = Math.min((timeElapsed / EPOCH_DURATION) * 100, 100);
 
-  // Calculer le temps restant en secondes
   const timeRemaining = Math.max(EPOCH_DURATION - timeElapsed, 0);
 
-  // Formater le temps sous la forme humaine : "1d 3h 22m 5s"
   const formatTime = (seconds) => {
-    const days = Math.floor(seconds / 86400); // 1 jour = 86400 secondes
-    const hours = Math.floor((seconds % 86400) / 3600); // Heures restantes
-    const minutes = Math.floor((seconds % 3600) / 60); // Minutes restantes
-    const secs = seconds % 60; // Secondes restantes
+    const days = Math.floor(seconds / 86400); 
+    const hours = Math.floor((seconds % 86400) / 3600); 
+    const minutes = Math.floor((seconds % 3600) / 60); 
+    const secs = seconds % 60; 
   return `${days}d ${hours}h ${minutes}m ${secs}s`; 
   };
 
-  // Convertir en milliards et formater avec le symbole "₳"
   const formatCirculatingSupply = (circulatingSupply) => {
-    return (circulatingSupply / 1_000_000_000).toFixed(2); // En milliards
+    return (circulatingSupply / 1_000_000_000).toFixed(2); 
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl p-2 text-base-content">
+    <div className="card bg-base-100  p-2 text-base-content">
       {/* Barre de progression de l'epoch */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
@@ -53,9 +44,9 @@ const EpochContext = ({ data }) => {
           <LinearProgress
             variant="determinate"
             value={progressPercentage}
-            className="bg-slate-800"
+            className="bg-slate-900"
             color="primary"
-            style={{ height: "1.5rem", borderRadius: "0.375rem" }} // Barre plus grande et arrondie
+            style={{ height: "1.5rem", borderRadius: "0.375rem" }} 
           />
           {/* Texte dans la barre de progression */}
           <Box
@@ -72,13 +63,11 @@ const EpochContext = ({ data }) => {
             {formatNumber(timeElapsed)}s / {formatNumber(EPOCH_DURATION)}s
           </Box>
         </Box>
-        {/* Temps restant en humain */}
         <div className="text-center text-sm mt-2">
           <span>Time Remaining: {formatTime(timeRemaining)}</span>
         </div>
       </div>
 
-      {/* Affichage de la Circulating Supply */}
       <div className="flex justify-between mt-4 text-sm">
         <span>Circulating Supply:</span>
         <span>

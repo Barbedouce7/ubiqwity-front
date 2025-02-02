@@ -114,7 +114,7 @@ function WalletPage() {
       )}
 
       {activeTab === 'json' && (
-        <div>
+        <div className="shadow-xl">
           <h2 className="text-lg font-bold mb-2">JSON Data</h2>
           <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>

@@ -31,6 +31,32 @@ function Navbar({ handleSearch }) {
     handleSearch(searchInput);
   };
 
+
+
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+
+
   return (
     <div className="navbar bg-base-100 shadow-xl p-2 mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">

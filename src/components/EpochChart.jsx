@@ -58,9 +58,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
   };
 
   return (
-    <Card>
-      <CardContent className="bg-base-100 shadow-xl p-2 text-base-content">
-        <div>
+        <div  className="bg-base-100 p-2 text-base-content">
           <Chart
             type="bar"
             data={combinedData}
@@ -79,8 +77,6 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
             }}
           />
         </div>
-      </CardContent>
-    </Card>
   );
 };
 
