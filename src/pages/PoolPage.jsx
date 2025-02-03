@@ -61,7 +61,7 @@ function PoolPage() {
     );
   };
 
-  if (loading) return <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
+  if (loading) return <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40 mb-40"></div>;
   if (error) return <div>{error}</div>;
 
   return (
