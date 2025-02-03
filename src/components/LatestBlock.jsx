@@ -43,7 +43,7 @@ const LatestBlock = () => {
     }
   }, [timeElapsed]);
 
-  if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
+  if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-30"></div>;
   if (error) return <div className="text-red-500 p-4">{error}</div>;
   if (!blockData) return null;
   
@@ -70,7 +70,7 @@ const LatestBlock = () => {
       </div>
 
       {/* Horloge circulaire de progression */}
-      <div className="absolute top-3 right-0 flex items-center justify-center">
+      <div className="absolute top-3 right-0 flex items-center justify-center right-3">
         <svg width="24" height="24" viewBox="0 0 40 40" className="transform -rotate-90">
           <circle cx="20" cy="20" r="18" stroke="#ddd" strokeWidth="4" fill="none" />
           <circle

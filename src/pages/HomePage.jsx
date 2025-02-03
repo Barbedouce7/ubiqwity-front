@@ -43,7 +43,7 @@ return (
         {chainUsage && Object.keys(chainUsage).length > 0 ? (
           <ChainUsage data={chainUsage} />
         ) : (
-          <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>
+          <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-20"></div>
         )}
       </div>
       <div className="flex-1 card bg-base-100 shadow-xl p-4">
@@ -61,7 +61,7 @@ return (
             activeStakes={epochData.activeStakes}
           />
         ) : (
-          <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>
+          <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-30"></div>
         )}
       </div>
       <div className="flex-1 card bg-base-100 shadow-xl">
@@ -73,7 +73,7 @@ return (
       {apiData.length > 0 ? (
         <CurrencyListWithCharts data={apiData} />
       ) : (
-        <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>
+        <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-30"></div>
       )}
     </div>
 );
