@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_CONFIG } from '../utils/apiConfig';
@@ -7,24 +7,43 @@ const LatestBlock = () => {
   const [blockData, setBlockData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  
+  const fetchTime = useRef(0);
+
+  const fetchLatestBlock = async () => {
+    try {
+      const response = await axios.get(`${API_CONFIG.baseUrl}latestblock`);
+      setBlockData(response.data);
+      
+      fetchTime.current = Math.floor(Date.now() / 1000);
+      setTimeElapsed(0);
+    } catch (err) {
+      setError("Failed to fetch block data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLatestBlock = async () => {
-      try {
-        const response = await axios.get(`${API_CONFIG.baseUrl}latestblock`);
-        console.log("API Response:", response.data);  // Debugging
-        setBlockData(response.data);
-      } catch (err) {
-        setError("Failed to fetch block data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLatestBlock();
   }, []);
 
-  if (loading) return <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTimeElapsed(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    if (timeElapsed >= 20) {
+      fetchLatestBlock();
+    }
+  }, [timeElapsed]);
+
+  if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
   if (error) return <div className="text-red-500 p-4">{error}</div>;
   if (!blockData) return null;
   
@@ -38,30 +57,53 @@ const LatestBlock = () => {
   return (
     <div className="relative w-full text-base-content p-0">
       {/* Barre de progression */}
-      <div className="absolute top-0 left-0 w-full h-2 rounded-lg text-right text-xs">
+      <div className="absolute top-0 left-0 w-full h-2 rounded-lg">
         <div
           className="h-full bg-sky-600 rounded-lg"
           style={{ width: `${progressPercentage}%` }}
-        ></div>Size : {blockSize} bytes
+        ></div>
       </div>
 
+      {/* Size affichée sous la progress bar */}
+      <div className="absolute top-3 left-0 text-xs font-semibold p-1">
+        Size: {blockSize} bytes
+      </div>
 
+      {/* Horloge circulaire de progression */}
+      <div className="absolute top-3 right-0 flex items-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 40 40" className="transform -rotate-90">
+          <circle cx="20" cy="20" r="18" stroke="#ddd" strokeWidth="4" fill="none" />
+          <circle
+            cx="20"
+            cy="20"
+            r="18"
+            stroke="#0284c7"
+            strokeWidth="4"
+            fill="none"
+            strokeDasharray="113"  // Circonférence = 2 * PI * 18
+            strokeDashoffset={`${113 - (timeElapsed / 20) * 113}`} // Remplissage progressif
+            strokeLinecap="round"
+            transition="stroke-dashoffset 1s linear"
+          />
+          <title>Trying to refresh each 20s</title>
+        </svg>
+      </div>
 
       <div className="mt-6">
-      <h2 className="text-xl font-bold mt-4">Latest Block:</h2>
-      <p className="text-sm break-all">{metadata.hash || "N/A"}</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-        <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>
-        <p><strong>Output:</strong> {metadata.output ? (metadata.output / 1000000).toFixed(2) : "N/A"} ₳</p>
-        <p><strong>Fees:</strong> {metadata.fees ? (metadata.fees / 1000000).toFixed(2) : "N/A"} ₳</p>
+        <h2 className="text-xl font-bold mt-4">Latest Block:</h2>
+        <p className="text-sm break-all">{metadata.hash || "N/A"}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+          <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>
+          <p><strong>Output:</strong> {metadata.output ? (metadata.output / 1000000).toFixed(2) : "N/A"} ₳</p>
+          <p><strong>Fees:</strong> {metadata.fees ? (metadata.fees / 1000000).toFixed(2) : "N/A"} ₳</p>
+        </div>
+        <p className="mt-4">
+          <strong>Slot Leader:</strong>{" "}
+          <Link to={`/pool/${metadata.slot_leader || ""}`} className="text-sky-500 underline">
+            {metadata.slot_leader || "N/A"}
+          </Link>
+        </p>
       </div>
-      <p className="mt-4">
-        <strong>Slot Leader:</strong>{" "}
-        <Link to={`/pool/${metadata.slot_leader || ""}`} className="text-blue-500 underline">
-          {metadata.slot_leader || "N/A"}
-        </Link>
-      </p>
-    </div>
 
       {/* Widget avec un tableau scrollable */}
       <div className="mt-4">

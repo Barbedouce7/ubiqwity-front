@@ -5,7 +5,7 @@ import { API_CONFIG } from '../utils/apiConfig';
 import CopyButton from '../components/CopyButton';
 
 function WalletPage() {
-  const { stakekey } = useParams();
+  const { walletAddress } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,25 +13,37 @@ function WalletPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!walletAddress) {
+        setError('Stake key is missing or undefined.');
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
-        const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${stakekey}`);
-        
+        const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${walletAddress}`);
         setData(response.data);
-        setLoading(false);
       } catch (error) {
-        console.error('Error fetching wallet data:', error);
-        setError('An error occurred while fetching wallet data');
+        if (error.response && error.response.status === 400) {
+          if (error.response.data.message) {
+            setError(error.response.data.message);
+          } else {
+            setError('Bad request. Please try again.');
+          }
+        } else {
+          console.error('Error fetching wallet data:', error);
+          setError('An error occurred while fetching wallet data');
+        }
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [stakekey]);
+  }, [walletAddress]);
 
-  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
+  if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
-  if (!data) return null;
+  if (!data || !data.stakekeyInfo) return <div>No wallet data available</div>;
 
   const { stakekeyInfo, transactions } = data;
 
@@ -48,19 +60,30 @@ function WalletPage() {
           <strong>Number of Addresses:</strong> {stakekeyInfo.numberOfAddresses}
         </div>
         
-        <h2 className="text-xl font-bold mt-4 mb-2">Stake Pool</h2>
         <div className="mb-2">
-          <Link className="text-sky-500" to={`/pool/${stakekeyInfo.stakepool.pool_id}`}>
-            {stakekeyInfo.stakepool.ticker}
-          </Link>        </div>
+          {stakekeyInfo.stakepool ? (
+            <Link className="text-sky-500" to={`/pool/${stakekeyInfo.stakepool.pool_id}`}>
+              {stakekeyInfo.stakepool.ticker || 'Unknown Ticker'}
+            </Link>
+          ) : (
+            <p>No stake pool information available</p>
+          )}
+        </div>
 
         <div className="mb-2">
-          <strong>Homepage:</strong> 
-          <a href={stakekeyInfo.stakepool.homepage} target="_blank" rel="noopener noreferrer">
-            {stakekeyInfo.stakepool.homepage}
-          </a>
+          {stakekeyInfo.stakepool && stakekeyInfo.stakepool.homepage ? (
+            <>
+              <strong>Homepage:</strong> 
+              <a href={stakekeyInfo.stakepool.homepage} target="_blank" rel="noopener noreferrer">
+                {stakekeyInfo.stakepool.homepage}
+              </a>
+            </>
+          ) : (
+            <p></p>
+          )}
         </div>
       </div>
+
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs">
           <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
@@ -70,47 +93,50 @@ function WalletPage() {
           <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
         </div>
       </div>
+
       {activeTab === 'hold' && (
         <div>
-        Tokens display - W.I.P
-        </div>
-      )}     
-      {activeTab === 'history' && (
-        <div>
-        Historic display - W.I.P
+          Tokens display - W.I.P
         </div>
       )}
+      
+      {activeTab === 'history' && (
+        <div>
+          Historic display - W.I.P
+        </div>
+      )}
+      
       {activeTab === 'friends' && (
         <div>
-        Friends wallet display - W.I.P
+          Friends wallet display - W.I.P
         </div>
       )}
 
-      {activeTab === 'transactions' && (
- <div>
-  <h2 className="text-lg font-bold mb-4 text-center">Transactions</h2>
-  {transactions.map((tx, index) => (
-    <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
-      <div className="card-body p-4">
-        <div className="flex justify-between mb-2">
-          <span className="text-sm font-semibold">
-            <strong>Date:</strong> {new Date(tx.blockTime * 1000).toLocaleString()}
-          </span>
-          <span className="text-sm font-semibold">
-            <strong>Block Height:</strong> {tx.blockHeight}
-          </span>
+      {activeTab === 'transactions' && transactions && (
+        <div>
+          <h2 className="text-lg font-bold mb-4 text-center">Transactions</h2>
+          {transactions.map((tx, index) => (
+            <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
+              <div className="card-body p-4">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-semibold">
+                    <strong>Date:</strong> {new Date(tx.blockTime * 1000).toLocaleString()}
+                  </span>
+                  <span className="text-sm font-semibold">
+                    <strong>Block Height:</strong> {tx.blockHeight}
+                  </span>
+                </div>
+                <div className="text-left">
+                  <strong>Hash: </strong>
+                  <Link className="text-primary hover:text-cyan-100" to={`/tx/${tx.txHash}`}>
+                    {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-10)}
+                  </Link>
+                  <CopyButton text={tx.txHash} className="ml-2" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="text-left">
-          <strong>Hash: </strong>
-          <Link className="text-primary hover:text-cyan-100" to={`/tx/${tx.txHash}`}>
-            {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-10)}
-          </Link>
-          <CopyButton text={tx.txHash} className="ml-2" />
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
       )}
 
       {activeTab === 'json' && (
