@@ -40,14 +40,14 @@ return (
     {/* Bloc Chain Usage & Epoch Context */}
     <div className="flex flex-col md:flex-row gap-4">
       <div className="flex-1 card bg-base-100 shadow-xl p-4">
+        <EpochContext data={epochContext} />
+      </div>
+      <div className="flex-1 card bg-base-100 shadow-xl p-4">
         {chainUsage && Object.keys(chainUsage).length > 0 ? (
           <ChainUsage data={chainUsage} />
         ) : (
           <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-20"></div>
         )}
-      </div>
-      <div className="flex-1 card bg-base-100 shadow-xl p-4">
-        <EpochContext data={epochContext} />
       </div>
     </div>
 

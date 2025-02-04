@@ -51,7 +51,7 @@ const LatestBlock = () => {
 
   const metadata = blockData?.metadata || {};
   const transactions = blockData?.transactions || [];
-  const blockSize = metadata.size || 0;
+  const blockSize = metadata.size / 1000 || 0;
   const progressPercentage = Math.min((blockSize / MAX_BLOCK_SIZE) * 100, 100);
 
   return (
@@ -66,7 +66,7 @@ const LatestBlock = () => {
 
       {/* Size affichée sous la progress bar */}
       <div className="absolute top-3 left-0 text-xs font-semibold p-1">
-        Size: {blockSize} bytes
+        {blockSize} kb / 88kb
       </div>
 
       {/* Horloge circulaire de progression */}
@@ -89,8 +89,8 @@ const LatestBlock = () => {
         </svg>
       </div>
 
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mt-4">Latest Block:</h2>
+      <div className="mt-10">
+        <h3 className="text-xl font-bold">Latest Block:</h3>
         <p className="text-sm break-all">{metadata.hash || "N/A"}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
           <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>

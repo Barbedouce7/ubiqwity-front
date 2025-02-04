@@ -21,6 +21,14 @@
   @apply text-black dark:text-white;
 }
 
+.price-change-green-text {
+  color: red !important; /* Use !important for immediate priority */
+}
+
+.price-change-red-text {
+  color: green !important; /* Use !important for immediate priority */
+}
+
 
 @layer components {
   .tabs {
