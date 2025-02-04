@@ -3,13 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import CopyButton from '../components/CopyButton';
+import WalletHold from '../components/WalletHold';
+import { shortener } from '../utils/utils';
+
 
 function WalletPage() {
   const { walletAddress } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('hold');
+  const [activeTab, setActiveTab] = useState('addresses');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,6 +89,7 @@ function WalletPage() {
 
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs">
+          <a className={`tab-custom ${activeTab === 'addresses' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('addresses')}>Addresses</a>
           <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
           <a className={`tab-custom ${activeTab === 'history' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('history')}>History</a>
           <a className={`tab-custom ${activeTab === 'friends' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('friends')}>Friends</a>
@@ -93,10 +97,27 @@ function WalletPage() {
           <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
         </div>
       </div>
-
+      {activeTab === 'addresses' && (
+    <div>
+      <h2 className="text-lg font-bold mb-4 text-center">Addresses</h2>
+      {stakekeyInfo.addressList.map((address, index) => (
+        <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
+          <div className="card-body p-4">
+            <div className="text-left">
+              <strong>Address: </strong>
+              <Link className="text-primary hover:text-cyan-100" to={`/address/${address}`}>
+                 {shortener(address)}
+              </Link>
+              <CopyButton text={address} className="ml-2" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+      )}
       {activeTab === 'hold' && (
         <div>
-          Tokens display - W.I.P
+          <WalletHold walletAddress={stakekeyInfo.stakekey} />
         </div>
       )}
       

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_CONFIG } from '../utils/apiConfig';
+import { shortener } from '../utils/utils';
+
 
 const LatestBlock = () => {
   const [blockData, setBlockData] = useState(null);
@@ -100,7 +102,7 @@ const LatestBlock = () => {
         <p className="mt-4">
           <strong>Slot Leader:</strong>{" "}
           <Link to={`/pool/${metadata.slot_leader || ""}`} className="text-sky-500 underline">
-            {metadata.slot_leader || "N/A"}
+            {shortener(metadata.slot_leader) || "N/A"}
           </Link>
         </p>
       </div>

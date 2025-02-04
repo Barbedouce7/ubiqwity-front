@@ -15,6 +15,11 @@ export const convertLovelaceToAda = (lovelace) => {
   return (parseInt(lovelace) / 1_000_000).toFixed(2) + '';
 };
 
+export const shortener = (input) => {
+  return `${input.slice(0, 10)}...${input.slice(-10)}`;
+};
+
+
 export const deviseResolver = async (unit) => {
   try {
     // Check if the unit starts with 'a0028' as it seems to be a specific case
