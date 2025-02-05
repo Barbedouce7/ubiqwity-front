@@ -16,7 +16,7 @@ const CopyButton = ({ text }) => {
   <button
     onClick={handleCopy}
     className="inline rounded-md transition-colors 
-               bg-gray-800 hover:bg-gray-700 text-white p-1 m-2"
+               bg-base-100 hover:bg-gray-500 text-white p-1 m-2"
   >
     {copied ? (
       <CheckIcon className="h-4 w-4 text-green-400 transition-all" />

@@ -2,6 +2,7 @@ import React from 'react';
 import GetHandle from './GetHandle';
 import CopyButton from './CopyButton';
 import { useParams, Link } from 'react-router-dom';
+import { shortener } from '../utils/utils';
 
 
 const PoolDelegatorsTab = ({ delegators }) => {
@@ -34,8 +35,9 @@ const PoolDelegatorsTab = ({ delegators }) => {
 
               <p className="text-lg">
                 <Link className="text-primary hover:text-cyan-100" to={`/wallet/${stakeKey}`}>
-                  {stakeKey}
+                  {shortener(stakeKey)}
                 </Link>
+                <CopyButton text={stakeKey} />
               </p>
             </div>
           );

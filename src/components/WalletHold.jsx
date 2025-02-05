@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
+import { shortener } from '../utils/utils';
 
 const HoldingsComponent = ({ walletAddress }) => {
   const [holdings, setHoldings] = useState([]);
@@ -14,38 +15,28 @@ const HoldingsComponent = ({ walletAddress }) => {
         const holdingsResponse = await axios.get(`${API_CONFIG.baseUrl}wallet/${walletAddress}/hold`);
         setAdaBalance(formatQuantity(holdingsResponse.data.holdings.find(h => h.unit === 'lovelace')?.quantity, 6));
 
-        // Group holdings by unit before fetching metadata
-        let groupedHoldings = holdingsResponse.data.holdings.reduce((acc, holding) => {
-          if (holding.unit !== 'lovelace') {
-            if (!acc[holding.unit]) acc[holding.unit] = [];
-            acc[holding.unit].push(holding);
-          }
-          return acc;
-        }, {});
+        for (let holding of holdingsResponse.data.holdings) {
+          if (holding.unit === 'lovelace') continue; // On ignore ADA ici
 
-        const updatedHoldings = await Promise.all(Object.entries(groupedHoldings).map(async ([unit, holdings]) => {
+          let updatedHolding = {
+            unit: holding.unit,
+            quantity: parseInt(holding.quantity),
+            decimals: holding.decimals,
+            metadata: null,
+          };
+
           try {
-            const metadataResponse = await axios.get(`https://tokens.cardano.org/metadata/${unit}`);
-            return { 
-              unit, 
-              metadata: metadataResponse.data, 
-              quantity: holdings.reduce((sum, h) => sum + parseInt(h.quantity), 0), 
-              decimals: holdings[0].decimals 
-            };
+            const metadataResponse = await axios.get(`${API_CONFIG.baseUrl}tokenmetadata/${holding.unit}`);
+            updatedHolding.metadata = metadataResponse.data;
           } catch (error) {
-            console.warn(`Could not fetch metadata for ${unit}`, error);
-            return { 
-              unit, 
-              metadata: null, 
-              quantity: holdings.reduce((sum, h) => sum + parseInt(h.quantity), 0), 
-              decimals: holdings[0].decimals 
-            };
+            console.warn(`Could not fetch metadata for ${holding.unit}`, error);
           }
-        }));
 
-        // Sort holdings so those with logos come first
-        updatedHoldings.sort((a, b) => (b.metadata?.logo ? 1 : 0) - (a.metadata?.logo ? 1 : 0));
-        setHoldings(updatedHoldings);
+          // Mise à jour progressive avec tri : ceux qui ont une image en premier
+          setHoldings(prevHoldings =>
+            [...prevHoldings, updatedHolding].sort((a, b) => (b.metadata?.logo ? 1 : 0) - (a.metadata?.logo ? 1 : 0))
+          );
+        }
       } catch (error) {
         console.error('Error fetching holdings:', error);
       } finally {
@@ -57,58 +48,55 @@ const HoldingsComponent = ({ walletAddress }) => {
   }, [walletAddress]);
 
   const formatQuantity = (quantity, decimals) => {
-    if (decimals === null) return quantity;
+    if (decimals === null || quantity === null) return quantity; // Si decimals est null, on affiche la quantity sans modification
     const number = parseInt(quantity, 10);
     return (number / Math.pow(10, decimals)).toFixed(decimals);
   };
 
-  if (isLoading) {
+  if (isLoading && holdings.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500 mt-20"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500 mt-10"></div>
       </div>
     );
   }
 
   return (
     <div className="holdings">
-      <h2 className="text-lg font-bold mb-4 text-center">Holdings</h2>
-      {/* Display ADA balance separately */}
-      <div className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
-        <div className="card-body p-4">
-          <div className="text-left">
-            <strong>ADA Balance:</strong> {adaBalance}
-          </div>
-        </div>
-      </div>
+    <div className="card shadow-xl mb-10 max-w-lg mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4 text-center">{adaBalance} ₳ </h2>
+    </div>
 
+      {/* Holdings List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {holdings.map((holding, index) => {
-          const name = holding.metadata?.name?.value || holding.unit;
+          const name = holding.metadata?.name?.value || shortener(holding.unit);
+          const url = holding.metadata?.url?.value;
+          const ticker = holding.metadata?.ticker?.value || "";
+
           return (
             <div key={index} className="card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
-              <div className="card-body p-4">
-                {holding.metadata?.logo && 
+              <div className="card-body p-4 flex flex-col items-center text-center">
+                {holding.metadata?.logo?.value && (
                   <figure className="mb-2">
-                    <img src={`data:image/png;base64,${holding.metadata.logo.value}`} alt="Token Logo" className="h-32 w-32 object-cover rounded-full" />
+                    <img
+                      src={`data:image/png;base64,${holding.metadata.logo.value}`}
+                      alt="Token Logo"
+                      className="h-32 w-32 object-cover rounded-full"
+                    />
                   </figure>
-                }
-                <p className="text-left"><strong>{formatQuantity(holding.quantity, holding.decimals)}</strong> {name}</p>
-                {holding.metadata?.ticker && 
-                  <p className="text-left"><strong>Ticker:</strong> {holding.metadata.ticker.value}</p>
-                }
-                {holding.metadata?.url && 
-                  <div className="text-left">
-                    <strong>URL:</strong>
-                    <a href={holding.metadata.url.value} target="_blank" rel="noopener noreferrer" className="ml-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v4" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14a2 2 0 100-4 2 2 0 000 4z" />
-                      </svg>
-                    </a>
-                  </div>
-                }
+                )}
+                <p className="text-lg font-semibold">
+                  <strong>{formatQuantity(holding.quantity, holding.decimals)}</strong> {ticker}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {/* Affichage conditionnel du nom ou de l'identifiant */}
+                  {url ? (
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sky-500">{name}</a>
+                  ) : (
+                    <span>{name}</span>
+                  )}
+                </p>
               </div>
             </div>
           );
