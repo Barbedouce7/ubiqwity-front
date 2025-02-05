@@ -12,75 +12,148 @@ import {
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip);
 
 const CurrencyListWithCharts = ({ data }) => {
-  const prepareChartData = (priceData, pairName) => {
-    const timestamps = priceData.map(entry => new Date(entry.date).toLocaleTimeString());
-    const values = priceData.map(entry => {
-      const pair = entry.price.find(item => Object.keys(item)[0] === pairName);
-      return pair ? Object.values(pair)[0] : null;
-    });
-
+  const prepareChartData = (prices, labels) => {
     return {
-      labels: timestamps,
+      labels: labels.reverse(), // Plus ancien au plus récent
       datasets: [{
-        data: values,
-        borderColor: "#1976d2",
-        fill: false,
-        tension: 0.1,
+        data: prices.reverse(), // Plus ancien au plus récent
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 0
       }],
     };
   };
 
-  const uniquePairs = Array.from(new Set(data[0]?.price.map(item => Object.keys(item)[0])));
-
-  const getPriceAndChange = (pairName) => {
-    if (data.length < 2) return { price: "N/A", change: "0.00", color: 'gray', priceChange: 0 };
-
-    const latest = data[data.length - 1].price.find(item => Object.keys(item)[0] === pairName);
-    const first = data[0].price.find(item => Object.keys(item)[0] === pairName);
-
-    if (!latest || !first) return { price: "N/A", change: "0.00", color: 'gray', priceChange: 0 };
-
-    const lastPrice = Object.values(latest)[0];
-    const firstPrice = Object.values(first)[0];
-    const priceChange = lastPrice - firstPrice;
-    const percentageChange = ((priceChange / firstPrice) * 100).toFixed(2);
-
-    return {
-      price: lastPrice.toFixed(6),
-      change: percentageChange,
-      color: priceChange >= 0 ? 'red' : 'green',
-      priceChange: priceChange
-    };
+  const getPriceChange = (latestPrice, initialPrice) => {
+    const change = ((latestPrice - initialPrice) / initialPrice * 100).toFixed(2);
+    const color = change >= 0 ? 'green' : 'red';
+    return { change, color };
   };
+
+  const getCurrencyPair = (currency, baseCurrency = 'ADA') => {
+    const directPair = `${baseCurrency}-${currency}`;
+    const inversePair = `${currency}-${baseCurrency}`;
+    return data[0]?.price.find(item => Object.keys(item)[0] === directPair || Object.keys(item)[0] === inversePair);
+  };
+
+  const stablecoins = ["iUSD", "DJED", "USDM"];
+  const allCurrencies = [...new Set(data[0]?.price.flatMap(item => {
+    const [currency1, currency2] = Object.keys(item)[0].split('-');
+    return [currency1, currency2];
+  }))];
+
+  // On enlève 'USD' et 'BTC' de la liste des devises à afficher
+  const orderedCurrencies = allCurrencies.filter(currency => currency !== 'USD' && currency !== 'BTC').sort((a, b) => {
+    if (a === "ADA") return -1;
+    if (b === "ADA") return 1;
+    if (stablecoins.includes(a) && !stablecoins.includes(b)) return -1;
+    if (!stablecoins.includes(a) && stablecoins.includes(b)) return 1;
+    return a.localeCompare(b);
+  });
+
+  const adaUsdPrice = data[0]?.price.find(item => Object.keys(item)[0] === "ADA-USD")?.["ADA-USD"] || 0;
+  const dates = data.map(item => new Date(item.date).toLocaleTimeString());
+
+  // Traitement spécial pour ADA en haut de la liste
+  const adaPricePair = getCurrencyPair("ADA", "USD");
+  const adaPrices = adaPricePair ? data.map(item => item.price.find(p => Object.keys(p)[0] === "ADA-USD")?.["ADA-USD"] || null).filter(price => price !== null) : [];
+  const adaLatestPrice = adaPrices[adaPrices.length - 1] || 0;
+  const adaInitialPrice = adaPrices[0] || 0;
+  const { change: adaChange, color: adaColor } = getPriceChange(adaLatestPrice, adaInitialPrice);
 
   return (
     <div className="grid grid-cols-1 gap-2">
-      {uniquePairs.map(pairName => {
-        const { price, change, color, priceChange } = getPriceAndChange(pairName);
+      
+      {/* ADA en haut de la liste */}
+      <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
+        <div className="w-1/3 text-left text-base-content font-semibold">
+          <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block mr-2 rounded-full w-10 h-10" />
+          ADA
+        </div>
+        <div className="w-1/3 text-center font-semibold text-base-content">
+          $ {adaLatestPrice.toFixed(4)}
+          <p className={`change24h text-sm ${adaColor === 'green' ? 'text-success' : 'text-error'}`}>
+            {adaChange >= 0 ? `+${adaChange}%` : `${adaChange}%`}
+          </p>
+        </div>
+        <div className="w-1/3 h-[80px]">
+          <Line
+            data={prepareChartData(adaPrices, dates)}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { display: false },
+                y: { display: false }
+              },
+              plugins: {
+                tooltip: { enabled: false },
+                legend: { display: false }
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Les autres devises */}
+      {orderedCurrencies.map((currency, index) => {
+        const pricePair = getCurrencyPair(currency);
+        if (!pricePair) return null;
+
+        const pairName = Object.keys(pricePair)[0];
+        const isStablecoin = stablecoins.includes(currency);
+        const isInverted = pairName.startsWith(currency);
+
+        const prices = data.map(item => {
+          const foundPair = item.price.find(p => Object.keys(p)[0] === pairName);
+          return foundPair ? foundPair[pairName] : null;
+        }).filter(price => price !== null);
+
+        if (prices.length === 0) return null;
+
+        const latestPrice = prices[prices.length - 1];
+        const initialPrice = prices[0];
+        const { change, color } = getPriceChange(latestPrice, initialPrice);
+
+        let displayPrice = isInverted ? ( latestPrice).toFixed(4) : latestPrice.toFixed(4);
+        let usdPrice = (latestPrice * adaUsdPrice).toFixed(4);
+
+        if (isStablecoin && !isInverted) {
+          displayPrice = (1 / latestPrice).toFixed(4);
+          usdPrice = (1 / latestPrice * adaUsdPrice).toFixed(4);
+        }
+
+
         return (
-          <div key={pairName} className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
-            <div className="w-1/3 text-left text-base-content font-semibold">{pairName}</div>
-            <div className="w-1/3 text-center font-semibold text-base-content">
-              {price}
+          <div key={currency} className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
+            <div className="w-1/4 text-left text-base-content font-semibold">
+              <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block mr-2 w-10 h-10 rounded-full" />
+              {currency}
+            </div>
+            <div className="w-1/4 text-center font-semibold text-base-content">
+              ₳ {displayPrice}
+              {currency !== "ADA" && <p className="text-xs opacity-70">$ {usdPrice}</p>}
+            </div>
+            <div className="w-1/4 text-center font-semibold text-base-content">
               <p className={`price-change-${color}-text text-sm`}>
-                {priceChange >= 0 ? `+${change}%` : `${change}%`}
+                {change >= 0 ? `+${change}%` : `${change}%`}
               </p>
             </div>
             <div className="w-1/3 h-[80px]">
               <Line
-                data={prepareChartData(data, pairName)}
+                data={prepareChartData(prices, dates)}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                  },
                   scales: {
                     x: { display: false },
                     y: { display: false }
                   },
-                  elements: {
-                    point: { radius: 0 }
+                  plugins: {
+                    tooltip: { enabled: false },
+                    legend: { display: false }
                   }
                 }}
               />

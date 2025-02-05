@@ -64,7 +64,7 @@ const HoldingsComponent = ({ walletAddress }) => {
   return (
     <div className="holdings">
     <div className="card shadow-xl mb-10 max-w-lg mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4 text-center">{adaBalance} ₳ </h2>
+      <h2 className="text-xl font-bold mb-4 text-center">{adaBalance} <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block mr-2 rounded-full w-10 h-10" /></h2>
     </div>
 
       {/* Holdings List */}

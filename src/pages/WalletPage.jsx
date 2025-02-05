@@ -103,7 +103,7 @@ function WalletPage() {
       {stakekeyInfo.addressList.map((address, index) => (
         <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
           <div className="card-body p-4">
-            <div className="text-left">
+            <div className="">
               <strong>Address: </strong>
               <Link className="text-primary hover:text-cyan-100" to={`/address/${address}`}>
                  {shortener(address)}
