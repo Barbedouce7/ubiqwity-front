@@ -90,11 +90,10 @@ const HoldingsComponent = ({ walletAddress }) => {
               <div className="card-body p-4">
                 {holding.metadata?.logo && 
                   <figure className="mb-2">
-                    <img src={`data:image/png;base64,${holding.metadata.logo.value}`} alt="Token Logo" className="w-full h-32 w-32 object-cover rounded-full" />
+                    <img src={`data:image/png;base64,${holding.metadata.logo.value}`} alt="Token Logo" className="h-32 w-32 object-cover rounded-full" />
                   </figure>
                 }
-                <p className="text-left"><strong>Name:</strong> {name}</p>
-                <p className="text-left"><strong>Quantity:</strong> {formatQuantity(holding.quantity, holding.decimals)}</p>
+                <p className="text-left"><strong>{formatQuantity(holding.quantity, holding.decimals)}</strong> {name}</p>
                 {holding.metadata?.ticker && 
                   <p className="text-left"><strong>Ticker:</strong> {holding.metadata.ticker.value}</p>
                 }
