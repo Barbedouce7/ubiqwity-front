@@ -49,7 +49,7 @@ const LatestBlock = () => {
   if (error) return <div className="text-red-500 p-4">{error}</div>;
   if (!blockData) return null;
   
-  const MAX_BLOCK_SIZE = 88000; 
+  const MAX_BLOCK_SIZE = 88; 
 
   const metadata = blockData?.metadata || {};
   const transactions = blockData?.transactions || [];
@@ -58,18 +58,7 @@ const LatestBlock = () => {
 
   return (
     <div className="relative w-full text-base-content p-0">
-      {/* Barre de progression */}
-      <div className="absolute top-0 left-0 w-full h-2 rounded-lg">
-        <div
-          className="h-full bg-sky-600 rounded-lg"
-          style={{ width: `${progressPercentage}%` }}
-        ></div>
-      </div>
 
-      {/* Size affichée sous la progress bar */}
-      <div className="absolute top-3 left-0 text-xs font-semibold p-1">
-        {blockSize} kb / 88kb
-      </div>
 
       {/* Horloge circulaire de progression */}
       <div className="absolute top-3 right-0 flex items-center justify-center right-3">
@@ -93,12 +82,34 @@ const LatestBlock = () => {
 
       <div className="mt-10">
         <h3 className="text-xl font-bold">Latest Block:</h3>
-        <p className="text-sm break-all">{metadata.hash || "N/A"}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+        <p className="text-sm break-all">{shortener(metadata.hash) || "N/A"}</p>
+
+
+      {/* Size affichée sous la progress bar */}
+      <div className="text-xs font-semibold p-1 text-center mt-1 mt-4">
+        {blockSize.toFixed(2)} KB / {MAX_BLOCK_SIZE} KB
+      </div>
+      {/* Barre de progression */}
+      <div className="w-20 mx-auto bg-base-300 h-1.5 rounded-lg overflow-hidden">
+        <div
+          className="h-full bg-sky-500 h-1.5 rounded-lg"
+          style={{ width: `${progressPercentage}%` }}
+        ></div>
+      </div>
+
+
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>
           <p><strong>Output:</strong> {metadata.output ? (metadata.output / 1000000).toFixed(2) : "N/A"} ₳</p>
           <p><strong>Fees:</strong> {metadata.fees ? (metadata.fees / 1000000).toFixed(2) : "N/A"} ₳</p>
         </div>
+
+
+
+
+
+
         <p className="mt-4">
           <strong>Slot Leader:</strong>{" "}
           <Link to={`/pool/${metadata.slot_leader || ""}`} className="text-sky-500 underline">
@@ -117,7 +128,7 @@ const LatestBlock = () => {
                 transactions.map((tx) => (
                   <tr key={tx} className="border-t border-gray-500">
                     <td className="p-2 break-all">
-                      <Link to={`tx/${tx}`} className="text-sky-500">{tx}</Link>
+                      <Link to={`tx/${tx}`} className="text-sky-500">{shortener(tx)}</Link>
                     </td>
                   </tr>
                 ))
