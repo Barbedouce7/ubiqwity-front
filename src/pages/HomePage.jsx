@@ -34,7 +34,7 @@ const HomePage = () => {
 
     fetchData();
   }, []);
-
+console.log(epochContext.circulating_supply);
 return (
   <div className="flex flex-col gap-8 p-4">
     {/* Bloc Chain Usage & Epoch Context */}
@@ -71,7 +71,7 @@ return (
 
 
       {apiData.length > 0 ? (
-        <CurrencyListWithCharts data={apiData} />
+        <CurrencyListWithCharts data={apiData} circulatingSupply={epochContext.circulating_supply} />
       ) : (
         <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-30"></div>
       )}

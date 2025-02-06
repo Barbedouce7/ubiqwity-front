@@ -11,7 +11,7 @@ import {
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip);
 
-const CurrencyListWithCharts = ({ data }) => {
+const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
   const prepareChartData = (prices, labels) => {
     return {
       labels: labels, // Plus ancien au plus récent
@@ -63,20 +63,24 @@ const CurrencyListWithCharts = ({ data }) => {
   const adaInitialPrice = adaPrices[0] || 0;
   const { change: adaChange, color: adaColor } = getPriceChange(adaLatestPrice, adaInitialPrice);
 
+
+  const marketCap = (circulatingSupply * adaLatestPrice / 1_000_000_000).toFixed(2);
+
   return (
     <div className="grid grid-cols-1 gap-2">
       
       {/* ADA en haut de la liste */}
-      <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
+      <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
         <div className="w-1/3 text-base-content font-semibold">
-          <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block rounded-full w-8 h-8 md:mr-2" />
-          ADA
+          <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block rounded-full w-8 h-8" />
+          <p>ADA</p>
         </div>
         <div className="w-1/3 text-center font-semibold text-base-content">
           $ {adaLatestPrice.toFixed(4)}
           <p className={`change24h text-sm price-change-${adaColor === 'green' ? 'text-success' : 'text-error'}`}>
             {adaChange >= 0 ? `+${adaChange}%` : `${adaChange}%`}
           </p>
+          <p>MarketCap : {marketCap} B $</p>
         </div>
         <div className="w-1/3 h-[80px]">
           <Line
@@ -125,12 +129,11 @@ const CurrencyListWithCharts = ({ data }) => {
           usdPrice = (1 / latestPrice * adaUsdPrice).toFixed(4);
         }
 
-
         return (
-          <div key={currency} className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
+          <div key={currency} className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
             <div className="w-1/4 text-base-content font-semibold">
-              <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block w-8 h-8 rounded-full md:mr-2" />
-              {currency}
+              <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block rounded-full w-8 h-8" />
+              <p>{currency}</p>
             </div>
             <div className="w-1/4 text-center font-semibold text-base-content">
               ₳ {displayPrice}
