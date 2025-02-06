@@ -14,9 +14,9 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip)
 const CurrencyListWithCharts = ({ data }) => {
   const prepareChartData = (prices, labels) => {
     return {
-      labels: labels.reverse(), // Plus ancien au plus récent
+      labels: labels, // Plus ancien au plus récent
       datasets: [{
-        data: prices.reverse(), // Plus ancien au plus récent
+        data: prices, // Plus ancien au plus récent
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         borderWidth: 2,
@@ -28,7 +28,7 @@ const CurrencyListWithCharts = ({ data }) => {
 
   const getPriceChange = (latestPrice, initialPrice) => {
     const change = ((latestPrice - initialPrice) / initialPrice * 100).toFixed(2);
-    const color = change >= 0 ? 'green' : 'red';
+    const color = change >= 0 ? 'red' : 'green';
     return { change, color };
   };
 
@@ -68,13 +68,13 @@ const CurrencyListWithCharts = ({ data }) => {
       
       {/* ADA en haut de la liste */}
       <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
-        <div className="w-1/3 text-left text-base-content font-semibold">
-          <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block mr-2 rounded-full w-10 h-10" />
+        <div className="w-1/3 text-base-content font-semibold">
+          <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block rounded-full w-8 h-8 md:mr-2" />
           ADA
         </div>
         <div className="w-1/3 text-center font-semibold text-base-content">
           $ {adaLatestPrice.toFixed(4)}
-          <p className={`change24h text-sm ${adaColor === 'green' ? 'text-success' : 'text-error'}`}>
+          <p className={`change24h text-sm price-change-${adaColor === 'green' ? 'text-success' : 'text-error'}`}>
             {adaChange >= 0 ? `+${adaChange}%` : `${adaChange}%`}
           </p>
         </div>
@@ -128,8 +128,8 @@ const CurrencyListWithCharts = ({ data }) => {
 
         return (
           <div key={currency} className="bg-base-100 shadow-md mt-2 p-2 flex items-center">
-            <div className="w-1/4 text-left text-base-content font-semibold">
-              <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block mr-2 w-10 h-10 rounded-full" />
+            <div className="w-1/4 text-base-content font-semibold">
+              <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block w-8 h-8 rounded-full md:mr-2" />
               {currency}
             </div>
             <div className="w-1/4 text-center font-semibold text-base-content">
