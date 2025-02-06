@@ -71,16 +71,19 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
       
       {/* ADA en haut de la liste */}
       <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
-        <div className="w-1/3 text-base-content font-semibold">
+        <div className="w-1/4 text-base-content font-semibold">
           <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block rounded-full w-8 h-8" />
           <p>ADA</p>
         </div>
-        <div className="w-1/3 text-center font-semibold text-base-content">
+        <div className="w-1/4 text-center font-semibold text-base-content">
           $ {adaLatestPrice.toFixed(4)}
-          <p className={`change24h text-sm price-change-${adaColor === 'green' ? 'text-success' : 'text-error'}`}>
+
+          <p>MarketCap : {marketCap} B $</p>
+        </div>
+        <div className="w-1/4 text-center font-semibold text-base-content">
+          <p className={`change24h text-sm price-change-${adaColor}-text`}>
             {adaChange >= 0 ? `+${adaChange}%` : `${adaChange}%`}
           </p>
-          <p>MarketCap : {marketCap} B $</p>
         </div>
         <div className="w-1/3 h-[80px]">
           <Line
