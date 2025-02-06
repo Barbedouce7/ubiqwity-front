@@ -8,6 +8,7 @@ import PoolDelegatorsTab from '../components/PoolDelegatorsTab';
 import { TokenContext } from '../utils/TokenContext';
 import { useParams, Link } from 'react-router-dom';
 import CopyButton from '../components/CopyButton';
+import { shortener } from '../utils/utils';
 
 
 function PoolPage() {
@@ -42,18 +43,18 @@ function PoolPage() {
     const rewardAccount = data?.rewardAccount;
 
     return (
-      <div className="p-4 rounded-lg overflow-auto text-left">
+      <div className="p-4 rounded-lg overflow-auto">
         {owners.map((owner, index) => (
           <div key={index} className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl  text-base-content">
             <p className="text-lg">
-              Owner: <CopyButton text={owner} /> <Link className="text-primary hover:text-cyan-100" to={`/wallet/${owner}`}>{owner}</Link>
+              Owner : <CopyButton text={owner} /> <Link className="text-primary hover:text-cyan-100" to={`/wallet/${owner}`}>{shortener(owner)}</Link>
             </p>
           </div>
         ))}
         {rewardAccount && (
           <div className="mb-4 rounded-lg bg-base-100 p-4  text-base-content shadow-xl">
             <p className="text-lg">
-              Reward Account: <CopyButton text={rewardAccount} /><Link className="text-primary hover:text-cyan-100" to={`/wallet/${rewardAccount}`}> {rewardAccount}</Link>
+              Reward Account : <CopyButton text={rewardAccount} /><Link className="text-primary hover:text-cyan-100" to={`/wallet/${rewardAccount}`}> {shortener(rewardAccount)}</Link>
             </p>
           </div>
         )}

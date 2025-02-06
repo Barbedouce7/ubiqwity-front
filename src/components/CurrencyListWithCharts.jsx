@@ -26,6 +26,22 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
     };
   };
 
+  const prepareInvertedChartData = (prices, dates) => {
+    const invertedPrices = prices.map(price => 1 / price);
+    
+    return {
+      labels: dates,
+      datasets: [{
+        data: invertedPrices,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 0
+      }]
+    };
+  };
+
   const getPriceChange = (latestPrice, initialPrice) => {
     const change = ((latestPrice - initialPrice) / initialPrice * 100).toFixed(2);
     const color = change >= 0 ? 'red' : 'green';
@@ -68,7 +84,7 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
 
   return (
     <div className="grid grid-cols-1 gap-2">
-      
+      <p>MarketCap : {marketCap} B $</p>
       {/* ADA en haut de la liste */}
       <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
         <div className="w-1/4 text-base-content font-semibold">
@@ -78,7 +94,7 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
         <div className="w-1/4 text-center font-semibold text-base-content">
           $ {adaLatestPrice.toFixed(4)}
 
-          <p>MarketCap : {marketCap} B $</p>
+          
         </div>
         <div className="w-1/4 text-center font-semibold text-base-content">
           <p className={`change24h text-sm price-change-${adaColor}-text`}>
@@ -122,7 +138,11 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
 
         const latestPrice = prices[prices.length - 1];
         const initialPrice = prices[0];
-        const { change, color } = getPriceChange(latestPrice, initialPrice);
+        const invertedLatestPrice = 1 / latestPrice;
+        const invertedInitialPrice = 1 / initialPrice;
+
+        const { change, color } = getPriceChange(invertedLatestPrice, invertedInitialPrice);
+
 
         let displayPrice = isInverted ? ( latestPrice).toFixed(4) : latestPrice.toFixed(4);
         let usdPrice = (latestPrice * adaUsdPrice).toFixed(4);
@@ -149,7 +169,8 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
             </div>
             <div className="w-1/3 h-[80px]">
               <Line
-                data={prepareChartData(prices, dates)}
+ data={isStablecoin ? prepareInvertedChartData(prices, dates) : prepareChartData(prices, dates)}
+
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
