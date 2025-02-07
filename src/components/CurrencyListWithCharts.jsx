@@ -84,7 +84,7 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
 
   return (
     <div className="grid grid-cols-1 gap-2">
-      <p>MarketCap : {marketCap} B $</p>
+      <p className="text-base-content">MarketCap : {marketCap} B $</p>
       {/* ADA en haut de la liste */}
       <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
         <div className="w-1/4 text-base-content font-semibold">
