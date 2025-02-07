@@ -140,9 +140,12 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
         const initialPrice = prices[0];
         const invertedLatestPrice = 1 / latestPrice;
         const invertedInitialPrice = 1 / initialPrice;
-
-        const { change, color } = getPriceChange(invertedLatestPrice, invertedInitialPrice);
-
+        let change, color;
+        if (isStablecoin) {
+          ({ change, color } = getPriceChange(invertedLatestPrice, invertedInitialPrice));
+        } else {
+          ({ change, color } = getPriceChange(latestPrice, initialPrice));
+        }
 
         let displayPrice = isInverted ? ( latestPrice).toFixed(4) : latestPrice.toFixed(4);
         let usdPrice = (latestPrice * adaUsdPrice).toFixed(4);
