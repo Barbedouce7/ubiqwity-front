@@ -4,7 +4,10 @@ import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import CopyButton from '../components/CopyButton';
 import WalletHold from '../components/WalletHold';
+import WalletFriends from '../components/WalletFriends';
+import ActivityCharts from '../components/ActivityCharts';
 import { shortener } from '../utils/utils';
+
 
 
 function WalletPage() {
@@ -40,9 +43,9 @@ function WalletPage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [walletAddress]);
+
 
   if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
@@ -57,12 +60,13 @@ function WalletPage() {
         <div className="mb-2">
           <strong>Stake Address:</strong> 
           <CopyButton text={stakekeyInfo.stakekey} /> 
-          {stakekeyInfo.stakekey}
+          {shortener(stakekeyInfo.stakekey)}
         </div>
         <div className="mb-2">
           <strong>Number of Addresses:</strong> {stakekeyInfo.numberOfAddresses}
         </div>
-        
+ 
+
         <div className="mb-2">
           {stakekeyInfo.stakepool ? (
             <Link className="text-sky-500" to={`/pool/${stakekeyInfo.stakepool.pool_id}`}>
@@ -76,7 +80,7 @@ function WalletPage() {
         <div className="mb-2">
           {stakekeyInfo.stakepool && stakekeyInfo.stakepool.homepage ? (
             <>
-              <strong>Homepage:</strong> 
+              <strong>Homepage: </strong> 
               <a href={stakekeyInfo.stakepool.homepage} target="_blank" rel="noopener noreferrer">
                 {stakekeyInfo.stakepool.homepage}
               </a>
@@ -90,6 +94,7 @@ function WalletPage() {
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs">
           <a className={`tab-custom ${activeTab === 'addresses' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('addresses')}>Addresses</a>
+          <a className={`tab-custom ${activeTab === 'activity' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('activity')}>Activity</a>
           <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
           <a className={`tab-custom ${activeTab === 'history' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('history')}>History</a>
           <a className={`tab-custom ${activeTab === 'friends' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('friends')}>Friends</a>
@@ -115,12 +120,21 @@ function WalletPage() {
       ))}
     </div>
       )}
+
+      {activeTab === 'activity' && (
+
+
+                <ActivityCharts stakekey={stakekeyInfo.stakekey} />
+
+
+      )}
+
       {activeTab === 'hold' && (
         <div>
           <WalletHold walletAddress={stakekeyInfo.stakekey} />
         </div>
       )}
-      
+
       {activeTab === 'history' && (
         <div>
           Historic display - W.I.P
@@ -129,13 +143,13 @@ function WalletPage() {
       
       {activeTab === 'friends' && (
         <div>
-          Friends wallet display - W.I.P
+          <WalletFriends stakekey={stakekeyInfo.stakekey} />
         </div>
       )}
 
       {activeTab === 'transactions' && transactions && (
         <div>
-          <h2 className="text-lg font-bold mb-4 text-center">Transactions</h2>
+          <h2 className="text-lg font-bold mb-4 text-center">Transactions  ({transactions.length})</h2>
           {transactions.map((tx, index) => (
             <div key={index} className="mb-4 card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
               <div className="card-body p-4">
@@ -150,7 +164,7 @@ function WalletPage() {
                 <div className="text-left">
                   <strong>Hash: </strong>
                   <Link className="text-primary hover:text-cyan-100" to={`/tx/${tx.txHash}`}>
-                    {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-10)}
+                    {shortener(tx.txHash)}
                   </Link>
                   <CopyButton text={tx.txHash} className="ml-2" />
                 </div>

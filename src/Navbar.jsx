@@ -58,7 +58,7 @@ function Navbar({ handleSearch }) {
 
 
   return (
-    <div className="navbar bg-base-100 shadow-xl p-2 mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
+    <div className="navbar bg-base-100 shadow-xl mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
           <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> Ubiqwity
