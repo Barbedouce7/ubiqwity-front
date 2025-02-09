@@ -36,7 +36,7 @@ function App() {
   };
 
   return (
-    <div className="w-full mx-auto text-center p-2 min-h-screen">
+    <div className="w-full bg-base-100 mx-auto text-center min-h-screen">
       <Navbar handleSearch={handleSearch} setSearchInput={setSearchInput} searchInput={searchInput} />
       <ThemeToggle />
       <Routes>

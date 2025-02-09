@@ -3,20 +3,26 @@ import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { shortener } from '../utils/utils';
 
-const HoldingsComponent = ({ walletAddress }) => {
+const HoldingsComponent = ({ holdingsData }) => {
   const [holdings, setHoldings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [adaBalance, setAdaBalance] = useState('0');
 
   useEffect(() => {
     const fetchHoldings = async () => {
+      if (!holdingsData || !holdingsData.holdings) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
-        const holdingsResponse = await axios.get(`${API_CONFIG.baseUrl}wallet/${walletAddress}/hold`);
-        setAdaBalance(formatQuantity(holdingsResponse.data.holdings.find(h => h.unit === 'lovelace')?.quantity, 6));
+        setAdaBalance(formatQuantity(holdingsData.holdings.find(h => h.unit === 'lovelace')?.quantity || 0, 6));
 
-        for (let holding of holdingsResponse.data.holdings) {
-          if (holding.unit === 'lovelace') continue; // On ignore ADA ici
+        const updatedHoldings = [];
+
+        for (let holding of holdingsData.holdings) {
+          if (holding.unit === 'lovelace') continue;
 
           let updatedHolding = {
             unit: holding.unit,
@@ -32,11 +38,11 @@ const HoldingsComponent = ({ walletAddress }) => {
             console.warn(`Could not fetch metadata for ${holding.unit}`, error);
           }
 
-          // Mise à jour progressive avec tri : ceux qui ont une image en premier
-          setHoldings(prevHoldings =>
-            [...prevHoldings, updatedHolding].sort((a, b) => (b.metadata?.logo ? 1 : 0) - (a.metadata?.logo ? 1 : 0))
-          );
+          updatedHoldings.push(updatedHolding);
         }
+
+        // Mise à jour triée : ceux qui ont une image en premier
+        setHoldings(updatedHoldings.sort((a, b) => (b.metadata?.logo ? 1 : 0) - (a.metadata?.logo ? 1 : 0)));
       } catch (error) {
         console.error('Error fetching holdings:', error);
       } finally {
@@ -45,7 +51,7 @@ const HoldingsComponent = ({ walletAddress }) => {
     };
 
     fetchHoldings();
-  }, [walletAddress]);
+  }, [holdingsData]);
 
   const formatQuantity = (quantity, decimals) => {
     if (decimals === null || quantity === null) return quantity; // Si decimals est null, on affiche la quantity sans modification

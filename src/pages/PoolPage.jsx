@@ -68,7 +68,7 @@ function PoolPage() {
   return (
     <div className="container mx-auto p-6 p-4  text-base-content">
       <h1 className="text-3xl font-bold text-center text-sky-500 mb-6">{data.metadata.name}</h1>
-      <p className="text-lg max-w-lg mx-auto text-gray-700 dark:text-gray-300"><span className="font-bold text-sky-500">{data.metadata.description}</span></p>
+
 
       <div className="text-center mb-6 mt-6">
         <p className="text-lg text-gray-700 dark:text-gray-300">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span></p>
@@ -99,10 +99,12 @@ function PoolPage() {
           </div>
         </div>
       </div>
+ 
 
 <div className="tabs mt-6 mb-6 flex justify-center items-center relative">
   <div className="tabs">
     <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Stats</a>
+    <a className={`tab-custom ${activeTab === 'description' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('description')}>Description</a>
     <a className={`tab-custom ${activeTab === 'delegators' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('delegators')}>Delegators</a>
     <a className={`tab-custom ${activeTab === 'relays' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('relays')}>Relays</a>
     <a className={`tab-custom ${activeTab === 'owner' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('owner')}>Owner</a>
@@ -111,6 +113,7 @@ function PoolPage() {
 </div>
 
 {activeTab === 'diagram' && <PoolCharts data={data} />}
+{activeTab === 'description' &&      <p className="text-lg max-w-lg mx-auto text-gray-700 dark:text-gray-300 mt-6"><span className="font-bold text-sky-500">{data.metadata.description}</span></p> }
 {activeTab === 'relays' && (
   <div className="bg-base-400 rounded-lg p-4">
     <h2 className="text-xl font-semibold text-primary mb-4">Relays</h2>
