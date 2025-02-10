@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
 import { SankeyController, Flow } from "chartjs-chart-sankey";
+import { shortener } from '../utils/utils';
 
 // Register the Sankey plugin
 Chart.register(SankeyController, Flow);
@@ -46,8 +47,8 @@ function DiagramTab({ inputs, outputs }) {
                 existingLink.units.push({ unit: outAmt.unit, quantity: flowQuantity });
               } else {
                 links.push({
-                  from: input.address,
-                  to: output.address,
+                  from: shortener(input.address),
+                  to: shortener(output.address),
                   flow: flow,
                   units: [{ unit: outAmt.unit, quantity: flowQuantity }]
                 });
@@ -76,7 +77,7 @@ function DiagramTab({ inputs, outputs }) {
         data: links,
         colorFrom: "#007BFF", // Bright blue for better visibility
         colorTo: "#FFA500",   // Orange for better visibility
-        color: '#ffffff',
+      //  color: '#ffffff',
         borderWidth: 0,
         hoverBorderWidth: 3,
         hoverBorderColor: '#ff0000',
@@ -108,7 +109,7 @@ function DiagramTab({ inputs, outputs }) {
                     return `${u.quantity} ${u.unit}`;
                   });
                   return [
-                    `${from} → ${to}`,
+                   // `${from} → ${to}`,
                     ...unitsTextArray
                   ];
                 }

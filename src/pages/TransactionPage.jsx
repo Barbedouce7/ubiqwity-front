@@ -14,7 +14,7 @@ function TransactionPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('eutxo');
+  const [activeTab, setActiveTab] = useState('diagram');
   const [resolvedAmounts, setResolvedAmounts] = useState({});
   const [tokenUnits, setTokenUnits] = useState([]);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
@@ -105,14 +105,14 @@ function TransactionPage() {
 
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs mb-4 flex justify-center items-center">
-          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
           <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>
+          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
           <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
         </div>
       </div>
 
       {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
-      {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  />}
+      {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  tokenMetadata={tokenMetadata}/>}
       {activeTab === 'json' && <JSONTab data={data} />}
     </div>
   );
