@@ -112,7 +112,7 @@ function TransactionPage() {
       </div>
 
       {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
-      {activeTab === 'diagram' && <DiagramTab />}
+      {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  />}
       {activeTab === 'json' && <JSONTab data={data} />}
     </div>
   );
