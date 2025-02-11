@@ -31,15 +31,15 @@ const HoldingsComponent = ({ holdingsData }) => {
             metadata: null,
           };
 
-          try {
+           try {
             const metadataResponse = await axios.get(`${API_CONFIG.baseUrl}tokenmetadata/${holding.unit}`);
             updatedHolding.metadata = metadataResponse.data;
           } catch (error) {
             console.warn(`Could not fetch metadata for ${holding.unit}`, error);
           }
-
+           
           updatedHoldings.push(updatedHolding);
-        }
+        } 
 
         // Mise à jour triée : ceux qui ont une image en premier
         setHoldings(updatedHoldings.sort((a, b) => (b.metadata?.logo ? 1 : 0) - (a.metadata?.logo ? 1 : 0)));

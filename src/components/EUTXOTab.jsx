@@ -39,7 +39,7 @@ function EUTXOTab({ inputs, outputs }) {
 
   return (
 <div className="grid md:grid-cols-2 gap-4">
-  {/* Inputs - Affiché à gauche sur grand écran */}
+
   <div className="md:col-span-1">
     <h2 className="text-xl font-bold mb-2 text-blue-500">
       {inputs.length} Input{inputs.length !== 1 ? 's' : ''}
@@ -67,7 +67,6 @@ function EUTXOTab({ inputs, outputs }) {
     ))}
   </div>
 
-  {/* Outputs - Affiché à droite sur grand écran */}
   <div className="md:col-span-1">
     <h2 className="text-xl font-bold mb-2 text-orange-500">
       {outputs.length} Output{outputs.length !== 1 ? 's' : ''}
