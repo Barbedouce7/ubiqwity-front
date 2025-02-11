@@ -8,6 +8,8 @@ import DiagramTab from '../components/DiagramTab';
 import JSONTab from '../components/JSONTab';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
+import { shortener } from '../utils/utils';
+
 
 function TransactionPage() {
   const { txId } = useParams();
@@ -87,10 +89,10 @@ function TransactionPage() {
       <h1 className="text-2xl font-bold mb-4">Transaction Details</h1>
       <div className="mb-4">
         <div className="mb-2">
-          <strong>Transaction Hash:</strong><CopyButton text={data.transaction} /> {data.transaction}
+          <strong>Transaction Hash:</strong><CopyButton text={data.transaction} /> {shortener(data.transaction)}
         </div>
         <div className="mb-2">
-          <strong>Block Hash:</strong> <CopyButton text={data.block.hash} /><span className="line-clamp-3 ml-2">{data.block.hash}</span>
+          <strong>Block Hash:</strong> <CopyButton text={data.block.hash} /><span className="line-clamp-3 ml-2">{shortener(data.block.hash)}</span>
         </div>
         <div className="mb-2">
           <strong>Block N°:</strong> {data.block.height}

@@ -91,9 +91,9 @@ function DiagramTab({ inputs, outputs }) {
           }
         }
 
-        if (remainingQuantity > 0) {
-          console.log(`Remaining quantity for ${outAmt.unit} at ${output.address}: ${remainingQuantity}`);
-        }
+       // if (remainingQuantity > 0) {
+       //   console.log(`Remaining quantity for ${outAmt.unit} at ${output.address}: ${remainingQuantity}`);
+       // }
       });
     });
 
