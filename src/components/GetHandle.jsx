@@ -49,14 +49,14 @@ function GetHandle({ stakekey }) {
     }, 500);
   };
 
-  if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
+  //if (loading) return  <div className="animate-spin rounded-full  mx-auto h-6 w-6 border-b-2 border-sky-500"></div>;
 
   return (
     <p className="text-lg">
       {defaultHandle ? (
         <>
-          <span className="text-green-500">$</span>
-          {defaultHandle}
+          <span className=" bg-slate-800 text-gray-100 w-auto inline-block rounded-lg pl-2 pr-2 pt-1 pb-1"><span className="text-green-500">$</span>
+          {defaultHandle}</span>
         </>
       ) : (
         <span className="text-gray-500"></span>

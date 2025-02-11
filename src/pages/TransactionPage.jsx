@@ -19,9 +19,8 @@ function TransactionPage() {
   const [tokenUnits, setTokenUnits] = useState([]);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
-  // Assuming fetchTokenData can handle batch requests, if not, you'll need to modify the backend
   const batchFetchTokenData = useCallback((units) => {
-    return fetchTokenData(units); // This should return a Promise resolving to an object or array of metadata
+    return fetchTokenData(units);
   }, [fetchTokenData]);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ function TransactionPage() {
         const newResolvedAmounts = {};
         const unitsToFetch = new Set();
 
-        // Collect all units to be fetched
         for (let io of [...response.data.utxos.inputs, ...response.data.utxos.outputs]) {
           const ioType = response.data.utxos.inputs.includes(io) ? 'input' : 'output';
           const index = io.output_index ?? io.index ?? 'unknown';  
@@ -53,7 +51,6 @@ function TransactionPage() {
           }
         }
 
-        // Fetch token data in batch
         const tokenData = await batchFetchTokenData([...unitsToFetch]);
         const unknownUnits = new Set([...unitsToFetch].filter(unit => !(unit in tokenData)));
 
@@ -96,24 +93,34 @@ function TransactionPage() {
           <strong>Block Hash:</strong> <CopyButton text={data.block.hash} /><span className="line-clamp-3 ml-2">{data.block.hash}</span>
         </div>
         <div className="mb-2">
-          <strong>Block Number:</strong> {data.block.height}
+          <strong>Block N°:</strong> {data.block.height}
         </div>
-        <div><strong>Date:</strong> {new Date(data.block.time * 1000).toLocaleString()}</div> {/* Convert to milliseconds */}
+        <div><strong>Date:</strong> {new Date(data.block.time).toLocaleString()}</div>
         <div className="mb-2"><strong>Fees:</strong> {data.fees} ADA</div>
         <div className="mb-2"><strong>Size:</strong> {data.size} bytes</div>
+        <p>
+          <span className="text-blue-500">{data.utxos.inputs.length} Input{data.utxos.inputs.length !== 1 ? 's' : ''}</span> | 
+          <span className="text-orange-500"> {data.utxos.outputs.length} Output{data.utxos.outputs.length !== 1 ? 's' : ''}</span>
+        </p>
       </div>
 
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs mb-4 flex justify-center items-center">
           <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>
           <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
+          {data.metadata && data.metadata.length > 0 && (
+            <a className={`tab-custom ${activeTab === 'metadata' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('metadata')}>Metadata</a>
+          )}
           <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
         </div>
       </div>
 
       {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
       {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  tokenMetadata={tokenMetadata}/>}
+      {activeTab === 'metadata' && data.metadata && (  <pre className="p-4 rounded shadow-xl text-left">{JSON.stringify(data.metadata, null, 2)}</pre>)}
+
       {activeTab === 'json' && <JSONTab data={data} />}
+
     </div>
   );
 }
