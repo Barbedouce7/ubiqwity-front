@@ -13,46 +13,71 @@ export const TokenProvider = ({ children }) => {
   });
 
   const [loadingTokens, setLoadingTokens] = useState(new Set());
+  const [failedTokens, setFailedTokens] = useState(() => {
+    const savedFailed = localStorage.getItem('failedTokens');
+    if (savedFailed) {
+      const parsed = JSON.parse(savedFailed);
+      return Object.keys(parsed).reduce((acc, unit) => {
+        if (parsed[unit] > Date.now()) acc[unit] = parsed[unit];
+        return acc;
+      }, {});
+    }
+    return {};
+  });
 
   useEffect(() => {
     localStorage.setItem('tokenMetadata', JSON.stringify(tokenMetadata));
-  }, [tokenMetadata]);
+    localStorage.setItem('failedTokens', JSON.stringify(failedTokens));
+  }, [tokenMetadata, failedTokens]);
 
-const fetchTokenData = async (unit) => {
-  console.log(`🟡 Recherche des métadonnées pour: ${unit}`);
+  const fetchTokenData = async (unit) => {
+    console.log(`🟡 Recherche des métadonnées pour: ${unit}`);
 
-  if (tokenMetadata[unit]) {
-    console.log(`✅ Métadonnées trouvées en cache:`, tokenMetadata[unit]);
-    return tokenMetadata[unit]; // Retourne ce qui est en mémoire
-  }
+    if (tokenMetadata[unit]) {
+      console.log(`✅ Métadonnées trouvées en cache:`, tokenMetadata[unit]);
+      return tokenMetadata[unit];
+    }
 
-  try {
-    const response = await axios.get(`${API_CONFIG.baseUrl}tokenmetadata/${unit}`);
-    console.log("🔹 Réponse API reçue:", response.data);
+    // Vérification si le token a échoué récemment
+    if (failedTokens[unit] && failedTokens[unit] > Date.now()) {
+      console.log(`❌ Token ${unit} a échoué récemment, pas de nouvelle tentative.`);
+      return { ticker: unit, name: "Unknown Token", decimals: 0 };
+    }
 
-    // Correction : on prend directement les valeurs sans `.value`
-    const ticker = response.data.ticker || unit;
-   // const logo = response.data.logo || null;
-    const name = response.data.name || "Unknown Token";
-    const decimals = response.data.decimals || 0;
+    try {
+      setLoadingTokens(prev => new Set([...prev, unit]));
+      const response = await axios.get(`${API_CONFIG.baseUrl}tokenmetadata/${unit}`);
+      console.log("🔹 Réponse API reçue:", response.data);
 
-    const newMetadata = { ticker, name, decimals };
-    console.log(`✅ Données récupérées depuis l'API pour ${unit}:`, newMetadata);
+      const ticker = response.data.ticker || unit;
+      const name = response.data.name || "Unknown Token";
+      const decimals = response.data.decimals || 0;
 
-    // Mise à jour du contexte et localStorage
-    setTokenMetadata(prev => {
-      const updatedMetadata = { ...prev, [unit]: newMetadata };
-      localStorage.setItem('tokenMetadata', JSON.stringify(updatedMetadata));
-      return updatedMetadata;
-    });
+      const newMetadata = { ticker, name, decimals };
+      console.log(`✅ Données récupérées depuis l'API pour ${unit}:`, newMetadata);
 
-    return newMetadata;
-  } catch (error) {
-    console.error(`❌ Erreur lors du chargement du token ${unit}`, error);
-    return { ticker: unit, name: "Unknown Token", decimals: 0 };
-  }
-};
+      setTokenMetadata(prev => {
+        const updatedMetadata = { ...prev, [unit]: newMetadata };
+        localStorage.setItem('tokenMetadata', JSON.stringify(updatedMetadata));
+        return updatedMetadata;
+      });
 
+      setLoadingTokens(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(unit);
+        return newSet;
+      });
+
+      return newMetadata;
+    } catch (error) {
+      console.error(`❌ Erreur lors du chargement du token ${unit}`, error);
+      if (error.response && error.response.status === 404) {
+        const expiryTime = Date.now() + 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+        setFailedTokens(prev => ({ ...prev, [unit]: expiryTime }));
+      }
+      return { ticker: unit, name: "Unknown Token", decimals: 0 };
+    }
+  };
 
   return (
     <TokenContext.Provider value={{ tokenMetadata, fetchTokenData }}>
