@@ -1,50 +1,50 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 
 const HoldingsComponent = ({ holdingsData }) => {
-  const [holdings, setHoldings] = useState([]);
-  const [displayedHoldings, setDisplayedHoldings] = useState([]);
+  const [processedHoldings, setProcessedHoldings] = useState([]);
   const [adaBalance, setAdaBalance] = useState("0");
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
   const formatQuantity = useCallback((quantity, decimals) => {
     if (!quantity) return "0";
-    return decimals ? (quantity / Math.pow(10, decimals)).toFixed(decimals) : quantity.toString();
+    return decimals ? 
+      (Number(quantity) / Math.pow(10, decimals)).toFixed(decimals) : 
+      quantity.toString();
   }, []);
 
   const checkImage = useCallback(async (token) => {
     if (!token?.unit) return null;
-    
-    const imageUrl = `/tokenimages/${token.unit}.png`;
     try {
+      const imageUrl = `/tokenimages/${token.unit}.png`;
       const response = await fetch(imageUrl, { method: "HEAD" });
-      if (response.ok) {
-        return imageUrl;
-      }
+      return response.ok ? imageUrl : null;
     } catch (error) {
       console.warn(`Image not found for token: ${token.unit}`);
+      return null;
     }
-    return null;
   }, []);
 
   useEffect(() => {
-    const processHoldings = async () => {
-      // Réinitialiser les états pour éviter les doublons
-      setHoldings([]);
-      setDisplayedHoldings([]);
+    let isMounted = true;
 
+    const processHoldings = async () => {
       if (!holdingsData?.holdings || !Array.isArray(holdingsData.holdings)) {
         console.warn('No holdings data available or invalid format');
         return;
       }
 
-      const mergedHoldings = holdingsData.holdings.reduce((acc, holding) => {
-        if (holding.unit === "lovelace") {
-          setAdaBalance(formatQuantity(holding.quantity, 6));
-          return acc;
-        }
+      // Process ADA balance first
+      const adaHolding = holdingsData.holdings.find(h => h.unit === "lovelace");
+      if (adaHolding) {
+        setAdaBalance(formatQuantity(adaHolding.quantity, 6));
+      }
 
+      // Merge quantities for duplicate tokens
+      const mergedHoldings = holdingsData.holdings.reduce((acc, holding) => {
+        if (holding.unit === "lovelace") return acc;
+        
         if (!acc[holding.unit]) {
           acc[holding.unit] = { ...holding, quantity: BigInt(holding.quantity) };
         } else {
@@ -53,52 +53,51 @@ const HoldingsComponent = ({ holdingsData }) => {
         return acc;
       }, {});
 
+      const processToken = async (holding) => {
+        try {
+          const metadata = tokenMetadata[holding.unit] || await fetchTokenData(holding.unit);
+          if (!metadata) return null;
+
+          const tokenData = {
+            unit: holding.unit,
+            quantity: Number(holding.quantity),
+            decimals: metadata?.decimals || holding.decimals || 0,
+            name: metadata?.ticker || metadata?.name || "Unknown Token",
+            logo: await checkImage({ unit: holding.unit })
+          };
+
+          return tokenData;
+        } catch (error) {
+          console.error(`Error processing token ${holding.unit}:`, error);
+          return null;
+        }
+      };
+
       const BATCH_SIZE = 5;
-      const mergedHoldingsArray = Object.values(mergedHoldings);
+      const holdings = Object.values(mergedHoldings);
+      const processedTokens = [];
 
-      for (let i = 0; i < mergedHoldingsArray.length; i += BATCH_SIZE) {
-        const batch = mergedHoldingsArray.slice(i, i + BATCH_SIZE);
-        const batchPromises = batch.map(async (holding) => {
-          try {
-            const metadata = tokenMetadata[holding.unit] || await fetchTokenData(holding.unit);
-            if (!metadata) return null;
-
-            const tokenData = {
-              unit: holding.unit,
-              quantity: Number(holding.quantity),
-              decimals: metadata?.decimals || holding.decimals || 0,
-              name: metadata?.ticker || metadata?.name || "Unknown Token",
-              logo: null
-            };
-
-            const logo = await checkImage(tokenData);
-            if (logo) {
-              tokenData.logo = logo;
-            }
-
-            return tokenData;
-          } catch (error) {
-            console.error(`Error processing token ${holding.unit}:`, error);
-            return null;
-          }
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        const validResults = batchResults.filter(result => result !== null);
+      for (let i = 0; i < holdings.length; i += BATCH_SIZE) {
+        const batch = holdings.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(batch.map(processToken));
+        const validResults = batchResults.filter(Boolean);
         
-        setDisplayedHoldings(prev => 
-          [...prev, ...validResults].sort((a, b) => (b.logo ? 1 : 0) - (a.logo ? 1 : 0))
-        );
-
-        // Ajouter les résultats valides à l'état final
-        setHoldings(prev => [...prev, ...validResults]);
+        if (isMounted) {
+          processedTokens.push(...validResults);
+          setProcessedHoldings([...processedTokens]);
+        }
 
         await new Promise(resolve => setTimeout(resolve, 50));
       }
     };
 
     processHoldings();
+    return () => { isMounted = false; };
   }, [holdingsData, tokenMetadata, fetchTokenData, checkImage, formatQuantity]);
+
+  const sortedHoldings = useMemo(() => {
+    return [...processedHoldings].sort((a, b) => (b.logo ? 1 : 0) - (a.logo ? 1 : 0));
+  }, [processedHoldings]);
 
   const TokenCard = ({ holding }) => {
     if (!holding) return null;
@@ -112,6 +111,7 @@ const HoldingsComponent = ({ holdingsData }) => {
                 src={holding.logo} 
                 alt={`${holding.name} Logo`} 
                 className="h-32 w-32 object-cover rounded-full"
+                loading="lazy"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </figure>
@@ -128,19 +128,27 @@ const HoldingsComponent = ({ holdingsData }) => {
 
   return (
     <div className="holdings">
-      <div className="card shadow-xl mb-10 max-w-lg mx-auto p-4">
+      <div className="card shadow-xl mb-6 max-w-lg mx-auto p-4">
         <h2 className="text-xl font-bold mb-4 text-center">
           {adaBalance}{' '}
           <img 
             src="/assets/cardano.webp" 
             alt="ADA" 
             className="iconCurrency inline-block mr-2 rounded-full w-10 h-10"
+            loading="lazy"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         </h2>
       </div>
+      
+      <div className="text-center mb-6">
+        <p className="text-lg font-semibold">
+          {processedHoldings.length} Native Tokens
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedHoldings.map(holding => (
+        {sortedHoldings.map(holding => (
           <TokenCard key={holding.unit} holding={holding} />
         ))}
       </div>
