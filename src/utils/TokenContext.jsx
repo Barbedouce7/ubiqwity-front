@@ -6,7 +6,7 @@ export const TokenContext = createContext();
 
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures
 const RETRY_DELAY = 5 * 60 * 1000; // 5 minutes
-const DEFAULT_METADATA = { ticker: "Unknown", name: "Unknown Token", decimals: 0 };
+const DEFAULT_METADATA = { ticker: "", name: "", decimals: 0, logo: 0 };
 
 export const TokenProvider = ({ children }) => {
   const [tokenMetadata, setTokenMetadata] = useState(() => {
@@ -80,8 +80,10 @@ export const TokenProvider = ({ children }) => {
 
         const newMetadata = {
           ticker: response.data.ticker || unit,
-          name: response.data.name || "Unknown Token",
-          decimals: response.data.decimals || 0
+          name: response.data.name || "No name",
+          decimals: response.data.decimals || 0,
+          policy: unit,
+          logo: response.data.logo || 0,
         };
 
         setTokenMetadata(prev => ({

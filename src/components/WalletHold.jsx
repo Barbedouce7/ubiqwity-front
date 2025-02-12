@@ -57,15 +57,15 @@ const HoldingsComponent = ({ holdingsData }) => {
         try {
           const metadata = tokenMetadata[holding.unit] || await fetchTokenData(holding.unit);
           if (!metadata) return null;
+          holding.unit === "25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff93555534454" && console.log(metadata);
 
           const tokenData = {
+            ticker: metadata?.ticker,
             unit: holding.unit,
             quantity: Number(holding.quantity),
             decimals: metadata?.decimals || holding.decimals || 0,
-            name: metadata?.ticker || metadata?.name || "Unknown Token",
-            logo: await checkImage({ unit: holding.unit })
-          };
-
+            name: metadata?.name,
+            logo: metadata?.logo ? await checkImage({ unit: holding.unit }) : false   };
           return tokenData;
         } catch (error) {
           console.error(`Error processing token ${holding.unit}:`, error);
@@ -110,7 +110,7 @@ const HoldingsComponent = ({ holdingsData }) => {
               <img 
                 src={holding.logo} 
                 alt={`${holding.name} Logo`} 
-                className="h-32 w-32 object-cover rounded-full"
+                className="h-24 w-24 object-cover rounded-full"
                 loading="lazy"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
@@ -118,9 +118,9 @@ const HoldingsComponent = ({ holdingsData }) => {
           )}
           <p className="text-lg font-semibold">
             <strong>{formatQuantity(holding.quantity, holding.decimals)}</strong>{' '}
-            {holding.name} <CopyButton text={holding.unit} />
+            {holding.ticker && holding.ticker !== "null" ? holding.ticker : holding.name} 
+            <CopyButton text={holding.unit} />
           </p>
-          <p className="text-sm text-gray-400">{holding.name}</p>
         </div>
       </div>
     );
