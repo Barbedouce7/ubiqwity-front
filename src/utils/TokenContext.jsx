@@ -32,11 +32,11 @@ const fetchTokenData = async (unit) => {
 
     // Correction : on prend directement les valeurs sans `.value`
     const ticker = response.data.ticker || unit;
-    const logo = response.data.logo || null;
+   // const logo = response.data.logo || null;
     const name = response.data.name || "Unknown Token";
     const decimals = response.data.decimals || 0;
 
-    const newMetadata = { ticker, logo, name, decimals };
+    const newMetadata = { ticker, name, decimals };
     console.log(`✅ Données récupérées depuis l'API pour ${unit}:`, newMetadata);
 
     // Mise à jour du contexte et localStorage
@@ -49,7 +49,7 @@ const fetchTokenData = async (unit) => {
     return newMetadata;
   } catch (error) {
     console.error(`❌ Erreur lors du chargement du token ${unit}`, error);
-    return { ticker: unit, logo: null, name: "Unknown Token", decimals: 0 };
+    return { ticker: unit, name: "Unknown Token", decimals: 0 };
   }
 };
 
