@@ -1,18 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { Chart } from "chart.js/auto";
 import { SankeyController, Flow } from "chartjs-chart-sankey";
 import { shortener } from "../utils/utils";
+import { TokenContext } from '../utils/TokenContext';
 
-// Enregistrement du contrôleur Sankey
 Chart.register(SankeyController, Flow);
 
 function DiagramTab({ inputs, outputs }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const [theme, setTheme] = useState("light");
+  const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
+  const [processedTokens, setProcessedTokens] = useState({});
 
   useEffect(() => {
-    // Détecte le mode actuel (Light/Dark) en observant Tailwind
     const detectTheme = () => {
       return document.documentElement.classList.contains("dark") ? "dark" : "light";
     };
@@ -31,8 +32,53 @@ function DiagramTab({ inputs, outputs }) {
     return () => observer.disconnect();
   }, []);
 
+  const formatQuantity = (quantity, unit) => {
+    if (unit === 'lovelace') {
+      return (quantity / 1000000).toFixed(6);
+    }
+    const metadata = processedTokens[unit];
+    if (metadata?.decimals) {
+      return (quantity / Math.pow(10, metadata.decimals)).toFixed(metadata.decimals);
+    }
+    return quantity.toString();
+  };
+
+  const getDisplayUnit = (unit) => {
+    if (unit === 'lovelace') return 'ADA';
+    const metadata = processedTokens[unit];
+    return metadata?.ticker || metadata?.name || shortener(unit);
+  };
+
   useEffect(() => {
-    if (!chartRef.current || !inputs || !outputs || inputs.length === 0 || outputs.length === 0) {
+    const processTokens = async () => {
+      const uniqueTokens = new Set();
+      [...inputs, ...outputs].forEach(io => {
+        io.amount.forEach(amt => uniqueTokens.add(amt.unit));
+      });
+
+      const processedMetadata = {};
+      for (const unit of uniqueTokens) {
+        try {
+          if (unit === 'lovelace') {
+            processedMetadata[unit] = { ticker: 'ADA', decimals: 6 };
+          } else {
+            const metadata = tokenMetadata[unit] || await fetchTokenData(unit);
+            processedMetadata[unit] = metadata;
+          }
+        } catch (error) {
+          console.error(`Error processing token ${unit}:`, error);
+        }
+      }
+      setProcessedTokens(processedMetadata);
+    };
+
+    if (inputs?.length && outputs?.length) {
+      processTokens();
+    }
+  }, [inputs, outputs, tokenMetadata, fetchTokenData]);
+
+  useEffect(() => {
+    if (!chartRef.current || !inputs || !outputs || inputs.length === 0 || outputs.length === 0 || Object.keys(processedTokens).length === 0) {
       return;
     }
 
@@ -81,7 +127,11 @@ function DiagramTab({ inputs, outputs }) {
               if (existingUnit) {
                 existingUnit.quantity += flowQuantity;
               } else {
-                links[key].units.push({ unit: outAmt.unit, quantity: flowQuantity });
+                links[key].units.push({ 
+                  unit: outAmt.unit,
+                  quantity: flowQuantity,
+                  displayUnit: getDisplayUnit(outAmt.unit)
+                });
               }
 
               remainingQuantity -= flowQuantity;
@@ -90,21 +140,16 @@ function DiagramTab({ inputs, outputs }) {
             }
           }
         }
-
-       // if (remainingQuantity > 0) {
-       //   console.log(`Remaining quantity for ${outAmt.unit} at ${output.address}: ${remainingQuantity}`);
-       // }
       });
     });
 
     if (Object.keys(links).length === 0) {
-      console.warn("Aucun transfert d'actifs détecté pour le Sankey Chart");
+      console.warn("No asset transfers detected for Sankey Chart");
       return;
     }
 
     const linksArray = Object.values(links);
 
-    // 🎨 Couleurs dynamiques selon le mode Light/Dark
     const colorText = theme === "dark" ? "#f8f9fa" : "#212529";
     const colorFrom = theme === "dark" ? "#38bdf8" : "#007BFF";
     const colorTo = theme === "dark" ? "#fbbf24" : "#FFA500";
@@ -140,10 +185,10 @@ function DiagramTab({ inputs, outputs }) {
             tooltip: {
               callbacks: {
                 label: function (tooltipItem) {
-                  const from = tooltipItem.raw.from;
-                  const to = tooltipItem.raw.to;
                   const unitsData = tooltipItem.raw.units;
-                  return unitsData.map((u) => `${u.quantity} ${u.unit}`);
+                  return unitsData.map((u) => 
+                    `${formatQuantity(u.quantity, u.unit)} ${u.displayUnit}`
+                  );
                 },
               },
             },
@@ -169,12 +214,16 @@ function DiagramTab({ inputs, outputs }) {
         chartInstance.current.destroy();
       }
     };
-  }, [inputs, outputs, theme]); // Mise à jour du graphique si le mode change
+  }, [inputs, outputs, theme, processedTokens]);
 
   return (
     <div>
       <canvas ref={chartRef}></canvas>
-      <p className="mx-auto max-w-lg p-4 border-2 mt-6 rounded-full "><span className="text-blue-500">Blue are inputs</span>, <span className="text-orange-500">orange are outputs</span>.<br /> Addresses can be in input AND output.</p>
+      <p className="mx-auto max-w-lg p-4 border-2 mt-6 rounded-full">
+        <span className="text-blue-500">Blue are inputs</span>, 
+        <span className="text-orange-500">orange are outputs</span>.
+        <br /> Addresses can be in input AND output.
+      </p>
     </div>
   );
 }

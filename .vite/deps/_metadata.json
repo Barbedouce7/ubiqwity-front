@@ -1,71 +1,71 @@
 {
   "hash": "e30348fa",
-  "browserHash": "e962f0de",
+  "browserHash": "f661f693",
   "optimized": {
     "react": {
       "src": "../../node_modules/react/index.js",
       "file": "react.js",
-      "fileHash": "9e8aff84",
+      "fileHash": "b9fb3af4",
       "needsInterop": true
     },
     "react-dom/client": {
       "src": "../../node_modules/react-dom/client.js",
       "file": "react-dom_client.js",
-      "fileHash": "5f344ff6",
+      "fileHash": "2ad7b12e",
       "needsInterop": true
     },
     "react-router-dom": {
       "src": "../../node_modules/react-router-dom/dist/index.mjs",
       "file": "react-router-dom.js",
-      "fileHash": "dd15b066",
+      "fileHash": "62bfa173",
       "needsInterop": false
     },
     "axios": {
       "src": "../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "faaab809",
+      "fileHash": "baefe349",
       "needsInterop": false
     },
     "@heroicons/react/24/outline": {
       "src": "../../node_modules/@heroicons/react/24/outline/esm/index.js",
       "file": "@heroicons_react_24_outline.js",
-      "fileHash": "072ab80e",
-      "needsInterop": false
-    },
-    "@heroicons/react/24/solid": {
-      "src": "../../node_modules/@heroicons/react/24/solid/esm/index.js",
-      "file": "@heroicons_react_24_solid.js",
-      "fileHash": "c3833dc5",
-      "needsInterop": false
-    },
-    "react-chartjs-2": {
-      "src": "../../node_modules/react-chartjs-2/dist/index.js",
-      "file": "react-chartjs-2.js",
-      "fileHash": "adc3f79f",
-      "needsInterop": false
-    },
-    "chart.js": {
-      "src": "../../node_modules/chart.js/dist/chart.js",
-      "file": "chart__js.js",
-      "fileHash": "d04e3723",
+      "fileHash": "3a5ac042",
       "needsInterop": false
     },
     "@mui/material": {
       "src": "../../node_modules/@mui/material/index.js",
       "file": "@mui_material.js",
-      "fileHash": "39f9c25f",
+      "fileHash": "4e9005d4",
+      "needsInterop": false
+    },
+    "chart.js": {
+      "src": "../../node_modules/chart.js/dist/chart.js",
+      "file": "chart__js.js",
+      "fileHash": "a1b26e79",
+      "needsInterop": false
+    },
+    "react-chartjs-2": {
+      "src": "../../node_modules/react-chartjs-2/dist/index.js",
+      "file": "react-chartjs-2.js",
+      "fileHash": "58b8c27c",
+      "needsInterop": false
+    },
+    "@heroicons/react/24/solid": {
+      "src": "../../node_modules/@heroicons/react/24/solid/esm/index.js",
+      "file": "@heroicons_react_24_solid.js",
+      "fileHash": "0c6bdad8",
       "needsInterop": false
     },
     "chart.js/auto": {
       "src": "../../node_modules/chart.js/auto/auto.js",
       "file": "chart__js_auto.js",
-      "fileHash": "ac007db3",
+      "fileHash": "c4367e35",
       "needsInterop": false
     },
     "chartjs-chart-sankey": {
       "src": "../../node_modules/chartjs-chart-sankey/dist/chartjs-chart-sankey.esm.js",
       "file": "chartjs-chart-sankey.js",
-      "fileHash": "ea6fa950",
+      "fileHash": "691d9699",
       "needsInterop": false
     }
   },
