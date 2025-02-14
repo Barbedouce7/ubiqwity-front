@@ -2,9 +2,14 @@ import React, { useState, useEffect, useContext, useCallback, useMemo } from 're
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 
+const Spinner = () => (
+  <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>
+);
+
 const HoldingsComponent = ({ holdingsData }) => {
   const [processedHoldings, setProcessedHoldings] = useState([]);
   const [adaBalance, setAdaBalance] = useState("0");
+  const [isLoadingTokens, setIsLoadingTokens] = useState(true);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
   const formatQuantity = useCallback((quantity, decimals) => {
@@ -15,7 +20,7 @@ const HoldingsComponent = ({ holdingsData }) => {
   }, []);
 
   const checkImage = useCallback(async (token) => {
-    if (!token?.unit) return null;
+    if (!token?.unit || !token.hasLogo) return null;
     try {
       const imageUrl = `/tokenimages/${token.unit}.png`;
       const response = await fetch(imageUrl, { method: "HEAD" });
@@ -26,16 +31,18 @@ const HoldingsComponent = ({ holdingsData }) => {
     }
   }, []);
 
+  // Phase 1: Load token data and images
   useEffect(() => {
     let isMounted = true;
 
     const processHoldings = async () => {
       if (!holdingsData?.holdings || !Array.isArray(holdingsData.holdings)) {
         console.warn('No holdings data available or invalid format');
+        setIsLoadingTokens(false);
         return;
       }
 
-      // Process ADA balance first
+      // Process ADA balance
       const adaHolding = holdingsData.holdings.find(h => h.unit === "lovelace");
       if (adaHolding) {
         setAdaBalance(formatQuantity(adaHolding.quantity, 6));
@@ -57,16 +64,25 @@ const HoldingsComponent = ({ holdingsData }) => {
         try {
           const metadata = tokenMetadata[holding.unit] || await fetchTokenData(holding.unit);
           if (!metadata) return null;
-          holding.unit === "25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff93555534454" && console.log(metadata);
 
-          const tokenData = {
+          // Check if token has logo in metadata
+          const hasLogo = metadata.logo === 1;
+          
+          // If token has logo, try to load it
+          const logoUrl = hasLogo ? await checkImage({
+            unit: holding.unit,
+            hasLogo: true
+          }) : null;
+
+          return {
             ticker: metadata?.ticker,
             unit: holding.unit,
             quantity: Number(holding.quantity),
             decimals: metadata?.decimals || holding.decimals || 0,
             name: metadata?.name,
-            logo: metadata?.logo ? await checkImage({ unit: holding.unit }) : false   };
-          return tokenData;
+            logo: logoUrl,
+            hasMetadata: !!metadata
+          };
         } catch (error) {
           console.error(`Error processing token ${holding.unit}:`, error);
           return null;
@@ -89,14 +105,23 @@ const HoldingsComponent = ({ holdingsData }) => {
 
         await new Promise(resolve => setTimeout(resolve, 50));
       }
+
+      setIsLoadingTokens(false);
     };
 
     processHoldings();
     return () => { isMounted = false; };
-  }, [holdingsData, tokenMetadata, fetchTokenData, checkImage, formatQuantity]);
+  }, [holdingsData, tokenMetadata, fetchTokenData, formatQuantity, checkImage]);
 
   const sortedHoldings = useMemo(() => {
-    return [...processedHoldings].sort((a, b) => (b.logo ? 1 : 0) - (a.logo ? 1 : 0));
+    return [...processedHoldings].sort((a, b) => {
+      // First sort by metadata presence
+      if (a.hasMetadata !== b.hasMetadata) {
+        return b.hasMetadata ? 1 : -1;
+      }
+      // Then by logo presence
+      return (b.logo ? 1 : 0) - (a.logo ? 1 : 0);
+    });
   }, [processedHoldings]);
 
   const TokenCard = ({ holding }) => {
@@ -126,21 +151,12 @@ const HoldingsComponent = ({ holdingsData }) => {
     );
   };
 
+  if (isLoadingTokens) {
+    return <Spinner />;
+  }
+
   return (
     <div className="holdings">
-      <div className="card shadow-xl mb-6 max-w-lg mx-auto p-4">
-        <h2 className="text-xl font-bold mb-4 text-center">
-          {adaBalance}{' '}
-          <img 
-            src="/assets/cardano.webp" 
-            alt="ADA" 
-            className="iconCurrency inline-block mr-2 rounded-full w-10 h-10"
-            loading="lazy"
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </h2>
-      </div>
-      
       <div className="text-center mb-6">
         <p className="text-lg font-semibold">
           {processedHoldings.length} Native Tokens

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
@@ -15,11 +15,27 @@ function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('addresses');
-
+  const [adaBalance, setAdaBalance] = useState("0");
   const [detailsData, setDetailsData] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [txsData, setTxsData] = useState(null);
   const [loadingTxs, setLoadingTxs] = useState(false);
+
+  const formatQuantity = useCallback((quantity, decimals) => {
+    if (!quantity) return "0";
+    return decimals ? 
+      (Number(quantity) / Math.pow(10, decimals)).toFixed(decimals) : 
+      quantity.toString();
+  }, []);
+
+  useEffect(() => {
+    if (data?.holdings) {
+      const adaHolding = data.holdings.find(h => h.unit === "lovelace");
+      if (adaHolding) {
+        setAdaBalance(formatQuantity(adaHolding.quantity, 6));
+      }
+    }
+  }, [data, formatQuantity]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,9 +96,17 @@ function WalletPage() {
     }
   }, [activeTab, data?.stakekeyInfo?.stakekey, txsData]);
 
-  if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
-  if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
-  if (!data || !data.stakekeyInfo) return <div>No wallet data available</div>;
+  if (loading) {
+    return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
+  }
+
+  if (error) {
+    return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
+  }
+
+  if (!data || !data.stakekeyInfo) {
+    return <div>No wallet data available</div>;
+  }
 
   const { stakekeyInfo, holdings } = data;
 
@@ -95,6 +119,17 @@ function WalletPage() {
           <CopyButton text={stakekeyInfo.stakekey} /> 
           {shortener(stakekeyInfo.stakekey)}
         </div>
+        
+        <h2 className="text-xl font-bold mb-4 text-center">
+          {adaBalance}{' '}ADA{' '}
+          <img 
+            src="/assets/cardano.webp" 
+            alt="ADA" 
+            className="iconCurrency inline-block ml-2 rounded-full w-6 h-6"
+            loading="lazy"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </h2>
 
         <div className="mb-2 flex gap-4 justify-center">
           <p>

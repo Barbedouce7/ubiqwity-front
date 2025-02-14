@@ -120,6 +120,7 @@ export const TokenProvider = ({ children }) => {
     return promise;
   }, [tokenMetadata, failedTokens, pendingRequests]);
 
+  console.log(tokenMetadata)
   return (
     <TokenContext.Provider value={{ 
       tokenMetadata, 
