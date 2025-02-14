@@ -6,6 +6,7 @@ import CopyButton from '../components/CopyButton';
 import WalletHold from '../components/WalletHold';
 import WalletFriends from '../components/WalletFriends';
 import ActivityCharts from '../components/ActivityCharts';
+import HistoricCharts from '../components/HistoricCharts';
 import TransactionsTab from '../components/TransactionsTab';
 import { shortener } from '../utils/utils';
 
@@ -63,7 +64,7 @@ function WalletPage() {
   }, [walletAddress]);
 
   useEffect(() => {
-    if ((activeTab === "friends" || activeTab === "activity") && data?.stakekeyInfo?.stakekey && !detailsData) {
+    if ((activeTab === "friends" || activeTab === "activity" || activeTab === "historic") && data?.stakekeyInfo?.stakekey && !detailsData) {
       const fetchDetailsData = async () => {
         setLoadingDetails(true);
         try {
@@ -155,6 +156,7 @@ function WalletPage() {
         <div className="tabs">
           <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
           <a className={`tab-custom ${activeTab === 'addresses' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('addresses')}>Addresses</a>
+          <a className={`tab-custom ${activeTab === 'historic' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('historic')}>Historic</a>
           <a className={`tab-custom ${activeTab === 'activity' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('activity')}>Activity</a>
           <a className={`tab-custom ${activeTab === 'friends' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('friends')}>Friends</a>
           <a className={`tab-custom ${activeTab === 'transactions' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('transactions')}>Transactions</a>
@@ -187,6 +189,15 @@ function WalletPage() {
             <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>
           ) : (
             <ActivityCharts stakekey={stakekeyInfo.stakekey} detailsData={detailsData} />
+          )}
+        </div>
+      )}
+      {activeTab === 'historic' && (
+        <div>
+          {loadingDetails ? (
+            <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>
+          ) : (
+            <HistoricCharts data={detailsData?.full_dataset} />
           )}
         </div>
       )}
