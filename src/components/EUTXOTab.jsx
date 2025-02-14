@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { shortener } from '../utils/utils';
 import { TokenContext } from '../utils/TokenContext';
 
+
 function EUTXOTab({ inputs, outputs }) {
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
   const [processedInputs, setProcessedInputs] = useState([]);
