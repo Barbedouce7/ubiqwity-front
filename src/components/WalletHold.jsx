@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
+import { shortener } from '../utils/utils';
 
 const Spinner = () => (
   <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>
@@ -144,7 +145,10 @@ const HoldingsComponent = ({ holdingsData }) => {
           <p className="text-lg font-semibold">
             <strong>{formatQuantity(holding.quantity, holding.decimals)}</strong>{' '}
             {holding.ticker && holding.ticker !== "null" ? holding.ticker : holding.name} 
-            <CopyButton text={holding.unit} />
+            <div className="flex items-center space-x-2">
+            <p className="text-xs opacity-60 break-all max-w-[180px]">{shortener(holding.unit)} <CopyButton text={holding.unit} /></p>
+            
+          </div>
           </p>
         </div>
       </div>

@@ -16,8 +16,12 @@ export const convertLovelaceToAda = (lovelace) => {
 };
 
 export const shortener = (input) => {
+  if (!input || typeof input !== 'string' || input.length <= 20) {
+    return input || ''; // Retourne l'input tel quel s'il est trop court ou invalide
+  }
   return `${input.slice(0, 10)}...${input.slice(-10)}`;
 };
+
 
 
 export const deviseResolver = async (unit) => {

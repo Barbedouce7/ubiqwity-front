@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
@@ -9,6 +9,8 @@ import ActivityCharts from '../components/ActivityCharts';
 import HistoricCharts from '../components/HistoricCharts';
 import TransactionsTab from '../components/TransactionsTab';
 import { shortener } from '../utils/utils';
+import GetHandle from '../components/GetHandle';
+
 
 function WalletPage() {
   const { walletAddress } = useParams();
@@ -19,8 +21,17 @@ function WalletPage() {
   const [adaBalance, setAdaBalance] = useState("0");
   const [detailsData, setDetailsData] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const [txsData, setTxsData] = useState(null);
-  const [loadingTxs, setLoadingTxs] = useState(false);
+
+  // Reset all states when wallet address changes
+  useEffect(() => {
+    setData(null);
+    setLoading(true);
+    setError(null);
+    setActiveTab('addresses');
+    setAdaBalance("0");
+    setDetailsData(null);
+    setLoadingDetails(false);
+  }, [walletAddress]);
 
   const formatQuantity = useCallback((quantity, decimals) => {
     if (!quantity) return "0";
@@ -28,6 +39,50 @@ function WalletPage() {
       (Number(quantity) / Math.pow(10, decimals)).toFixed(decimals) : 
       quantity.toString();
   }, []);
+
+  const transactions = useMemo(() => {
+    if (!detailsData?.full_dataset) return null;
+    
+    return detailsData.full_dataset.map(tx => ({
+      hash: tx.txHash,
+      timestamp: tx.timestamp,
+      // On peut ajouter d'autres informations si nécessaire
+    }));
+  }, [detailsData]);
+
+    const isTransactionLimitExceeded = useMemo(() => {
+    return data?.stakekeyInfo?.totalTransactions > 5000;
+  }, [data?.stakekeyInfo?.totalTransactions]);
+
+
+    const availableTabs = useMemo(() => {
+      const baseTabs = ['hold', 'addresses'];
+      const allTabs = !isTransactionLimitExceeded 
+        ? [...baseTabs, 'historic', 'activity', 'friends', 'transactions'] 
+        : baseTabs;
+      return [...allTabs, 'json'];
+    }, [isTransactionLimitExceeded]);
+
+
+  const getTabAvailability = useCallback(() => {
+    const baseAvailability = {
+      hold: Boolean(data?.holdings),
+      addresses: Boolean(data?.stakekeyInfo?.addressList),
+      json: Boolean(data)
+    };
+
+    if (!isTransactionLimitExceeded) {
+      return {
+        ...baseAvailability,
+        historic: Boolean(detailsData?.full_dataset),
+        activity: Boolean(detailsData),
+        friends: Boolean(detailsData),
+        transactions: Boolean(transactions)
+      };
+    }
+    return baseAvailability;
+  }, [data, detailsData, transactions, isTransactionLimitExceeded]);
+
 
   useEffect(() => {
     if (data?.holdings) {
@@ -64,7 +119,10 @@ function WalletPage() {
   }, [walletAddress]);
 
   useEffect(() => {
-    if ((activeTab === "friends" || activeTab === "activity" || activeTab === "historic") && data?.stakekeyInfo?.stakekey && !detailsData) {
+    if ((activeTab === "friends" || activeTab === "activity" || activeTab === "historic" || activeTab === "transactions") && 
+        data?.stakekeyInfo?.stakekey && 
+        !detailsData && 
+        !isTransactionLimitExceeded) {
       const fetchDetailsData = async () => {
         setLoadingDetails(true);
         try {
@@ -78,24 +136,10 @@ function WalletPage() {
       };
       fetchDetailsData();
     }
-  }, [activeTab, data?.stakekeyInfo?.stakekey, detailsData]);
+  }, [activeTab, data?.stakekeyInfo?.stakekey, detailsData, isTransactionLimitExceeded]);
 
-  useEffect(() => {
-    if (activeTab === "transactions" && data?.stakekeyInfo?.stakekey && !txsData) {
-      const fetchTxsData = async () => {
-        setLoadingTxs(true);
-        try {
-          const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${data.stakekeyInfo.stakekey}/transactions`);
-          setTxsData(response.data);
-        } catch (error) {
-          console.error("Error fetching transactions data:", error);
-        } finally {
-          setLoadingTxs(false);
-        }
-      };
-      fetchTxsData();
-    }
-  }, [activeTab, data?.stakekeyInfo?.stakekey, txsData]);
+
+
 
   if (loading) {
     return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
@@ -110,6 +154,19 @@ function WalletPage() {
   }
 
   const { stakekeyInfo, holdings } = data;
+    const [integerPart, decimalPart] = adaBalance.toString().split(".");
+  const tabAvailability = getTabAvailability();
+
+ const getTabStyle = (tabName) => {
+    const baseStyle = "tab-custom cursor-pointer";
+    const activeStyle = "tab-custom-active";
+    const unavailableStyle = "opacity-60";
+    
+    if (activeTab === tabName) {
+      return `${baseStyle} ${activeStyle}`;
+    }
+    return `${baseStyle} ${!getTabAvailability()[tabName] ? unavailableStyle : ''}`;
+  };
 
   return (
     <div className="container mx-auto p-4 text-base-content">
@@ -120,23 +177,59 @@ function WalletPage() {
           <CopyButton text={stakekeyInfo.stakekey} /> 
           {shortener(stakekeyInfo.stakekey)}
         </div>
-        
-        <h2 className="text-xl font-bold mb-4 text-center">
-          {adaBalance}{' '}ADA{' '}
-          <img 
+        <div  className="mb-4">
+         <GetHandle stakekey={stakekeyInfo.stakekey} />
+        </div>
+
+         <h2 className="text-xl font-bold mb-4 text-center">
+                   <img 
             src="/assets/cardano.webp" 
             alt="ADA" 
-            className="iconCurrency inline-block ml-2 rounded-full w-6 h-6"
+            className="iconCurrency inline-block mr-2 rounded-full w-6 h-6"
             loading="lazy"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
+      {integerPart}
+      {decimalPart && (
+        <span className="text-sm text-gray-400 opacity-70">
+          .{decimalPart}
+        </span>
+      )}
+      {' '}ADA{' '}
+ 
         </h2>
 
-        <div className="mb-2 flex gap-4 justify-center">
-          <p>
-            <strong>Addresses:</strong> {stakekeyInfo.numberOfAddresses} | <strong>Transactions:</strong> {stakekeyInfo.totalTransactions}
-          </p>
-        </div>
+<div className="mb-2 flex gap-4 justify-center items-center">
+  <p>
+    <strong>Address{stakekeyInfo.numberOfAddresses > 1 ? "es" : ""}:</strong> {stakekeyInfo.numberOfAddresses} |  
+    <strong> Transaction{stakekeyInfo.totalTransactions > 1 ? "s" : ""}:</strong> {stakekeyInfo.totalTransactions}
+  </p>
+
+  {stakekeyInfo.totalTransactions > 5000 && (
+    <div className="relative group">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor"
+        className="w-6 h-6 text-red-500 cursor-pointer"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+        />
+      </svg>
+
+      {/* Tooltip */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
+        Too many transactions, limited user experience
+      </div>
+    </div>
+  )}
+</div>
+
 
         <div className="mb-2">
           {stakekeyInfo.stakepool ? (
@@ -152,17 +245,21 @@ function WalletPage() {
         </div>
       </div>
 
+      
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs">
-          <a className={`tab-custom ${activeTab === 'hold' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('hold')}>Hold</a>
-          <a className={`tab-custom ${activeTab === 'addresses' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('addresses')}>Addresses</a>
-          <a className={`tab-custom ${activeTab === 'historic' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('historic')}>Historic</a>
-          <a className={`tab-custom ${activeTab === 'activity' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('activity')}>Activity</a>
-          <a className={`tab-custom ${activeTab === 'friends' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('friends')}>Friends</a>
-          <a className={`tab-custom ${activeTab === 'transactions' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('transactions')}>Transactions</a>
-          <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
+          {availableTabs.map(tab => (
+            <a 
+              key={tab}
+              className={getTabStyle(tab)} 
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </a>
+          ))}
         </div>
       </div>
+
 
       {activeTab === 'addresses' && (
         <div>
@@ -218,10 +315,10 @@ function WalletPage() {
 
       {activeTab === 'transactions' && (
         <div>
-          {loadingTxs ? (
+          {loadingDetails ? (
             <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>
-          ) : txsData ? (
-            <TransactionsTab transactions={txsData.transactions} />
+          ) : transactions ? (
+            <TransactionsTab transactions={transactions} />
           ) : (
             <div className="text-center mt-10 text-red-500">No transactions data available</div>
           )}
