@@ -13,12 +13,12 @@ export const TokenProvider = ({ children }) => {
     try {
       const savedState = localStorage.getItem('tokenMetadata');
       return savedState ? JSON.parse(savedState) : {
-        lovelace: { ticker: "ADA", logo: "/assets/cardano.webp", name: "Cardano" }
+        lovelace: { ticker: "ADA", logo: "/assets/cardano.webp", name: "Cardano", decimals : 6, policy: 'lovelace' }
       };
     } catch (error) {
       console.error("Error loading from localStorage:", error);
       return {
-        lovelace: { ticker: "ADA", logo: "/assets/cardano.webp", name: "Cardano" }
+        lovelace: { ticker: "ADA", logo: "/assets/cardano.webp", name: "Cardano", decimals : 6, policy: 'lovelace' }
       };
     }
   });
