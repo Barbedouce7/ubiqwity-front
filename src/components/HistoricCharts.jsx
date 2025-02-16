@@ -64,8 +64,14 @@ const HistoricChart = ({ data }) => {
 
             await Promise.all(tokenPromises);
 
-            // Combine default visible tokens with all tokens, ensuring defaults come first
-            const allSortedTokens = [...defaultVisibleTokens, ...Array.from(allTokens).filter(token => !defaultVisibleTokens.includes(token))];
+            // Filter tokens to only those with data
+            const tokensWithData = Array.from(allTokens).filter(token => {
+                return Object.values(data).some(point => point.balances[token] !== undefined && point.balances[token] !== 0);
+            });
+
+            // Combine default visible tokens with tokens that have data, ensuring defaults come first
+            const allSortedTokens = [...defaultVisibleTokens, ...tokensWithData.filter(token => !defaultVisibleTokens.includes(token))];
+
             const lastValues = {};
             allSortedTokens.forEach(token => {
                 const lastPoint = Object.values(data).sort((a, b) => b.timestamp - a.timestamp)[0];
@@ -89,6 +95,11 @@ const HistoricChart = ({ data }) => {
                     dataPoints = simplifyData(dataPoints);
                 }
 
+                // Only include tokens with data
+                if (dataPoints.every(point => point.y === 0)) {
+                    return null; // Skip tokens with all zero values
+                }
+
                 return {
                     label: resolveTokenLabel(token, metadata),
                     data: dataPoints,
@@ -99,7 +110,7 @@ const HistoricChart = ({ data }) => {
                     fill: false,
                     hidden: !defaultVisibleTokens.includes(token)
                 };
-            });
+            }).filter(dataset => dataset !== null); // Filter out null entries
 
             const ctx = chartRef.current.getContext('2d');
             chartInstance.current = new Chart(ctx, {
@@ -187,8 +198,8 @@ const HistoricChart = ({ data }) => {
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold">Balance History</div>
                 <div>
-                    <button onClick={() => setChartType('simplified')} className="mr-2 px-3 py-1 bg-blue-500 text-white rounded">Simplified View</button>
-                    <button onClick={() => setChartType('detailed')} className="px-3 py-1 bg-green-500 text-white rounded">Detailed View</button>
+                    <button onClick={() => setChartType('simplified')} className="mr-2 mb-2 px-3 py-1 bg-blue-500 text-white rounded">Simplified View</button>
+                    <button onClick={() => setChartType('detailed')} className="px-3 mb-2 py-1 bg-sky-500 text-white rounded">Detailed View</button>
                 </div>
             </div>
             <div className="relative w-full md:w-4/5 mx-auto">
