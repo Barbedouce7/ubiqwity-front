@@ -10,11 +10,13 @@ const HistoricChart = ({ data }) => {
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
     const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
-    const [chartType, setChartType] = useState('simplified'); // 'simplified' or 'detailed'
+    const [chartType, setChartType] = useState('simplified');
+    const dataPoints = Object.values(data || {});
+    const isDetailedAvailable = dataPoints.length > 100;
 
     const defaultVisibleTokens = ['lovelace', '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd615368656e4d6963726f555344', '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61446a65644d6963726f555344'];
 
-    // Utility functions remain unchanged
+    // Utilitaires existants inchangés
     const resolveTokenLabel = (tokenId, metadata) => {
         if (tokenId === 'lovelace') return 'ADA';
         if (metadata) {
@@ -40,7 +42,8 @@ const HistoricChart = ({ data }) => {
     };
 
     const simplifyData = (dataPoints) => {
-        const n = Math.max(Math.floor(dataPoints.length / 50), 1); // Show at most 50 points
+        if (dataPoints.length <= 100) return dataPoints; // Si moins de 100 points, pas de simplification
+        const n = Math.max(Math.floor(dataPoints.length / 50), 1);
         return dataPoints.filter((_, index) => index % n === 0 || index === dataPoints.length - 1);
     };
 
@@ -64,12 +67,10 @@ const HistoricChart = ({ data }) => {
 
             await Promise.all(tokenPromises);
 
-            // Filter tokens to only those with data
             const tokensWithData = Array.from(allTokens).filter(token => {
                 return Object.values(data).some(point => point.balances[token] !== undefined && point.balances[token] !== 0);
             });
 
-            // Combine default visible tokens with tokens that have data, ensuring defaults come first
             const allSortedTokens = [...defaultVisibleTokens, ...tokensWithData.filter(token => !defaultVisibleTokens.includes(token))];
 
             const lastValues = {};
@@ -90,14 +91,12 @@ const HistoricChart = ({ data }) => {
                     y: adjustValueByDecimals(token, lastValues[token], metadata)
                 });
 
-                // Simplify data if needed
                 if (chartType === 'simplified') {
                     dataPoints = simplifyData(dataPoints);
                 }
 
-                // Only include tokens with data
                 if (dataPoints.every(point => point.y === 0)) {
-                    return null; // Skip tokens with all zero values
+                    return null;
                 }
 
                 return {
@@ -110,7 +109,7 @@ const HistoricChart = ({ data }) => {
                     fill: false,
                     hidden: !defaultVisibleTokens.includes(token)
                 };
-            }).filter(dataset => dataset !== null); // Filter out null entries
+            }).filter(dataset => dataset !== null);
 
             const ctx = chartRef.current.getContext('2d');
             chartInstance.current = new Chart(ctx, {
@@ -118,9 +117,10 @@ const HistoricChart = ({ data }) => {
                 data: { datasets },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Permet un contrôle plus précis de la hauteur
                     layout: {
                         padding: {
-                            top: 30 // Margin between legend and chart
+                            top: 40 // Augmenté pour plus d'espace pour la légende
                         }
                     },
                     scales: {
@@ -152,15 +152,19 @@ const HistoricChart = ({ data }) => {
                             },
                             pan: { enabled: false },
                             onZoom: ({ chart }) => {
-                                chart.options.scales.y.min = 0; // Reset min to 0 after zoom
+                                chart.options.scales.y.min = 0;
                                 chart.update('none');
                             }
                         },
                         legend: { 
-                            position: 'top', 
+                            position: 'top',
+                            align: 'start',
                             labels: { 
                                 usePointStyle: true, 
-                                padding: 20 
+                                padding: 25, // Augmenté pour plus d'espace entre les éléments
+                                font: {
+                                    size: 14 // Police plus grande pour meilleure lisibilité
+                                }
                             }
                         },
                         tooltip: {
@@ -175,7 +179,6 @@ const HistoricChart = ({ data }) => {
                 }
             });
 
-            // Double-click to reset zoom
             chartRef.current.addEventListener('dblclick', () => {
                 chartInstance.current.resetZoom();
                 chartInstance.current.options.scales.y.min = 0;
@@ -194,18 +197,26 @@ const HistoricChart = ({ data }) => {
     }, [data, tokenMetadata, fetchTokenData, chartType]);
 
     return (
-        <div className="w-full p-4 bg-base-100">
+        <div className="w-full p-4">
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold">Balance History</div>
-                <div>
-                    <button onClick={() => setChartType('simplified')} className="mr-2 mb-2 px-3 py-1 bg-blue-500 text-white rounded">Simplified View</button>
-                    <button onClick={() => setChartType('detailed')} className="px-3 mb-2 py-1 bg-sky-500 text-white rounded">Detailed View</button>
-                </div>
+                {isDetailedAvailable && (
+                    <label className="flex items-center cursor-pointer gap-2">
+                        <span className="text-sm">Simplified</span>
+                        <input 
+                            type="checkbox" 
+                            className="toggle"
+                            checked={chartType === 'detailed'}
+                            onChange={(e) => setChartType(e.target.checked ? 'detailed' : 'simplified')}
+                        />
+                        <span className="text-sm">Detailed</span>
+                    </label>
+                )}
             </div>
-            <div className="relative w-full md:w-4/5 mx-auto">
+            <div className="relative w-full md:w-4/5 mx-auto" style={{ height: '600px', minHeight: '600px' }}>
                 <canvas ref={chartRef} />
             </div>
-            <div className="text-xs text-gray-500 mt-2">
+            <div className="text-xs text-gray-500 mt-4 text-center">
                 Use scroll wheel or pinch to zoom • Double-click to reset zoom • Click on legend to toggle tokens
             </div>
         </div>

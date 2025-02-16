@@ -22,22 +22,59 @@ function WalletPage() {
   const [loadedTransactions, setLoadedTransactions] = useState(0);
   const [error, setError] = useState(null);
 
-  // Tabs that require details data
+  // Constants for configuration
+  const TRANSACTION_LIMIT = 5000;
   const detailsTabs = ['historic', 'activity', 'friends', 'transactions'];
 
-  // Derived states
+  // Computed states using useMemo
+  const hasNativeTokens = useMemo(() => {
+    if (!walletData?.holdings) return false;
+    const nonLovelaceTokens = walletData.holdings.filter(
+      h => h.unit !== "lovelace" && Number(h.quantity) > 0
+    );
+    return nonLovelaceTokens.length > 0;
+  }, [walletData?.holdings]);
+
   const isTransactionLimitExceeded = useMemo(() => {
-    return walletData?.stakekeyInfo?.totalTransactions > 5000;
+    return walletData?.stakekeyInfo?.totalTransactions > TRANSACTION_LIMIT;
   }, [walletData?.stakekeyInfo?.totalTransactions]);
 
   const availableTabs = useMemo(() => {
-    const baseTabs = ['addresses', 'hold'];
+    const baseTabs = ['addresses'];
+    if (hasNativeTokens) {
+      baseTabs.push('hold');
+    }
     if (!isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
     baseTabs.push('json');
     return baseTabs;
-  }, [isTransactionLimitExceeded]);
+  }, [isTransactionLimitExceeded, hasNativeTokens]);
+
+  const sortedHoldings = useMemo(() => {
+    if (!walletData?.holdings) return [];
+    
+    return [...walletData.holdings].sort((a, b) => {
+      // Always keep lovelace first
+      if (a.unit === "lovelace") return -1;
+      if (b.unit === "lovelace") return 1;
+      
+      const aHasName = Boolean(a.name || a.ticker);
+      const bHasName = Boolean(b.name || b.ticker);
+      
+      // Prioritize tokens with names/tickers
+      if (aHasName && !bHasName) return -1;
+      if (!bHasName && aHasName) return 1;
+      
+      // Sort named tokens alphabetically
+      if (aHasName && bHasName) {
+        return (a.name || a.ticker).localeCompare(b.name || b.ticker);
+      }
+      
+      // Sort unnamed tokens by policy ID
+      return a.unit.localeCompare(b.unit);
+    });
+  }, [walletData?.holdings]);
 
   const formattedBalance = useMemo(() => {
     const adaHolding = walletData?.holdings?.find(h => h.unit === "lovelace");
@@ -48,7 +85,7 @@ function WalletPage() {
     return { integer, decimal };
   }, [walletData?.holdings]);
 
-  // Fetch wallet data
+  // Effect for fetching wallet data
   useEffect(() => {
     const fetchWalletData = async () => {
       if (!walletAddress) {
@@ -69,6 +106,8 @@ function WalletPage() {
     };
 
     fetchWalletData();
+    
+    // Cleanup
     return () => {
       setWalletData(null);
       setDetailsData(null);
@@ -78,14 +117,15 @@ function WalletPage() {
     };
   }, [walletAddress]);
 
-  // Fetch details data when needed
+  // Effect for fetching details data
   useEffect(() => {
-    if (!detailsTabs.includes(activeTab) || 
-        !walletData?.stakekeyInfo || 
-        detailsData || 
-        isTransactionLimitExceeded) {
-      return;
-    }
+    const shouldFetchDetails = 
+      detailsTabs.includes(activeTab) && 
+      walletData?.stakekeyInfo && 
+      !detailsData && 
+      !isTransactionLimitExceeded;
+
+    if (!shouldFetchDetails) return;
 
     const fetchDetailsData = async () => {
       setIsLoadingDetails(true);
@@ -95,7 +135,7 @@ function WalletPage() {
         const identifier = walletData.stakekeyInfo.stakekey || walletData.stakekeyInfo.addressList[0];
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/details`);
         
-        // Simulate progressive loading
+        // Progressive loading simulation
         const totalTx = walletData.stakekeyInfo.totalTransactions;
         let count = 0;
         const increment = Math.max(1, Math.floor(totalTx / 20));
@@ -148,46 +188,48 @@ function WalletPage() {
     ].filter(Boolean).join(" ");
   };
 
+  const renderAddressesList = () => (
+    <div>
+      <h2 className="text-lg font-bold mb-4 text-center">
+        Addresses ({stakekeyInfo.numberOfAddresses})
+      </h2>
+      {stakekeyInfo.addressList.map((address, index) => (
+        <div key={index} className="mb-4 card bg-base-100 shadow-2xl rounded-lg overflow-hidden">
+          <div className="card-body p-4">
+            <div>
+              <strong>Address: </strong>
+              <Link className="text-primary hover:text-cyan-100" to={`/address/${address}`}>
+                {shortener(address)}
+              </Link>
+              <CopyButton text={address} className="ml-2" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderContent = () => {
-    // Show loading progress for details tabs
     if (isLoadingDetails && detailsTabs.includes(activeTab)) {
       return (
         <div className="mt-8">
-          <LoadingProgress totalTransactions={stakekeyInfo.totalTransactions}  />
+          <LoadingProgress 
+            totalTransactions={stakekeyInfo.totalTransactions} 
+            nbAddresses={stakekeyInfo.numberOfAddresses} 
+          />
         </div>
       );
     }
 
-    // Render tab content
     switch (activeTab) {
       case 'addresses':
-        return (
-          <div>
-            <h2 className="text-lg font-bold mb-4 text-center">
-              Addresses ({stakekeyInfo.numberOfAddresses})
-            </h2>
-            {stakekeyInfo.addressList.map((address, index) => (
-              <div key={index} className="mb-4 card bg-base-100 shadow-2xl rounded-lg overflow-hidden">
-                <div className="card-body p-4">
-                  <div>
-                    <strong>Address: </strong>
-                    <Link className="text-primary hover:text-cyan-100" to={`/address/${address}`}>
-                      {shortener(address)}
-                    </Link>
-                    <CopyButton text={address} className="ml-2" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
+        return renderAddressesList();
       
       case 'hold':
         return (
           <WalletHold 
             holdingsData={{ 
-              holdings: walletData.holdings, 
-              stakekey: stakekeyInfo.stakekey 
+              holdings: sortedHoldings,
             }} 
           />
         );
@@ -244,11 +286,12 @@ function WalletPage() {
     <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       
-      {/* Wallet Info */}
-        <div className="mb-4">
-          <GetHandle stakekey={mainIdentifier} />
-        </div>
+      {/* Handle */}
+      <div className="mb-4">
+        <GetHandle stakekey={mainIdentifier} />
+      </div>
 
+      {/* Main Info */}
       <div className="mb-4">
         <div>
           <strong>{stakekeyInfo.stakekey ? "Stake Address:" : "Address:"}</strong>
@@ -261,8 +304,6 @@ function WalletPage() {
             Single address (no stakekey)
           </div>
         )}
-
-
 
         {/* Balance */}
         <h2 className="text-xl font-bold mb-4 text-center">
@@ -316,19 +357,17 @@ function WalletPage() {
         )}
 
         {/* Pool Info */}
-        <div className="mb-2">
-          {stakekeyInfo.stakepool && (
-            <>
-              <strong>Pool:</strong>
-              <Link 
-                className="text-sky-500 ml-1" 
-                to={`/pool/${stakekeyInfo.stakepool.pool_id}`}
-              >
-                {stakekeyInfo.stakepool.ticker || 'Unknown Ticker'}
-              </Link>
-            </>
-          )}
-        </div>
+        {stakekeyInfo.stakepool && (
+          <div className="mb-2">
+            <strong>Pool:</strong>
+            <Link 
+              className="text-sky-500 ml-1" 
+              to={`/pool/${stakekeyInfo.stakepool.pool_id}`}
+            >
+              {stakekeyInfo.stakepool.ticker || 'Unknown Ticker'}
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
