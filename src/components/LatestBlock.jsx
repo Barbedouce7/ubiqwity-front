@@ -134,7 +134,7 @@ const LatestBlock = () => {
                 ))
               ) : (
                 <tr>
-                  <td className="p-2 text-center text-gray-500">No data Available</td>
+                  <td className="p-2 text-center text-gray-500">Empty block</td>
                 </tr>
               )}
             </tbody>

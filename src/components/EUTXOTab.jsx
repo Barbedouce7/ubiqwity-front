@@ -76,7 +76,7 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
               return (
                 <tr key={`${asset.unit}-${idx}`}>
                   <td className="py-2 px-4 border-b">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-2">
                       {logoUrl && (
                         <img
                           src={logoUrl}
@@ -85,7 +85,7 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
                           onError={(e) => e.target.style.display = 'none'}
                         />
                       )}
-                      <div className="flex flex-col min-w-0">
+                      <div className="flex flex-col min-w-0 p-2">
                         <span className="font-medium truncate">
                           {shortener(asset.displayUnit)}
                         </span>
@@ -100,7 +100,7 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
                       )}
                     </div>
                   </td>
-                  <td className="py-2 px-4 border-b text-right font-mono">
+                  <td className="py-2 px-4 border-b text-right font-mono p-2">
                     {asset.displayQuantity}
                   </td>
                 </tr>
@@ -129,25 +129,20 @@ const UTXOCard = ({ data, type, index }) => {
         {type === 'input' ? 'Input' : 'Output'} {index + 1}
       </span>
       
-      <div className="p-2 mt-4">
+      <div className="mt-4">
         <div className="space-y-2">
           <GetHandle stakekey={data.address} />
           
-          <div className="flex items-center justify-center min-w-0">
+          <div className="flex items-center justify-center min-w-0 p-2">
             <span className="font-semibold">Address:</span>
-            <span className="ml-3 mr-3">{shortener(data.address)}</span>
-            <CopyButton text={data.address} />
             <Link 
               to={`/wallet/${data.address}`}
               className="text-sky-500 hover:opacity-75 transition-opacity"
-            >
-              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            > <span className="ml-3 mr-3">{shortener(data.address)}</span>
             </Link>
-          </div>
-        </div>
+            <CopyButton text={data.address} />
 
-        <div className="mt-2 border-t-2">
-          <AssetsTable assets={data.processedAmount} />
+          </div>
         </div>
 
         {(data.inline_datum || data.collateral || data.reference_script_hash || data.consumed_by_tx) && (
@@ -155,8 +150,8 @@ const UTXOCard = ({ data, type, index }) => {
             {data.inline_datum && (
               <div className="space-y-1">
                 <span className="font-semibold">Inline Datum:</span>
-                <div className="flex items-center space-x-2">
-                  <span className="truncate">{data.inline_datum}</span>
+                <div className="flex items-center space-x-2 justify-center">
+                  <span className="truncate">{shortener(data.inline_datum)}</span>
                   <CopyButton text={data.inline_datum} />
                 </div>
               </div>
@@ -171,22 +166,22 @@ const UTXOCard = ({ data, type, index }) => {
             {data.reference_script_hash && (
               <div className="space-y-1">
                 <span className="font-semibold">Reference Script Hash:</span>
-                <div className="flex items-center space-x-2">
-                  <span className="truncate">{data.reference_script_hash}</span>
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="truncate">{shortener(data.reference_script_hash)}</span>
                   <CopyButton text={data.reference_script_hash} />
                 </div>
               </div>
             )}
             
             {data.consumed_by_tx && (
-              <div className="space-y-1">
+              <div className="space-y-1 mb-4">
                 <span className="font-semibold">Consumed By TX:</span>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 justify-center">
                   <Link
                     to={`/tx/${data.consumed_by_tx}`}
                     className="text-sky-500 hover:opacity-75 transition-opacity truncate"
                   >
-                    {data.consumed_by_tx}
+                    {shortener(data.consumed_by_tx)}
                   </Link>
                   <CopyButton text={data.consumed_by_tx} />
                 </div>
@@ -194,6 +189,10 @@ const UTXOCard = ({ data, type, index }) => {
             )}
           </div>
         )}
+        <div className="border-t-2 mt-4">
+          <AssetsTable assets={data.processedAmount} />
+        </div>
+
       </div>
     </div>
   );

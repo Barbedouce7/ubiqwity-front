@@ -118,25 +118,33 @@ function WalletPage() {
     fetchData();
   }, [walletAddress]);
 
-  useEffect(() => {
-    if ((activeTab === "friends" || activeTab === "activity" || activeTab === "historic" || activeTab === "transactions") && 
-        data?.stakekeyInfo?.stakekey && 
-        !detailsData && 
-        !isTransactionLimitExceeded) {
-      const fetchDetailsData = async () => {
-        setLoadingDetails(true);
-        try {
-          const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${data.stakekeyInfo.stakekey}/details`);
-          setDetailsData(response.data);
-        } catch (error) {
-          console.error("Error fetching details data:", error);
-        } finally {
-          setLoadingDetails(false);
-        }
-      };
-      fetchDetailsData();
-    }
-  }, [activeTab, data?.stakekeyInfo?.stakekey, detailsData, isTransactionLimitExceeded]);
+useEffect(() => {
+  if (
+    (activeTab === "friends" ||
+      activeTab === "activity" ||
+      activeTab === "historic" ||
+      activeTab === "transactions") &&
+    (data?.stakekeyInfo?.stakekey || data?.stakekeyInfo?.addressList?.[0]) &&
+    !detailsData &&
+    !isTransactionLimitExceeded
+  ) {
+    const fetchDetailsData = async () => {
+      setLoadingDetails(true);
+      try {
+        // On utilise stakekey si disponible, sinon on prend la première adresse
+        const identifier = data.stakekeyInfo.stakekey || data.stakekeyInfo.addressList[0];
+        const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/details`);
+        setDetailsData(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détails :", error);
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+
+    fetchDetailsData();
+  }
+}, [activeTab, data, detailsData, isTransactionLimitExceeded]);
 
 
 
@@ -172,13 +180,20 @@ function WalletPage() {
     <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       <div className="mb-4">
-        <div className="mb-2">
-          <strong>Stake Address:</strong> 
-          <CopyButton text={stakekeyInfo.stakekey} /> 
-          {shortener(stakekeyInfo.stakekey)}
+        <div className="">
+          <strong>{stakekeyInfo.stakekey ? "Stake Address:" : "Address:"}</strong> 
+          <CopyButton text={stakekeyInfo.stakekey || stakekeyInfo.addressList?.[0]} /> 
+          {shortener(stakekeyInfo.stakekey || stakekeyInfo.addressList?.[0])}
         </div>
-        <div  className="mb-4">
-         <GetHandle stakekey={stakekeyInfo.stakekey} />
+
+        {!stakekeyInfo.stakekey && (
+          <div className=" text-sm text-gray-500">
+            Single address (no stakekey)
+          </div>
+        )}
+
+        <div className="mb-4">
+          <GetHandle stakekey={stakekeyInfo.stakekey || stakekeyInfo.addressList?.[0]} />
         </div>
 
          <h2 className="text-xl font-bold mb-4 text-center">
@@ -200,20 +215,24 @@ function WalletPage() {
         </h2>
 
 <div className="mb-2 flex gap-4 justify-center items-center">
-  <p>
-    <strong>Address{stakekeyInfo.numberOfAddresses > 1 ? "es" : ""}:</strong> {stakekeyInfo.numberOfAddresses} |  
-    <strong> Transaction{stakekeyInfo.totalTransactions > 1 ? "s" : ""}:</strong> {stakekeyInfo.totalTransactions}
-  </p>
-
+    <p>
+      {!stakekeyInfo.stakekey ? null : (
+        <>
+          <strong>Address{stakekeyInfo.numberOfAddresses > 1 ? "es" : ""}:</strong> {stakekeyInfo.numberOfAddresses} |  
+        </>
+      )}
+      <strong> Transaction{stakekeyInfo.totalTransactions > 1 ? "s" : ""}:</strong> {stakekeyInfo.totalTransactions}
+    </p>
+</div>
   {stakekeyInfo.totalTransactions > 5000 && (
-    <div className="relative group">
+    <div className="justify-center flex items-center space-x-2 text-xs text-red-500 mb-4">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth="1.5"
         stroke="currentColor"
-        className="w-6 h-6 text-red-500 cursor-pointer"
+        className="w-4 h-4"
       >
         <path
           strokeLinecap="round"
@@ -221,14 +240,11 @@ function WalletPage() {
           d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
         />
       </svg>
-
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
-        Too many transactions, limited user experience
-      </div>
+      <span>Too many transactions: <br />limited user experience</span>
     </div>
+
   )}
-</div>
+
 
 
         <div className="mb-2">
@@ -240,7 +256,7 @@ function WalletPage() {
               </Link>
             </>
           ) : (
-            <p>No stake pool</p>
+            <p></p>
           )}
         </div>
       </div>
