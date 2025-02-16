@@ -245,6 +245,10 @@ function WalletPage() {
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       
       {/* Wallet Info */}
+        <div className="mb-4">
+          <GetHandle stakekey={mainIdentifier} />
+        </div>
+
       <div className="mb-4">
         <div>
           <strong>{stakekeyInfo.stakekey ? "Stake Address:" : "Address:"}</strong>
@@ -258,9 +262,7 @@ function WalletPage() {
           </div>
         )}
 
-        <div className="mb-4">
-          <GetHandle stakekey={mainIdentifier} />
-        </div>
+
 
         {/* Balance */}
         <h2 className="text-xl font-bold mb-4 text-center">

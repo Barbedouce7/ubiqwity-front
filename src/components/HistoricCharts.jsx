@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useRef, useContext, useState } from 'react';
 import { Chart } from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 import zoomPlugin from 'chartjs-plugin-zoom';
@@ -10,8 +10,11 @@ const HistoricChart = ({ data }) => {
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
     const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
+    const [chartType, setChartType] = useState('simplified'); // 'simplified' or 'detailed'
 
-    // Fonctions utilitaires inchangées
+    const defaultVisibleTokens = ['lovelace', '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd615368656e4d6963726f555344', '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61446a65644d6963726f555344'];
+
+    // Utility functions remain unchanged
     const resolveTokenLabel = (tokenId, metadata) => {
         if (tokenId === 'lovelace') return 'ADA';
         if (metadata) {
@@ -36,6 +39,11 @@ const HistoricChart = ({ data }) => {
         return colors[index % colors.length];
     };
 
+    const simplifyData = (dataPoints) => {
+        const n = Math.max(Math.floor(dataPoints.length / 50), 1); // Show at most 50 points
+        return dataPoints.filter((_, index) => index % n === 0 || index === dataPoints.length - 1);
+    };
+
     useEffect(() => {
         if (!data || !chartRef.current) return;
 
@@ -56,17 +64,18 @@ const HistoricChart = ({ data }) => {
 
             await Promise.all(tokenPromises);
 
-            const sortedTokens = Array.from(allTokens).sort((a, b) => (a === 'lovelace' ? -1 : b === 'lovelace' ? 1 : 0));
+            // Combine default visible tokens with all tokens, ensuring defaults come first
+            const allSortedTokens = [...defaultVisibleTokens, ...Array.from(allTokens).filter(token => !defaultVisibleTokens.includes(token))];
             const lastValues = {};
-            sortedTokens.forEach(token => {
+            allSortedTokens.forEach(token => {
                 const lastPoint = Object.values(data).sort((a, b) => b.timestamp - a.timestamp)[0];
                 lastValues[token] = lastPoint.balances[token] || 0;
             });
 
-            const datasets = sortedTokens.map((token, index) => {
-                const metadata = tokenMetadata[token];
+            const datasets = allSortedTokens.map((token, index) => {
+                const metadata = tokenMetadata[token] || {};
                 const color = generateColor(token, index);
-                const dataPoints = Object.values(data).map(point => ({
+                let dataPoints = Object.values(data).map(point => ({
                     x: point.timestamp * 1000,
                     y: adjustValueByDecimals(token, point.balances[token] || 0, metadata)
                 }));
@@ -75,6 +84,11 @@ const HistoricChart = ({ data }) => {
                     y: adjustValueByDecimals(token, lastValues[token], metadata)
                 });
 
+                // Simplify data if needed
+                if (chartType === 'simplified') {
+                    dataPoints = simplifyData(dataPoints);
+                }
+
                 return {
                     label: resolveTokenLabel(token, metadata),
                     data: dataPoints,
@@ -82,7 +96,8 @@ const HistoricChart = ({ data }) => {
                     backgroundColor: color,
                     borderWidth: 2,
                     tension: 0.1,
-                    fill: false
+                    fill: false,
+                    hidden: !defaultVisibleTokens.includes(token)
                 };
             });
 
@@ -92,9 +107,27 @@ const HistoricChart = ({ data }) => {
                 data: { datasets },
                 options: {
                     responsive: true,
+                    layout: {
+                        padding: {
+                            top: 30 // Margin between legend and chart
+                        }
+                    },
                     scales: {
-                        x: { type: 'time', time: { unit: 'day', stepSize: 1, displayFormats: { day: 'MMM d', hour: 'HH:mm' } } },
-                        y: { beginAtZero: true, min: 0, ticks: { callback: value => value.toLocaleString() } }
+                        x: { 
+                            type: 'time', 
+                            time: { 
+                                unit: 'day', 
+                                stepSize: 1, 
+                                displayFormats: { day: 'MMM d', hour: 'HH:mm' } 
+                            } 
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            min: 0, 
+                            ticks: { 
+                                callback: value => value.toLocaleString() 
+                            }
+                        }
                     },
                     interaction: { mode: 'nearest', axis: 'x', intersect: false },
                     elements: { line: { stepped: 'before' }, point: { radius: 2, hoverRadius: 6, hitRadius: 8 } },
@@ -102,69 +135,40 @@ const HistoricChart = ({ data }) => {
                         zoom: {
                             limits: { x: { min: 'original', max: 'original' }, y: { min: 0, maxRange: Infinity } },
                             zoom: {
-                                wheel: { enabled: false }, // Désactivé pour simplifier
-                                pinch: { enabled: false }, // Désactivé pour simplifier
-                                drag: { enabled: true, backgroundColor: 'rgba(0,0,0,0.1)', borderColor: 'rgba(0,0,0,0.3)', borderWidth: 1, mode: 'x' },
-                                onZoomComplete: ({ chart }) => {
-                                    chart.options.plugins.zoom.pan.enabled = true;
-                                    chart.options.plugins.zoom.drag.enabled = false;
-                                    chart.canvas.style.cursor = 'grab';
-                                    chart.update();
-                                }
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                drag: { enabled: false },
                             },
-                            pan: { enabled: false, mode: 'x' }
+                            pan: { enabled: false },
+                            onZoom: ({ chart }) => {
+                                chart.options.scales.y.min = 0; // Reset min to 0 after zoom
+                                chart.update('none');
+                            }
                         },
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                        legend: { 
+                            position: 'top', 
+                            labels: { 
+                                usePointStyle: true, 
+                                padding: 20 
+                            }
+                        },
                         tooltip: {
-                            mode: 'nearest', axis: 'x', intersect: false,
-                            callbacks: { label: tooltipItem => `${tooltipItem.dataset.label}: ${tooltipItem.raw.y.toLocaleString()}` }
+                            mode: 'nearest', 
+                            axis: 'x', 
+                            intersect: false,
+                            callbacks: { 
+                                label: tooltipItem => `${tooltipItem.dataset.label}: ${tooltipItem.raw.y.toLocaleString()}` 
+                            }
                         }
                     }
                 }
             });
 
-            // Double-clic pour réinitialiser
+            // Double-click to reset zoom
             chartRef.current.addEventListener('dblclick', () => {
-                chartInstance.current.resetZoom('x');
-                chartInstance.current.options.plugins.zoom.pan.enabled = false;
-                chartInstance.current.options.plugins.zoom.drag.enabled = true;
-                chartInstance.current.canvas.style.cursor = 'auto';
+                chartInstance.current.resetZoom();
+                chartInstance.current.options.scales.y.min = 0;
                 chartInstance.current.update();
-            });
-
-            // Ctrl + clic pour rezoomer (ordinateur)
-            chartRef.current.addEventListener('click', (event) => {
-                if (event.ctrlKey && !chartInstance.current.options.plugins.zoom.drag.enabled) {
-                    chartInstance.current.options.plugins.zoom.pan.enabled = false;
-                    chartInstance.current.options.plugins.zoom.drag.enabled = true;
-                    chartInstance.current.canvas.style.cursor = 'auto';
-                    chartInstance.current.update();
-                }
-            });
-
-            // Double-tap pour rezoomer (mobile)
-            let lastTap = 0;
-            chartRef.current.addEventListener('touchend', (event) => {
-                const now = new Date().getTime();
-                if (now - lastTap < 300 && !chartInstance.current.options.plugins.zoom.drag.enabled) {
-                    chartInstance.current.options.plugins.zoom.pan.enabled = false;
-                    chartInstance.current.options.plugins.zoom.drag.enabled = true;
-                    chartInstance.current.canvas.style.cursor = 'auto';
-                    chartInstance.current.update();
-                }
-                lastTap = now;
-            });
-
-            // Curseur pour déplacement
-            chartRef.current.addEventListener('mousedown', () => {
-                if (chartInstance.current.options.plugins.zoom.pan.enabled) {
-                    chartInstance.current.canvas.style.cursor = 'grabbing';
-                }
-            });
-            chartRef.current.addEventListener('mouseup', () => {
-                if (chartInstance.current.options.plugins.zoom.pan.enabled) {
-                    chartInstance.current.canvas.style.cursor = 'grab';
-                }
             });
         };
 
@@ -174,24 +178,24 @@ const HistoricChart = ({ data }) => {
             if (chartInstance.current) chartInstance.current.destroy();
             if (chartRef.current) {
                 chartRef.current.removeEventListener('dblclick', () => {});
-                chartRef.current.removeEventListener('click', () => {});
-                chartRef.current.removeEventListener('touchend', () => {});
-                chartRef.current.removeEventListener('mousedown', () => {});
-                chartRef.current.removeEventListener('mouseup', () => {});
             }
         };
-    }, [data, tokenMetadata, fetchTokenData]);
+    }, [data, tokenMetadata, fetchTokenData, chartType]);
 
     return (
         <div className="w-full p-4 bg-base-100">
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold">Balance History</div>
+                <div>
+                    <button onClick={() => setChartType('simplified')} className="mr-2 px-3 py-1 bg-blue-500 text-white rounded">Simplified View</button>
+                    <button onClick={() => setChartType('detailed')} className="px-3 py-1 bg-green-500 text-white rounded">Detailed View</button>
+                </div>
             </div>
             <div className="relative w-full md:w-4/5 mx-auto">
                 <canvas ref={chartRef} />
             </div>
             <div className="text-xs text-gray-500 mt-2">
-                Drag to zoom • Drag to move when zoomed • Double-click/tap to reset • Ctrl+click or double-tap to rezoom
+                Use scroll wheel or pinch to zoom • Double-click to reset zoom • Click on legend to toggle tokens
             </div>
         </div>
     );

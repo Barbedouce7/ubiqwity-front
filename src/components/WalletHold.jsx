@@ -11,6 +11,7 @@ const HoldingsComponent = ({ holdingsData }) => {
   const [processedHoldings, setProcessedHoldings] = useState([]);
   const [adaBalance, setAdaBalance] = useState("0");
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
+  const [isLoadingImages, setIsLoadingImages] = useState(true); // Nouvel état pour les images
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
   const formatQuantity = useCallback((quantity, decimals) => {
@@ -32,7 +33,6 @@ const HoldingsComponent = ({ holdingsData }) => {
     }
   }, []);
 
-  // Phase 1: Load token data and images
   useEffect(() => {
     let isMounted = true;
 
@@ -40,16 +40,15 @@ const HoldingsComponent = ({ holdingsData }) => {
       if (!holdingsData?.holdings || !Array.isArray(holdingsData.holdings)) {
         console.warn('No holdings data available or invalid format');
         setIsLoadingTokens(false);
+        setIsLoadingImages(false);
         return;
       }
 
-      // Process ADA balance
       const adaHolding = holdingsData.holdings.find(h => h.unit === "lovelace");
       if (adaHolding) {
         setAdaBalance(formatQuantity(adaHolding.quantity, 6));
       }
 
-      // Merge quantities for duplicate tokens
       const mergedHoldings = holdingsData.holdings.reduce((acc, holding) => {
         if (holding.unit === "lovelace") return acc;
         
@@ -66,22 +65,13 @@ const HoldingsComponent = ({ holdingsData }) => {
           const metadata = tokenMetadata[holding.unit] || await fetchTokenData(holding.unit);
           if (!metadata) return null;
 
-          // Check if token has logo in metadata
-          const hasLogo = metadata.logo === 1;
-          
-          // If token has logo, try to load it
-          const logoUrl = hasLogo ? await checkImage({
-            unit: holding.unit,
-            hasLogo: true
-          }) : null;
-
           return {
             ticker: metadata?.ticker,
             unit: holding.unit,
             quantity: Number(holding.quantity),
             decimals: metadata?.decimals || holding.decimals || 0,
             name: metadata?.name,
-            logo: logoUrl,
+            hasLogo: metadata.logo === 1, // On ne charge pas l'image ici
             hasMetadata: !!metadata
           };
         } catch (error) {
@@ -108,6 +98,22 @@ const HoldingsComponent = ({ holdingsData }) => {
       }
 
       setIsLoadingTokens(false);
+      // Commence à charger les images après que les tokens soient traités
+      loadImages();
+    };
+
+    const loadImages = async () => {
+      if (isMounted) {
+        const withImages = await Promise.all(processedHoldings.map(async (token) => {
+          if (token.hasLogo) {
+            const logoUrl = await checkImage({ unit: token.unit, hasLogo: true });
+            return { ...token, logo: logoUrl };
+          }
+          return token;
+        }));
+        setProcessedHoldings(withImages);
+        setIsLoadingImages(false);
+      }
     };
 
     processHoldings();
@@ -116,22 +122,28 @@ const HoldingsComponent = ({ holdingsData }) => {
 
   const sortedHoldings = useMemo(() => {
     return [...processedHoldings].sort((a, b) => {
-      // First sort by metadata presence
       if (a.hasMetadata !== b.hasMetadata) {
         return b.hasMetadata ? 1 : -1;
       }
-      // Then by logo presence
       return (b.logo ? 1 : 0) - (a.logo ? 1 : 0);
     });
   }, [processedHoldings]);
 
-  const TokenCard = ({ holding }) => {
-    if (!holding) return null;
+  const TokenPlaceholder = () => (
+    <div className="card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
+      <div className="card-body p-4 flex flex-col items-center text-center">
+        <div className="h-24 w-24 rounded-full bg-gray-300 animate-pulse"></div>
+        <div className="h-4 bg-gray-300 rounded w-3/4 animate-pulse mt-2"></div>
+        <div className="h-4 bg-gray-300 rounded w-1/2 animate-pulse mt-1"></div>
+      </div>
+    </div>
+  );
 
+  const TokenCard = ({ holding }) => {
     return (
       <div className="card text-base-content bg-base-100 text-white shadow-2xl rounded-lg overflow-hidden">
         <div className="card-body p-4 flex flex-col items-center text-center">
-          {holding.logo && (
+          {holding.logo && !isLoadingImages ? (
             <figure className="mb-2">
               <img 
                 src={holding.logo} 
@@ -141,14 +153,15 @@ const HoldingsComponent = ({ holdingsData }) => {
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </figure>
+          ) : (
+            <div className="h-24 w-24 rounded-full bg-gray-300 animate-pulse mb-2"></div>
           )}
           <p className="text-lg font-semibold">
             <strong>{formatQuantity(holding.quantity, holding.decimals)}</strong>{' '}
             {holding.ticker && holding.ticker !== "null" ? holding.ticker : holding.name} 
             <div className="flex items-center space-x-2">
-            <p className="text-xs opacity-60 break-all max-w-[180px]">{shortener(holding.unit)} <CopyButton text={holding.unit} /></p>
-            
-          </div>
+              <p className="text-xs opacity-60 break-all max-w-[180px]">{shortener(holding.unit)} <CopyButton text={holding.unit} /></p>
+            </div>
           </p>
         </div>
       </div>
@@ -156,7 +169,20 @@ const HoldingsComponent = ({ holdingsData }) => {
   };
 
   if (isLoadingTokens) {
-    return <Spinner />;
+    return (
+      <div className="holdings">
+        <div className="text-center mb-6">
+          <p className="text-lg font-semibold">
+            {holdingsData?.holdings?.length || 0} Native Tokens
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: holdingsData?.holdings?.length || 0 }).map((_, index) => (
+            <TokenPlaceholder key={index} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -166,7 +192,6 @@ const HoldingsComponent = ({ holdingsData }) => {
           {processedHoldings.length} Native Tokens
         </p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedHoldings.map(holding => (
           <TokenCard key={holding.unit} holding={holding} />
