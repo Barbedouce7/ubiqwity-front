@@ -31,7 +31,7 @@ const WalletFriends = ({ stakekey, friendsData }) => {
                 {shortener(stakeKey)}
               </Link>
             </h3>
-            <p className="text-gray-600">Fréquence : {frequency}</p>
+            <p className="text-gray-600">Frequency : {frequency}</p>
           </div>
         </div>
       ))}
