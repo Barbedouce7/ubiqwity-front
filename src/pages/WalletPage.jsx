@@ -53,30 +53,17 @@ function WalletPage() {
     return baseTabs;
   }, [isTransactionLimitExceeded, hasNativeTokens]);
 
-  const sortedHoldings = useMemo(() => {
-    if (!walletData?.holdings) return [];
-    
-    return [...walletData.holdings].sort((a, b) => {
-      // Always keep lovelace first
-      if (a.unit === "lovelace") return -1;
-      if (b.unit === "lovelace") return 1;
-      
-      const aHasName = Boolean(a.name || a.ticker);
-      const bHasName = Boolean(b.name || b.ticker);
-      
-      // Prioritize tokens with names/tickers
-      if (aHasName && !bHasName) return -1;
-      if (!bHasName && aHasName) return 1;
-      
-      // Sort named tokens alphabetically
-      if (aHasName && bHasName) {
-        return (a.name || a.ticker).localeCompare(b.name || b.ticker);
-      }
-      
-      // Sort unnamed tokens by policy ID
-      return a.unit.localeCompare(b.unit);
-    });
-  }, [walletData?.holdings]);
+    const sortedHoldings = useMemo(() => {
+      if (!walletData?.holdings) return [];
+
+      return [...walletData.holdings].sort((a, b) => {
+        const aLabel = a.name || a.ticker || "";
+        const bLabel = b.name || b.ticker || "";
+
+        return aLabel ? (bLabel ? aLabel.localeCompare(bLabel) : -1) : (bLabel ? 1 : a.unit.localeCompare(b.unit));
+      });
+    }, [walletData?.holdings]);
+
 
   const formattedBalance = useMemo(() => {
     const adaHolding = walletData?.holdings?.find(h => h.unit === "lovelace");
