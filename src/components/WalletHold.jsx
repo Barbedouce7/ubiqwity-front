@@ -15,28 +15,115 @@ const HoldingsComponent = ({ holdingsData }) => {
       quantity.toString();
   };
 
-  const splitPolicyAndAsset = (unit) => {
-    const policyId = unit.slice(0, 56);
-    const assetNameHex = unit.slice(56);
-    let assetName = '';
-    
-    try {
-      for (let i = 0; i < assetNameHex.length; i += 2) {
-        const hexPair = assetNameHex.substr(i, 2);
-        const charCode = parseInt(hexPair, 16);
-        if (charCode >= 32 && charCode <= 126) {
-          assetName += String.fromCharCode(charCode);
-        } else {
-          assetName += `[${hexPair}]`;
+const splitPolicyAndAsset = (unit) => {
+  const policyId = unit.slice(0, 56);
+  const assetNameHex = unit.slice(56);
+  let assetName = '';
+  
+  try {
+    let i = 0;
+    while (i < assetNameHex.length) {
+      // Vérifier qu'il y a au moins 2 caractères restants
+      if (i + 1 >= assetNameHex.length) break;
+      
+      const hexPair = assetNameHex.substr(i, 2);
+      const charCode = parseInt(hexPair, 16);
+      
+      // Fonction pour vérifier si une séquence hex est un nombre valide
+      const isValidHex = (hex) => /^[0-9A-Fa-f]+$/.test(hex);
+      
+      // Si le hex n'est pas valide, passer au suivant
+      if (!isValidHex(hexPair)) {
+        i += 2;
+        continue;
+      }
+
+      // 1. Traitement des caractères ASCII imprimables
+      if (charCode >= 32 && charCode <= 126) {
+        assetName += String.fromCharCode(charCode);
+        i += 2;
+        continue;
+      }
+
+      // 2. Tentative de décodage d'emoji (séquence de 4 bytes)
+      if (i + 8 <= assetNameHex.length && 
+          assetNameHex.substr(i, 4) === 'f09f') {
+        const emojiHex = assetNameHex.substr(i, 8);
+        if (isValidHex(emojiHex)) {
+          const emojiBytes = new Uint8Array(4);
+          for (let j = 0; j < 8; j += 2) {
+            emojiBytes[j/2] = parseInt(emojiHex.substr(j, 2), 16);
+          }
+          try {
+            const emojiChar = new TextDecoder('utf-8').decode(emojiBytes);
+            if (emojiChar && emojiChar.length === 1) {
+              assetName += emojiChar;
+              i += 8;
+              continue;
+            }
+          } catch (e) {
+            // Échec du décodage d'emoji, continuer avec le traitement normal
+          }
         }
       }
-    } catch (error) {
-      console.warn('Error converting hex to text:', error);
-      assetName = assetNameHex;
+
+      // 3. Traitement des caractères spéciaux courants
+      if (charCode === 0) {
+        i += 2; // Ignorer les bytes nuls
+        continue;
+      }
+      if (charCode === 0x0d || charCode === 0x0a) {
+        assetName += ' ';
+        i += 2;
+        continue;
+      }
+
+      // 4. Tentative de décodage UTF-8
+      if (charCode > 0x7f) {
+        let bytesCount = 0;
+        if ((charCode & 0xE0) === 0xC0) bytesCount = 2;
+        else if ((charCode & 0xF0) === 0xE0) bytesCount = 3;
+        else if ((charCode & 0xF8) === 0xF0) bytesCount = 4;
+
+        if (bytesCount > 0 && i + (bytesCount * 2) <= assetNameHex.length) {
+          const utfHex = assetNameHex.substr(i, bytesCount * 2);
+          if (isValidHex(utfHex)) {
+            const utfBytes = new Uint8Array(bytesCount);
+            for (let j = 0; j < bytesCount * 2; j += 2) {
+              utfBytes[j/2] = parseInt(utfHex.substr(j, 2), 16);
+            }
+            try {
+              const char = new TextDecoder('utf-8').decode(utfBytes);
+              if (char && !char.includes('�')) {
+                assetName += char;
+                i += bytesCount * 2;
+                continue;
+              }
+            } catch (e) {
+              // Échec du décodage UTF-8
+            }
+          }
+        }
+      }
+
+      // 5. Si aucun décodage n'a réussi, remplacer par un caractère de substitution
+      assetName += '_';
+      i += 2;
     }
 
-    return { policyId, assetName };
-  };
+    // 6. Nettoyage final
+    assetName = assetName
+      .replace(/_{2,}/g, '_') // Remplacer les suites de _ par un seul
+      .replace(/^\s+|\s+$/g, ''); // Trim les espaces
+
+  } catch (error) {
+    console.warn('Error converting hex to text:', error);
+    assetName = assetNameHex;
+  }
+
+  return { policyId, assetName };
+};
+
 
   const getDisplayName = (token) => {
     if (token.hasMetadata) {
