@@ -11,6 +11,8 @@ import TransactionsTab from '../components/TransactionsTab';
 import LoadingProgress from '../components/LoadingProgress';
 import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
+import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+
 
 function WalletPage() {
   const { walletAddress } = useParams();
@@ -23,7 +25,7 @@ function WalletPage() {
   const [error, setError] = useState(null);
 
   // Constants for configuration
-  const TRANSACTION_LIMIT = 5000;
+  const TRANSACTION_LIMIT = 3000;
   const detailsTabs = ['historic', 'activity', 'friends', 'transactions'];
 
   // Computed states using useMemo
@@ -336,25 +338,14 @@ function WalletPage() {
         </div>
 
         {/* Transaction limit warning */}
-        {isTransactionLimitExceeded && (
-          <div className="justify-center flex items-center space-x-2 text-xs text-red-500 mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-              />
-            </svg>
-            <span>Too many transactions: <br />limited user experience</span>
-          </div>
-        )}
+      {(isTransactionLimitExceeded || (!stakekeyInfo?.totalTransactions)) && (
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
+          <span className="text-xs text-red-500">
+            Too many transactions: <br />limited user experience
+          </span>
+        </div>
+      )}
 
         {/* Pool Info */}
         {stakekeyInfo.stakepool && (
