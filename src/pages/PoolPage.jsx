@@ -9,7 +9,7 @@ import { TokenContext } from '../utils/TokenContext';
 import { useParams, Link } from 'react-router-dom';
 import CopyButton from '../components/CopyButton';
 import { shortener } from '../utils/utils';
-
+import { FormatNumberWithSpaces } from '../utils/FormatNumberWithSpaces';
 
 function PoolPage() {
   const { poolId } = useParams();
@@ -72,13 +72,12 @@ function PoolPage() {
 
       <div className="text-center mb-6 mt-6">
         <p className="text-lg text-gray-700 dark:text-gray-300">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span></p>
-        <p className="text-lg text-gray-700 dark:text-gray-300">Pool id: <CopyButton text={data.metadata.pool_id} /><span className="font-bold text-sky-500">{data.metadata.pool_id}</span></p>
+        <p className="text-lg text-gray-700 dark:text-gray-300">Pool id: <CopyButton text={data.metadata.pool_id} /><span className="font-bold text-sky-500">{shortener(data.metadata.pool_id)}</span></p>
         <p className="text-lg text-gray-700 dark:text-gray-300">Site: <span className="font-bold text-sky-500"><a href={data.metadata.homepage}>{data.metadata.homepage}</a></span></p>
-        <p className="text-lg">Saturation: <span className="font-bold">{data.stats.saturationPercentage}%</span></p>
         <p className="text-lg">Fixed Cost: <span className="font-bold">{data.stats.fixedCost} ₳</span></p>
         <p className="text-lg">Margin Cost: <span className="font-bold">{data.stats.marginPercentage}</span></p>
-        <p className="text-lg">Live Pledge: <span className="font-bold">{data.stats.pledge.live} ₳</span></p>
-        <p className="text-lg">Pledge: <span className="font-bold">{data.stats.pledge.declared} ₳</span></p>
+        <p className="text-lg">Live Pledge: <span className="font-bold"><FormatNumberWithSpaces number={data.stats.pledge.live}/> ₳</span></p>
+        <p className="text-lg">Pledge: <span className="font-bold"><FormatNumberWithSpaces number={data.stats.pledge.declared}/> ₳</span></p>
         <p className="text-lg">Delegators: <span className="font-bold">{data.stats.delegators}</span></p>
       </div>
 

@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_CONFIG } from '../utils/apiConfig';
 import { shortener } from '../utils/utils';
-
+import { FormatNumberWithSpaces } from '../utils/FormatNumberWithSpaces';
 
 const LatestBlock = () => {
   const [blockData, setBlockData] = useState(null);
@@ -99,16 +99,15 @@ const LatestBlock = () => {
 
 
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-          <p><strong>Transactions:</strong> {metadata.tx_count || "N/A"}</p>
-          <p><strong>Output:</strong> {metadata.output ? (metadata.output / 1000000).toFixed(2) : "N/A"} ₳</p>
-          <p><strong>Fees:</strong> {metadata.fees ? (metadata.fees / 1000000).toFixed(2) : "N/A"} ₳</p>
-        </div>
-
-
-
-
-
+        {metadata.tx_count > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            <p><strong>Transactions:</strong> {metadata.tx_count}</p>
+            <p><strong>Output:</strong> <FormatNumberWithSpaces number={(metadata.output / 1000000).toFixed(2)}/> ₳</p>
+            <p><strong>Fees:</strong> <FormatNumberWithSpaces number={(metadata.fees / 1000000).toFixed(2)}/> ₳</p>
+          </div>
+        ) : (
+          <p className="mt-4 text-gray-500">Empty block</p>
+        )}
 
         <p className="mt-4">
           <strong>Slot Leader:</strong>{" "}
@@ -116,29 +115,29 @@ const LatestBlock = () => {
             {shortener(metadata.slot_leader) || "N/A"}
           </Link>
         </p>
-      </div>
 
-      {/* Widget avec un tableau scrollable */}
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold">Transactions:</h3>
-        <div className="max-h-60 overflow-y-auto rounded-lg shadow-sm">
-          <table className="w-full border-collapse">
-            <tbody>
-              {transactions.length > 0 ? (
-                transactions.map((tx) => (
-                  <tr key={tx} className="border-t border-gray-500">
-                    <td className="p-2 break-all">
-                      <Link to={`tx/${tx}`} className="text-sky-500">{shortener(tx)}</Link>
-                    </td>
+        {/* Widget avec un tableau scrollable */}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">Transactions:</h3>
+          <div className="max-h-60 overflow-y-auto rounded-lg shadow-sm">
+            <table className="w-full border-collapse">
+              <tbody>
+                {transactions.length > 0 ? (
+                  transactions.map((tx) => (
+                    <tr key={tx} className="border-t border-gray-500">
+                      <td className="p-2 break-all">
+                        <Link to={`tx/${tx}`} className="text-sky-500">{shortener(tx)}</Link>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="p-2 text-center text-gray-500">Empty block</td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="p-2 text-center text-gray-500">Empty block</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

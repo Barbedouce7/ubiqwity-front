@@ -23,14 +23,10 @@ export const shortener = (input) => {
 };
 
 
-
 export const deviseResolver = async (unit) => {
   try {
-    // Check if the unit starts with 'a0028' as it seems to be a specific case
       const response = await axios.get(`https://tokens.cardano.org/metadata/${unit}`);
       const metadata = response.data;
-      
-      // Assuming the ticker is in the 'ticker' field of the metadata
       if (metadata && metadata.ticker && metadata.ticker.value) {
         return metadata.ticker.value;
       }

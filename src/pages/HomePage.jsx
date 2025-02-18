@@ -7,6 +7,7 @@ import LatestBlock from '../components/LatestBlock';
 import CurrencyListWithCharts from '../components/CurrencyListWithCharts';
 import { API_CONFIG } from '../utils/apiConfig';
 
+
 const HomePage = () => {
   const [apiData, setApiData] = useState([]);
   const [epochContext, setEpochContext] = useState([]);

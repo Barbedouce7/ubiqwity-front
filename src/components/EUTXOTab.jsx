@@ -112,11 +112,11 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
 };
 
 const UTXOCard = ({ data, type, index, handleComponent }) => {
-  const borderColor = type === 'input' ? 'border-blue-500/50' : 'border-orange-500/50';
+  const borderColor = type === 'input' ? 'sky' : 'orange';
   
   return (
-    <div className={`relative border-2 ${borderColor} rounded-lg overflow-hidden`}>
-      <div className="px-3 py-1 border-b border-gray-500 flex items-center justify-between">
+    <div className={`relative border-2 border-${borderColor}-500/50 rounded-lg overflow-hidden bg-${borderColor}-500/5`}>
+      <div className={`px-3 py-1 border-b border-${borderColor}-500/30 flex items-center justify-between`}>
         <span className="text-xs font-medium">
           {type === 'input' ? 'Input' : 'Output'} {index + 1}
         </span>
@@ -144,7 +144,7 @@ const UTXOCard = ({ data, type, index, handleComponent }) => {
         </div>
 
         {(data.inline_datum || data.collateral || data.reference_script_hash || data.consumed_by_tx) && (
-          <div className="space-y-2 pt-2 border-t border-gray-500">
+          <div className={`space-y-2 pt-2 border-t border-${borderColor}-500/30`}>
             {data.inline_datum && (
               <div className="flex items-center justify-between text-sm">
                 <span className="opacity-70">Inline Datum:</span>
@@ -196,7 +196,7 @@ const UTXOCard = ({ data, type, index, handleComponent }) => {
           </div>
         )}
 
-        <div className="border-t pt-2">
+        <div className={`border-t border-${borderColor}-500/30 pt-2`}>
           <AssetsTable assets={data.processedAmount} />
         </div>
       </div>
@@ -291,7 +291,7 @@ const EUTXOTab = ({ inputs, outputs }) => {
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div>
-        <h2 className="text-lg font-semibold mb-2 text-blue-500">
+        <h2 className="text-lg font-semibold mb-2 text-sky-500">
           {processedInputs.length} Input{processedInputs.length !== 1 ? 's' : ''}
         </h2>
         {processedInputs.map((input, index) => (

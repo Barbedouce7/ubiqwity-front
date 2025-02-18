@@ -55,8 +55,8 @@ const TxMetadatas = ({ data = [] }) => {
         >
           <div className="p-4">
             {item.label && (
-              <div className="font-medium text-gray-700 mb-2">
-                <span className="mr-2 px-2 py-1 bg-blue-100 text-blue-800 rounded">
+              <div className="font-medium mb-2">
+                <span className="mr-2 px-2 py-1 bg-blue-500/10 rounded">
                   {item.label}
                 </span>
                 {item.label === "message" && <span>674</span>}
@@ -67,7 +67,7 @@ const TxMetadatas = ({ data = [] }) => {
 
           <div
             onClick={() => toggleExpand(index)}
-            className="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+            className="flex justify-between items-center p-4 cursor-pointer transition-colors"
           >
             <span className="text-gray-500">JSON Details</span>
             {expandedItems[index] ? (
@@ -78,7 +78,7 @@ const TxMetadatas = ({ data = [] }) => {
           </div>
 
           {expandedItems[index] && (
-            <div className="p-4 bg-white">
+            <div className="p-4">
               <pre className="text-xs text-gray-500 overflow-x-auto">
                 {JSON.stringify(item, null, 2)}
               </pre>

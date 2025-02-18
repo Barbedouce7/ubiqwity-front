@@ -7,6 +7,7 @@ import EUTXOTab from '../components/EUTXOTab';
 import DiagramTab from '../components/DiagramTab';
 import JSONTab from '../components/JSONTab';
 import TxMetadatas from '../components/TxMetadatas';
+import TxTabScriptAndDatums from '../components/TxTabScriptAndDatums';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 import { shortener } from '../utils/utils';
@@ -86,7 +87,7 @@ function TransactionPage() {
   if (!data) return null;
 
   return (
-    <div className="container mx-auto p-4 text-base-content">
+    <div className="container mx-auto text-base-content">
       <h1 className="text-2xl font-bold mb-4">Transaction Details</h1>
       <div className="mb-4">
         <div className="mb-2">
@@ -110,10 +111,28 @@ function TransactionPage() {
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs mb-4 flex justify-center items-center">
           <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>
-          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
           {data.metadata && data.metadata.length > 0 && (
             <a className={`tab-custom ${activeTab === 'metadata' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('metadata')}>Metadata</a>
           )}
+          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
+
+          {(
+  data.datums?.length > 0 || 
+  data.utxos?.inputs?.some(input => 
+    input.reference_script_hash || 
+    input.inline_datum || 
+    input.data_hash
+  ) || 
+  data.utxos?.outputs?.some(output => 
+    output.reference_script_hash || 
+    output.inline_datum || 
+    output.data_hash || 
+    output.consumed_by_tx
+  )
+) && (
+          <a className={`tab-custom ${activeTab === 'scripts' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('scripts')}>Scripts</a>
+
+)}
           <a className={`tab-custom ${activeTab === 'json' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('json')}>JSON</a>
         </div>
       </div>
@@ -121,7 +140,20 @@ function TransactionPage() {
       {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
       {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  tokenMetadata={tokenMetadata}/>}
       {activeTab === 'metadata' && data.metadata && ( <TxMetadatas data={data.metadata} />)}
-    
+{activeTab === 'scripts' && (
+  data.datums?.length > 0 || 
+  data.utxos?.inputs?.some(input => 
+    input.reference_script_hash || 
+    input.inline_datum || 
+    input.data_hash
+  ) || 
+  data.utxos?.outputs?.some(output => 
+    output.reference_script_hash || 
+    output.inline_datum || 
+    output.data_hash || 
+    output.consumed_by_tx
+  )
+) && (<TxTabScriptAndDatums data={data} />)}
 
       {activeTab === 'json' && <JSONTab data={data} />}
 

@@ -33,13 +33,13 @@ const TransactionsTab = ({ transactions }) => {
   };
 
   return (
-    <div className="space-y-4 bg-transparent">
-      {/* Header avec range et bouton de tri */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">
-          Transactions ({startIndex + 1} to {endIndex} of {transactions.length})
-        </h2>
-        <button onClick={toggleSortOrder} className="btn btn-ghost flex items-center gap-1">
+    <div className="space-y-4 rounded-box">
+      {/* Header with range and sort button */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+        <h3 className="text-lg font-bold mb-2 md:mb-0">
+          Transactions ({startIndex + 1}..{endIndex} / {transactions.length})
+        </h3>
+        <button onClick={toggleSortOrder} className="btn btn-xs btn-outline text-base-content">
           {sortOrder === 'desc' ? (
             <>
               <ArrowDownIcon className="w-5 h-5" /> Newest First
@@ -52,21 +52,21 @@ const TransactionsTab = ({ transactions }) => {
         </button>
       </div>
 
-      {/* Table des transactions */}
+      {/* Transactions table */}
       <div className="overflow-x-auto">
-        <table className="table w-full bg-transparent text-base-content">
+        <table className="table-compact w-full">
           <thead>
             <tr>
-              <th className="bg-transparent">Date</th>
-              <th className="bg-transparent">Hash</th>
+              <th>Date</th>
+              <th>Hash</th>
             </tr>
           </thead>
           <tbody>
             {currentTransactions.map((tx, index) => (
-              <tr key={index} className="hover:bg-base-300">
-                <td className="bg-transparent">{new Date(tx.timestamp * 1000).toLocaleString()}</td>
-                <td className="bg-transparent flex items-center gap-2">
-                  <Link className="link link-primary" to={`/tx/${tx.hash}`}>
+              <tr key={index} className="hover:bg-base-300/50">
+                <td className="text-sm">{new Date(tx.timestamp * 1000).toLocaleString()}</td>
+                <td className="flex items-center gap-2">
+                  <Link className="link link-hover" to={`/tx/${tx.hash}`}>
                     {shortener(tx.hash)}
                   </Link>
                   <CopyButton text={tx.hash} />
@@ -80,17 +80,17 @@ const TransactionsTab = ({ transactions }) => {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-4">
-          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="btn btn-sm btn-ghost">
+          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="btn btn-sm btn-outline">
             <ChevronDoubleLeftIcon className="w-5 h-5" />
           </button>
-          <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="btn btn-sm btn-ghost">
+          <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="btn btn-sm btn-outline">
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="btn btn-sm btn-ghost">
+          <span className="text-sm">Page {currentPage} of {totalPages}</span>
+          <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="btn btn-sm btn-outline">
             <ChevronRightIcon className="w-5 h-5" />
           </button>
-          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="btn btn-sm btn-ghost">
+          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="btn btn-sm btn-outline">
             <ChevronDoubleRightIcon className="w-5 h-5" />
           </button>
         </div>
