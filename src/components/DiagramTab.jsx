@@ -12,6 +12,7 @@ function DiagramTab({ inputs, outputs }) {
   const [theme, setTheme] = useState("light");
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
   const [processedTokens, setProcessedTokens] = useState({});
+  const [hasTransfers, setHasTransfers] = useState(true);
 
   useEffect(() => {
     const detectTheme = () => {
@@ -143,8 +144,10 @@ function DiagramTab({ inputs, outputs }) {
       });
     });
 
+    // Check if there are any actual transfers between different addresses
+    setHasTransfers(Object.keys(links).length > 0);
+
     if (Object.keys(links).length === 0) {
-      console.warn("No asset transfers detected for Sankey Chart");
       return;
     }
 
@@ -208,7 +211,6 @@ function DiagramTab({ inputs, outputs }) {
         },
       });
     }
-
     return () => {
       if (chartInstance.current) {
         chartInstance.current.destroy();
@@ -218,12 +220,20 @@ function DiagramTab({ inputs, outputs }) {
 
   return (
     <div>
-      <canvas ref={chartRef}></canvas>
-      <p className="mx-auto max-w-lg p-4 border-2 mt-6 rounded-full">
-        <span className="text-blue-500">Blue are inputs</span>, 
-        <span className="text-orange-500">orange are outputs</span>.
-        <br /> Addresses can be in input AND output.
-      </p>
+      {hasTransfers ? (
+        <>
+          <canvas ref={chartRef}></canvas>
+          <p className="mx-auto max-w-lg p-4 border-2 mt-6 rounded-full">
+            <span className="text-blue-500">Blue are inputs</span>, 
+            <span className="text-orange-500">orange are outputs</span>.
+            <br /> Addresses can be in input AND output.
+          </p>
+        </>
+      ) : (
+        <p className="mx-auto max-w-lg mt-6">
+            This transaction represents UTXO management only - no assets have changed ownership between different addresses.
+        </p>
+      )}
     </div>
   );
 }

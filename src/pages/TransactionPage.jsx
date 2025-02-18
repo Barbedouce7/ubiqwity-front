@@ -6,6 +6,7 @@ import { copyToClipboard } from '../utils/utils';
 import EUTXOTab from '../components/EUTXOTab';
 import DiagramTab from '../components/DiagramTab';
 import JSONTab from '../components/JSONTab';
+import TxMetadatas from '../components/TxMetadatas';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 import { shortener } from '../utils/utils';
@@ -119,7 +120,8 @@ function TransactionPage() {
 
       {activeTab === 'eutxo' && <EUTXOTab inputs={data.utxos.inputs} outputs={data.utxos.outputs} resolvedAmounts={resolvedAmounts} tokenMetadata={tokenMetadata} />}
       {activeTab === 'diagram' && <DiagramTab inputs={data.utxos.inputs} outputs={data.utxos.outputs}  tokenMetadata={tokenMetadata}/>}
-      {activeTab === 'metadata' && data.metadata && (  <pre className="p-4 rounded shadow-xl text-left">{JSON.stringify(data.metadata, null, 2)}</pre>)}
+      {activeTab === 'metadata' && data.metadata && ( <TxMetadatas data={data.metadata} />)}
+    
 
       {activeTab === 'json' && <JSONTab data={data} />}
 

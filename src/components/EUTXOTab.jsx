@@ -1,43 +1,34 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
-  ClipboardIcon, 
+  ClipboardIcon,
   ArrowTopRightOnSquareIcon 
 } from '@heroicons/react/24/solid';
 import { TokenContext } from '../utils/TokenContext';
 import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
-
-
-const CopyButton = ({ text, className = '' }) => (
-  <button 
-    onClick={() => navigator.clipboard.writeText(text)}
-    className={`p-1 hover:opacity-75 transition-opacity ${className}`}
-  >
-    <ClipboardIcon className="h-4 w-4" />
-  </button>
-);
+import CopyButton from '../components/CopyButton';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => (
-  <div className="flex justify-center items-center gap-2 mt-2">
+  <div className="flex justify-center items-center gap-1 mt-1">
     <button
       onClick={() => onPageChange(Math.max(1, currentPage - 1))}
       disabled={currentPage === 1}
-      className="p-1 hover:opacity-75 disabled:opacity-50 transition-opacity"
+      className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 transition-colors"
     >
-      <ChevronLeftIcon className="h-4 w-4" />
+      <ChevronLeftIcon className="h-3 w-3" />
     </button>
-    <span className="text-sm font-medium">
+    <span className="text-xs font-medium">
       {currentPage} / {totalPages}
     </span>
     <button
       onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
       disabled={currentPage === totalPages}
-      className="p-1 hover:opacity-75 disabled:opacity-50 transition-opacity"
+      className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 transition-colors"
     >
-      <ChevronRightIcon className="h-4 w-4" />
+      <ChevronRightIcon className="h-3 w-3" />
     </button>
   </div>
 );
@@ -60,55 +51,55 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <th className="text-left py-2 px-4 border-b">Asset</th>
-              <th className="text-right py-2 px-4 border-b">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedAssets.map((asset, idx) => {
-              const logoUrl = asset.unit === 'lovelace'  ? "/assets/cardano.webp" : asset.metadata?.logo  ? `/tokenimages/${asset.unit}.png`  : null;
-              const extractedName = asset.unit !== 'lovelace' ? extractAssetNameFromPolicy(asset.unit) : null;
-              
-              return (
-                <tr key={`${asset.unit}-${idx}`}>
-                  <td className="py-2 px-4 border-b">
-                    <div className="flex items-center space-x-2 p-2">
-                      {logoUrl && (
-                        <img
-                          src={logoUrl}
-                          alt=""
-                          className="h-6 w-6 rounded-full"
-                          onError={(e) => e.target.style.display = 'none'}
-                        />
-                      )}
-                      <div className="flex flex-col min-w-0 p-2">
-                        <span className="font-medium truncate">
-                          {shortener(asset.displayUnit)}
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th className="text-left py-1 px-2 text-xs font-medium opacity-70">Asset</th>
+            <th className="text-right py-1 px-2 text-xs font-medium opacity-70">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayedAssets.map((asset, idx) => {
+            const logoUrl = asset.unit === 'lovelace' 
+              ? "/assets/cardano.webp" 
+              : asset.metadata?.logo ? `/tokenimages/${asset.unit}.png` : null;
+            const extractedName = asset.unit !== 'lovelace' ? extractAssetNameFromPolicy(asset.unit) : null;
+            
+            return (
+              <tr key={`${asset.unit}-${idx}`} >
+                <td className="py-1 px-2">
+                  <div className="flex items-center gap-2">
+                    {logoUrl && (
+                      <img
+                        src={logoUrl}
+                        alt=""
+                        className="h-4 w-4 rounded-full"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium truncate">
+                        {shortener(asset.displayUnit)}
+                      </span>
+                      {extractedName && (
+                        <span className="text-xs opacity-70 truncate">
+                          {extractedName}
                         </span>
-                        {extractedName && (
-                          <span className="text-xs opacity-70 truncate">
-                            {extractedName}
-                          </span>
-                        )}
-                      </div>
-                      {asset.unit !== 'lovelace' && (
-                        <CopyButton text={asset.unit} />
                       )}
                     </div>
-                  </td>
-                  <td className="py-2 px-4 border-b text-right font-mono p-2">
-                    {asset.displayQuantity}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    {asset.unit !== 'lovelace' && (
+                      <CopyButton text={asset.unit} />
+                    )}
+                  </div>
+                </td>
+                <td className="py-1 px-2 text-right font-mono text-sm">
+                  {asset.displayQuantity}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
       {totalPages > 1 && (
         <Pagination 
           currentPage={currentPage}
@@ -120,79 +111,94 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
   );
 };
 
-const UTXOCard = ({ data, type, index }) => {
-  const borderColor = type === 'input' ? 'border-blue-500' : 'border-orange-500';
+const UTXOCard = ({ data, type, index, handleComponent }) => {
+  const borderColor = type === 'input' ? 'border-blue-500/50' : 'border-orange-500/50';
   
   return (
     <div className={`relative border-2 ${borderColor} rounded-lg overflow-hidden`}>
-      <span className="absolute top-2 left-2 text-sm font-semibold opacity-70">
-        {type === 'input' ? 'Input' : 'Output'} {index + 1}
-      </span>
+      <div className="px-3 py-1 border-b border-gray-500 flex items-center justify-between">
+        <span className="text-xs font-medium">
+          {type === 'input' ? 'Input' : 'Output'} {index + 1}
+        </span>
+        {handleComponent}
+      </div>
       
-      <div className="mt-4">
-        <div className="space-y-2">
-          <GetHandle stakekey={data.address} />
-          
-          <div className="flex items-center justify-center min-w-0 p-2">
-            <span className="font-semibold">Address:</span>
+      <div className="p-3 space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="opacity-70">Address:</span>
+          <div className="flex items-center gap-1">
             <Link 
               to={`/wallet/${data.address}`}
-              className="text-sky-500 hover:opacity-75 transition-opacity"
-            > <span className="ml-3 mr-3">{shortener(data.address)}</span>
+              className="text-sky-500 hover:text-sky-600 transition-colors"
+            >
+              {shortener(data.address)}
             </Link>
             <CopyButton text={data.address} />
-
+            <Link 
+              to={`/wallet/${data.address}`} 
+              target="_blank"
+              className="hover:bg-gray-100 rounded transition-colors"
+            >
+            </Link>
           </div>
         </div>
 
         {(data.inline_datum || data.collateral || data.reference_script_hash || data.consumed_by_tx) && (
-          <div className="mt-4 pt-4  space-y-2">
+          <div className="space-y-2 pt-2 border-t border-gray-500">
             {data.inline_datum && (
-              <div className="space-y-1">
-                <span className="font-semibold">Inline Datum:</span>
-                <div className="flex items-center space-x-2 justify-center">
-                  <span className="truncate">{shortener(data.inline_datum)}</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="opacity-70">Inline Datum:</span>
+                <div className="flex items-center gap-1">
+                  <span className="truncate max-w-[200px]">{shortener(data.inline_datum)}</span>
                   <CopyButton text={data.inline_datum} />
                 </div>
               </div>
             )}
             
             {data.collateral && (
-              <div>
-                <span className="font-semibold">Collateral:</span> Yes
+              <div className="flex items-center justify-between text-sm">
+                <span className="opacity-70">Collateral:</span>
+                <span>Yes</span>
               </div>
             )}
             
             {data.reference_script_hash && (
-              <div className="space-y-1">
-                <span className="font-semibold">Reference Script Hash:</span>
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="truncate">{shortener(data.reference_script_hash)}</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="opacity-70">Reference Script:</span>
+                <div className="flex items-center gap-1">
+                  <span className="truncate max-w-[200px]">{shortener(data.reference_script_hash)}</span>
                   <CopyButton text={data.reference_script_hash} />
                 </div>
               </div>
             )}
             
             {data.consumed_by_tx && (
-              <div className="space-y-1 mb-4">
-                <span className="font-semibold">Consumed By TX:</span>
-                <div className="flex items-center space-x-2 justify-center">
+              <div className="flex items-center justify-between text-sm">
+                <span className="opacity-70">Consumed By TX:</span>
+                <div className="flex items-center gap-1">
                   <Link
                     to={`/tx/${data.consumed_by_tx}`}
-                    className="text-sky-500 hover:opacity-75 transition-opacity truncate"
+                    className="text-sky-500 hover:text-sky-600 transition-colors truncate max-w-[200px]"
                   >
                     {shortener(data.consumed_by_tx)}
                   </Link>
                   <CopyButton text={data.consumed_by_tx} />
+                  <Link 
+                    to={`/tx/${data.consumed_by_tx}`} 
+                    target="_blank"
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                  </Link>
                 </div>
               </div>
             )}
           </div>
         )}
-        <div className="border-t-2 mt-4">
+
+        <div className="border-t pt-2">
           <AssetsTable assets={data.processedAmount} />
         </div>
-
       </div>
     </div>
   );
@@ -202,6 +208,21 @@ const EUTXOTab = ({ inputs, outputs }) => {
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
   const [processedInputs, setProcessedInputs] = useState([]);
   const [processedOutputs, setProcessedOutputs] = useState([]);
+
+  // Create a map of addresses to their GetHandle components
+  const addressHandles = useMemo(() => {
+    const addresses = new Set([
+      ...inputs.map(input => input.address),
+      ...outputs.map(output => output.address)
+    ]);
+    
+    const handleMap = {};
+    addresses.forEach(address => {
+      handleMap[address] = <GetHandle stakekey={address} />;
+    });
+    
+    return handleMap;
+  }, [inputs, outputs]);
 
   const formatQuantity = (quantity, decimals) => {
     if (!quantity) return "0";
@@ -270,29 +291,31 @@ const EUTXOTab = ({ inputs, outputs }) => {
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div>
-        <h2 className="text-xl font-bold mb-2 text-blue-500">
+        <h2 className="text-lg font-semibold mb-2 text-blue-500">
           {processedInputs.length} Input{processedInputs.length !== 1 ? 's' : ''}
         </h2>
         {processedInputs.map((input, index) => (
-          <div key={`input-${index}`} className="mb-6 shadow-xl">
+          <div key={`input-${index}`} className="mb-4">
             <UTXOCard 
               data={input}
               type="input"
               index={index}
+              handleComponent={addressHandles[input.address]}
             />
           </div>
         ))}
       </div>
       <div>
-        <h2 className="text-xl font-bold mb-2 text-orange-500">
+        <h2 className="text-lg font-semibold mb-2 text-orange-500">
           {processedOutputs.length} Output{processedOutputs.length !== 1 ? 's' : ''}
         </h2>
         {processedOutputs.map((output, index) => (
-          <div key={`output-${index}`} className="mb-6 shadow-xl">
+          <div key={`output-${index}`} className="mb-4">
             <UTXOCard
               data={output}
               type="output"
               index={index}
+              handleComponent={addressHandles[output.address]}
             />
           </div>
         ))}
