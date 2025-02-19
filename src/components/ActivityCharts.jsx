@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'; // Import l'icône
-
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -67,18 +66,28 @@ const ActivityCharts = ({ detailsData }) => {
       label, 
       data: values, 
       backgroundColor: "#34A5E6", 
-      borderRadius: 22 // Ajout des bords arrondis pour toutes les barres du graphique
+      borderRadius: 22 
     }],
   });
-
-  
 
   const sleepStartUTC = groupByHour().reduce((min, curr, idx) => curr.count < min.count ? { count: curr.count, hour: idx } : min, { count: Infinity, hour: 0 }).hour;
   const timeDifference = (sleepStartUTC - 0 + 24) % 24;
   const estimatedRegion = estimateRegion(timeDifference);
 
-  // State for tooltip visibility
   const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showTooltip && !event.target.closest('.relative.inline-block')) {
+        setShowTooltip(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTooltip]);
 
   return (
     <div className="p-4 space-y-6">
@@ -91,7 +100,6 @@ const ActivityCharts = ({ detailsData }) => {
         </div>
       </div>
       <div className="relative inline-block">
-
         <strong>Estimated Region   <QuestionMarkCircleIcon
           className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 mr-2 mb-1"
           onClick={() => setShowTooltip(!showTooltip)}
