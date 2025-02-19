@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'; // Import l'icône
+
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -69,9 +71,14 @@ const ActivityCharts = ({ detailsData }) => {
     }],
   });
 
+  
+
   const sleepStartUTC = groupByHour().reduce((min, curr, idx) => curr.count < min.count ? { count: curr.count, hour: idx } : min, { count: Infinity, hour: 0 }).hour;
   const timeDifference = (sleepStartUTC - 0 + 24) % 24;
   const estimatedRegion = estimateRegion(timeDifference);
+
+  // State for tooltip visibility
+  const [showTooltip, setShowTooltip] = useState(false);
 
   return (
     <div className="p-4 space-y-6">
@@ -83,8 +90,20 @@ const ActivityCharts = ({ detailsData }) => {
           <strong>Last activity:</strong> {new Date(lastActivity * 1000).toLocaleString()}
         </div>
       </div>
-      <div>
-        <strong>Estimated Region:</strong> {estimatedRegion}
+      <div className="relative inline-block">
+
+        <strong>Estimated Region   <QuestionMarkCircleIcon
+          className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 mr-2 mb-1"
+          onClick={() => setShowTooltip(!showTooltip)}
+        /> :</strong> {estimatedRegion}
+        {showTooltip && (
+          <div 
+            className="absolute z-10 w-64 p-2 mt-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip"
+            style={{ left: '50%', transform: 'translateX(-50%)' }}
+          >
+            This feature is under development. We are trying to determine when a person sleeps to estimate where they live.
+          </div>
+        )}
       </div>
       <div className="w-full h-80">
         <h3 className="text-lg font-semibold mb-4">Overall</h3>
