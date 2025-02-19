@@ -6,6 +6,7 @@ import { shortener } from '../utils/utils';
 const HoldingsComponent = ({ holdingsData }) => {
   const [tokens, setTokens] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showNFTs, setShowNFTs] = useState(false);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
   const formatQuantity = (quantity, decimals = 0) => {
@@ -178,7 +179,8 @@ const splitPolicyAndAsset = (unit) => {
               logo: logoUrl,
               policyId,
               assetName,
-              hasMetadata: !!metadata
+              hasMetadata: !!metadata,
+              isNFT: Number(holding.quantity) === 1
             };
           } catch (error) {
             console.error(`Error processing token ${holding.unit}:`, error);
@@ -189,7 +191,8 @@ const splitPolicyAndAsset = (unit) => {
               decimals: 0,
               policyId,
               assetName,
-              hasMetadata: false
+              hasMetadata: false,
+              isNFT: Number(holding.quantity) === 1
             };
           }
         })
@@ -207,26 +210,40 @@ const splitPolicyAndAsset = (unit) => {
     processHoldings();
   }, [holdingsData, tokenMetadata, fetchTokenData]);
 
+  const filteredTokens = tokens.filter(token => token.isNFT === showNFTs);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
+        <div className="loading loading-spinner loading-md text-primary"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-center">
-        {tokens.length} Native Tokens
-      </h2>
+      <div className="flex flex-col items-center space-y-4">
+        <div className="flex items-center gap-4">
+          <span className={!showNFTs ? "font-bold" : "text-base-content/50"}>Tokens</span>
+          <input 
+            type="checkbox" 
+            className="toggle toggle-primary toggle-lg" 
+            checked={showNFTs}
+            onChange={(e) => setShowNFTs(e.target.checked)}
+          />
+          <span className={showNFTs ? "font-bold" : "text-base-content/50"}>NFTs</span>
+        </div>
+        <h2 className="text-lg font-semibold">
+          {filteredTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
+        </h2>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tokens.map(token => (
-          <div key={token.unit} className="bg-base-100 rounded-lg shadow-xl p-4">
-            <div className="flex flex-col items-center space-y-3">
+        {filteredTokens.map(token => (
+          <div key={token.unit} className="card bg-base-100 shadow-xl">
+            <div className="card-body items-center text-center space-y-3">
               {token.logo ? (
-                <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+                <div className="w-24 h-24 rounded-full overflow-hidden">
                   <img
                     src={token.logo}
                     alt=""
@@ -235,17 +252,17 @@ const splitPolicyAndAsset = (unit) => {
                   />
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-200" />
+                <div className="w-24 h-24 rounded-full bg-base-200" />
               )}
               
-              <div className="text-center">
+              <div>
                 <p className="font-semibold">
                   {formatQuantity(token.quantity, token.decimals)}{' '}
                   {getDisplayName(token)}
                 </p>
-                <div className="flex flex-col items-center text-xs text-gray-500 mt-1">
+                <div className="flex flex-col items-center text-xs opacity-70 mt-1">
                   {!token.hasMetadata && (
-                    <span className="text-xs opacity-50 font-mono break-all mb-1">
+                    <span className="font-mono break-all mb-1">
                       {shortener(token.policyId)}
                       <CopyButton text={token.policyId} className="ml-1" />
                     </span>
