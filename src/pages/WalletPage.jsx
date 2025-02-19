@@ -71,7 +71,8 @@ function WalletPage() {
     
     const balance = (Number(adaHolding.quantity) / 1000000).toFixed(6);
     const [integer, decimal] = balance.split('.');
-    return { integer, decimal };
+    const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return { integer: formattedInteger, decimal };
   }, [walletData?.holdings]);
 
   // Effect for fetching wallet data
@@ -295,11 +296,11 @@ function WalletPage() {
         )}
 
         {/* Balance */}
-        <h2 className="text-xl font-bold mb-4 text-center">
+        <h2 className="text-xl font-bold mb-4 text-center border border-sky-500/50 rounded inline-block mx-auto p-2">
           <img 
             src="/assets/cardano.webp" 
             alt="ADA" 
-            className="iconCurrency inline-block mr-2 rounded-full w-6 h-6"
+            className="iconCurrency inline-block mr-2 mb-1 rounded-full w-6 h-6"
             loading="lazy"
             onError={(e) => { e.target.style.display = 'none'; }}
           />

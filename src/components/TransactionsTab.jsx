@@ -39,7 +39,7 @@ const TransactionsTab = ({ transactions }) => {
         <h3 className="text-lg font-bold mb-2 md:mb-0">
           Transactions ({startIndex + 1}..{endIndex} / {transactions.length})
         </h3>
-        <button onClick={toggleSortOrder} className="btn btn-xs btn-outline text-base-content">
+        <button onClick={toggleSortOrder} className="flex text-xs border p-2 text-base-content rounded">
           {sortOrder === 'desc' ? (
             <>
               <ArrowDownIcon className="w-5 h-5" /> Newest First

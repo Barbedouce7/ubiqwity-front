@@ -3,7 +3,7 @@ import GetHandle from './GetHandle';
 import CopyButton from './CopyButton';
 import { useParams, Link } from 'react-router-dom';
 import { shortener } from '../utils/utils';
-
+import { FormatNumberWithSpaces } from '../utils/FormatNumberWithSpaces';
 
 const PoolDelegatorsTab = ({ delegators }) => {
   // Trier les délégateurs par live stake en ordre décroissant
@@ -30,7 +30,7 @@ const PoolDelegatorsTab = ({ delegators }) => {
               {/* Contenu de la carte */}
               <div className="relative z-10 flex justify-between items-center">
                 <GetHandle stakekey={stakeKey} />
-                <p className="text-sm font-semibold text-gray-700">{delegator.liveStake} ₳</p>
+                <p className="text-sm font-semibold text-gray-700"><FormatNumberWithSpaces number={delegator.liveStake} /> ₳</p>
               </div>
 
               <p className="text-lg">
