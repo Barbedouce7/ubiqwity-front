@@ -152,7 +152,7 @@ const WalletFriends = ({ stakekey, friendsData }) => {
                   {shortener(stakeKey)}
                 </Link>
               </h3>
-              <p className="text-base-content/70">Frequency : {frequency}</p>
+              <p className="text-gray-500 opacity-80">Frequency : {frequency}</p>
             </div>
           </div>
         ))}

@@ -224,14 +224,14 @@ const splitPolicyAndAsset = (unit) => {
     <div className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
         <div className="flex items-center gap-4">
-          <span className={!showNFTs ? "font-bold" : "text-base-content/50"}>Tokens</span>
+          <span className={!showNFTs ? "font-bold" : "opacity-50"}>Tokens</span>
           <input 
             type="checkbox" 
             className="toggle toggle-primary toggle-lg" 
             checked={showNFTs}
             onChange={(e) => setShowNFTs(e.target.checked)}
           />
-          <span className={showNFTs ? "font-bold" : "text-base-content/50"}>NFTs</span>
+          <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
         </div>
         <h2 className="text-lg font-semibold">
           {filteredTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}

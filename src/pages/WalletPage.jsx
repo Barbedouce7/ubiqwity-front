@@ -302,7 +302,7 @@ function WalletPage() {
       {/* Main Info */}
       <div className="mb-4">
         <div>
-          <strong>{stakekeyInfo.stakekey ? "Stake Address: ss" : "Address: "}</strong> 
+          <strong>{stakekeyInfo.stakekey ? "Stake Address: " : "Address: "}</strong> 
           {shortener(mainIdentifier)}<CopyButton text={mainIdentifier} />
         </div>
 
