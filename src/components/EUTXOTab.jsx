@@ -111,9 +111,11 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
   );
 };
 
-const UTXOCard = ({ data, type, index, handleComponent }) => {
+const UTXOCard = ({ data, type, index, handleComponent, showScriptInfo }) => {
   const borderColor = type === 'input' ? 'sky' : 'orange';
   
+  const hasScriptInfo = data.inline_datum || data.collateral || data.reference_script_hash || data.consumed_by_tx;
+
   return (
     <div className={`relative border-2 border-${borderColor}-500/50 rounded-lg overflow-hidden bg-${borderColor}-500/5`}>
       <div className={`px-3 py-1 border-b border-${borderColor}-500/30 flex items-center justify-between`}>
@@ -143,7 +145,11 @@ const UTXOCard = ({ data, type, index, handleComponent }) => {
           </div>
         </div>
 
-        {(data.inline_datum || data.collateral || data.reference_script_hash || data.consumed_by_tx) && (
+        <div className={`border-t border-${borderColor}-500/30 pt-2`}>
+          <AssetsTable assets={data.processedAmount} />
+        </div>
+
+        {hasScriptInfo && showScriptInfo && (
           <div className={`space-y-2 pt-2 border-t border-${borderColor}-500/30`}>
             {data.inline_datum && (
               <div className="flex items-center justify-between text-sm">
@@ -196,18 +202,18 @@ const UTXOCard = ({ data, type, index, handleComponent }) => {
           </div>
         )}
 
-        <div className={`border-t border-${borderColor}-500/30 pt-2`}>
-          <AssetsTable assets={data.processedAmount} />
-        </div>
       </div>
     </div>
   );
 };
 
+
 const EUTXOTab = ({ inputs, outputs }) => {
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
   const [processedInputs, setProcessedInputs] = useState([]);
   const [processedOutputs, setProcessedOutputs] = useState([]);
+  const [showScriptInfo, setShowScriptInfo] = useState(false);
+
 
   // Create a map of addresses to their GetHandle components
   const addressHandles = useMemo(() => {
@@ -288,37 +294,55 @@ const EUTXOTab = ({ inputs, outputs }) => {
     );
   }
 
-  return (
-    <div className="grid md:grid-cols-2 gap-4">
-      <div>
-        <h2 className="text-lg font-semibold mb-2 text-sky-500">
-          {processedInputs.length} Input{processedInputs.length !== 1 ? 's' : ''}
-        </h2>
-        {processedInputs.map((input, index) => (
-          <div key={`input-${index}`} className="mb-4">
-            <UTXOCard 
-              data={input}
-              type="input"
-              index={index}
-              handleComponent={addressHandles[input.address]}
+ return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 p-2 ">
+        <div className="form-control mx-auto">
+          <label className="label cursor-pointer gap-2">
+            <span className="text-base-content font-medium">Script Info</span>
+            <input 
+              type="checkbox" 
+              className="toggle toggle-primary" 
+              checked={showScriptInfo}
+              onChange={(e) => setShowScriptInfo(e.target.checked)}
             />
-          </div>
-        ))}
+          </label>
+        </div>
       </div>
-      <div>
-        <h2 className="text-lg font-semibold mb-2 text-orange-500">
-          {processedOutputs.length} Output{processedOutputs.length !== 1 ? 's' : ''}
-        </h2>
-        {processedOutputs.map((output, index) => (
-          <div key={`output-${index}`} className="mb-4">
-            <UTXOCard
-              data={output}
-              type="output"
-              index={index}
-              handleComponent={addressHandles[output.address]}
-            />
-          </div>
-        ))}
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <h2 className="text-lg font-semibold mb-2 text-sky-500">
+            {processedInputs.length} Input{processedInputs.length !== 1 ? 's' : ''}
+          </h2>
+          {processedInputs.map((input, index) => (
+            <div key={`input-${index}`} className="mb-4">
+              <UTXOCard 
+                data={input}
+                type="input"
+                index={index}
+                handleComponent={addressHandles[input.address]}
+                showScriptInfo={showScriptInfo}
+              />
+            </div>
+          ))}
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold mb-2 text-orange-500">
+            {processedOutputs.length} Output{processedOutputs.length !== 1 ? 's' : ''}
+          </h2>
+          {processedOutputs.map((output, index) => (
+            <div key={`output-${index}`} className="mb-4">
+              <UTXOCard
+                data={output}
+                type="output"
+                index={index}
+                handleComponent={addressHandles[output.address]}
+                showScriptInfo={showScriptInfo}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

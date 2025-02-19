@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import TransactionPage from './pages/TransactionPage';
 import PoolPage from './pages/PoolPage';
 import WalletPage from './pages/WalletPage';
+import DatumPage from './pages/DatumPage';
 import { API_CONFIG } from './utils/apiConfig';
 import axios from 'axios';
 
@@ -44,6 +45,7 @@ function App() {
         <Route path="/tx/:txId" element={<TransactionPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
+        <Route path="/datum/:datumHash" element={<DatumPage />} />
       </Routes>
       <Footer />
     </div>

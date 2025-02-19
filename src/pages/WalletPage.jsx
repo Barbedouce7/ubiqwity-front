@@ -11,7 +11,8 @@ import TransactionsTab from '../components/TransactionsTab';
 import LoadingProgress from '../components/LoadingProgress';
 import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
-import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import { ExclamationTriangleIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+
 
 
 function WalletPage() {
@@ -150,6 +151,23 @@ function WalletPage() {
     fetchDetailsData();
   }, [activeTab, walletData, detailsData, isTransactionLimitExceeded]);
 
+
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showTooltip && !event.target.closest('.relative.inline-block')) {
+        setShowTooltip(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTooltip]);
+
+
   if (isLoading) {
     return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40" />;
   }
@@ -284,7 +302,7 @@ function WalletPage() {
       {/* Main Info */}
       <div className="mb-4">
         <div>
-          <strong>{stakekeyInfo.stakekey ? "Stake Address: " : "Address: "}</strong> 
+          <strong>{stakekeyInfo.stakekey ? "Stake Address: ss" : "Address: "}</strong> 
           {shortener(mainIdentifier)}<CopyButton text={mainIdentifier} />
         </div>
 
@@ -313,15 +331,31 @@ function WalletPage() {
         </h2>
 
         {/* Stats */}
-        <div className="mb-2 flex gap-4 justify-center items-center">
+        <div className="mb-2 flex gap-4 justify-center items-center relative">
           <p>
             {stakekeyInfo.stakekey && (
               <>
                 <strong>Addresses:</strong> {stakekeyInfo.numberOfAddresses} |{' '}
               </>
             )}
-            <strong>Transactions:</strong> {stakekeyInfo.totalTransactions}
+            <strong>
+              Transactions:
+              {stakekeyInfo.numberOfAddresses > 1 && (stakekeyInfo.totalTransactions < TRANSACTION_LIMIT ) && (
+                <QuestionMarkCircleIcon
+                  className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mb-1"
+                  onClick={() => setShowTooltip(!showTooltip)}
+                />
+              )}
+            </strong> {stakekeyInfo.totalTransactions}
           </p>
+          {stakekeyInfo.numberOfAddresses > 1 && showTooltip && (
+            <div 
+              className="absolute z-10 w-64 p-2 mt-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip"
+              style={{ left: '50%', transform: 'translateX(-50%)' }}
+            >
+              The transaction count shown here may include duplicates since a single transaction can involve multiple addresses and be counted multiple times (unlike in the 'transactions' tab).
+            </div>
+          )}
         </div>
 
         {/* Transaction limit warning */}

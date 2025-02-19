@@ -65,7 +65,7 @@ const TxTabScriptsAndDatums = ({ data }) => {
                   <div className="flex items-center justify-between text-sm">
                     <span className="opacity-70">Data Hash:</span>
                     <div className="flex items-center gap-1">
-                      <span className="font-mono">{truncateHash(input.data_hash)}</span>
+                      <Link to={`/datum/${input.data_hash}`} className="text-sky-500">{truncateHash(input.data_hash)}</Link>
                       <CopyButton text={input.data_hash} />
                     </div>
                   </div>
@@ -121,7 +121,7 @@ const TxTabScriptsAndDatums = ({ data }) => {
                   <div className="flex items-center justify-between text-sm">
                     <span className="opacity-70">Data Hash:</span>
                     <div className="flex items-center gap-1">
-                      <span className="font-mono">{truncateHash(output.data_hash)}</span>
+                    <Link to={`/datum/${output.data_hash}`} className="text-sky-500">{truncateHash(output.data_hash)}</Link>
                       <CopyButton text={output.data_hash} />
                     </div>
                   </div>
