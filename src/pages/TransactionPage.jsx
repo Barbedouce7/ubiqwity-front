@@ -80,8 +80,8 @@ function TransactionPage() {
     return () => {
       ignore = true;
     };
-  }, [txId, batchFetchTokenData]);
-
+  }, [txId]);
+// }, [txId, batchFetchTokenData]); J'ai viré batchFetchToken pour éviter une multiplication des appels à l'API
   if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40"></div>;
   if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
   if (!data) return null;
@@ -114,7 +114,7 @@ function TransactionPage() {
           {data.metadata && data.metadata.length > 0 && (
             <a className={`tab-custom ${activeTab === 'metadata' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('metadata')}>Metadata</a>
           )}
-          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>eUTXO</a>
+          <a className={`tab-custom ${activeTab === 'eutxo' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('eutxo')}>UTXO</a>
 
           {(
   data.datums?.length > 0 || 

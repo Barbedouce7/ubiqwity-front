@@ -18,7 +18,7 @@ function WalletPage() {
   const [walletData, setWalletData] = useState(null);
   const [walletDataHold, setWalletDataHold] = useState(null);
   const [detailsData, setDetailsData] = useState(null);
-  const [activeTab, setActiveTab] = useState('addresses');
+  const [activeTab, setActiveTab] = useState('hold');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingHold, setIsLoadingHold] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -346,16 +346,18 @@ function WalletPage() {
             {walletDataHold?.stakekeyInfo && (
               <>
             <strong>
-              Transactions:
+              Transactions:{' '}
               {stakekeyInfo.numberOfAddresses > 1 && (walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT ) && (
                 <QuestionMarkCircleIcon
                   className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mb-1"
                   onClick={() => setShowTooltip(!showTooltip)}
                 />
               )}
-            </strong> {(walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT || walletDataHold?.stakekeyInfo.totalTransactions < 1 ) 
-                ? <span className="text-red-500">> {TRANSACTION_LIMIT}</span>
-                : walletDataHold?.stakekeyInfo.totalTransactions}
+            </strong>{(walletDataHold?.stakekeyInfo.totalTransactions === 0) 
+    ? <span className="text-red-500">{`> ${TRANSACTION_LIMIT}`}</span>
+    : (walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT) 
+        ? <span className="text-red-500">{walletDataHold?.stakekeyInfo.totalTransactions}</span>
+        : walletDataHold?.stakekeyInfo.totalTransactions}
             </>
             )}
           </p>
