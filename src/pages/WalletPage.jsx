@@ -340,12 +340,10 @@ function WalletPage() {
         {/* Stats */}
         <div className="mb-2 flex gap-4 justify-center items-center relative">
           <p>
-            {stakekeyInfo.stakekey && (
-              <>
+
                 <strong>Addresses:</strong> {stakekeyInfo.numberOfAddresses} |{' '}
-              </>
-            )}
-            {walletDataHold?.stakekeyInfo.stakekey && (
+
+            {walletDataHold?.stakekeyInfo && (
               <>
             <strong>
               Transactions:
