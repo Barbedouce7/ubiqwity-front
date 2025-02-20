@@ -13,34 +13,32 @@ import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
 import { ExclamationTriangleIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
-
-
 function WalletPage() {
   const { walletAddress } = useParams();
   const [walletData, setWalletData] = useState(null);
+  const [walletDataHold, setWalletDataHold] = useState(null);
   const [detailsData, setDetailsData] = useState(null);
   const [activeTab, setActiveTab] = useState('addresses');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingHold, setIsLoadingHold] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [loadedTransactions, setLoadedTransactions] = useState(0);
   const [error, setError] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
-  // Constants for configuration
+  // Constants
   const TRANSACTION_LIMIT = 3000;
   const detailsTabs = ['historic', 'activity', 'friends', 'transactions'];
 
   // Computed states using useMemo
   const hasNativeTokens = useMemo(() => {
-    if (!walletData?.holdings) return false;
-    const nonLovelaceTokens = walletData.holdings.filter(
-      h => h.unit !== "lovelace" && Number(h.quantity) > 0
-    );
-    return nonLovelaceTokens.length > 0;
-  }, [walletData?.holdings]);
+    if (!walletDataHold?.holdings) return false;
+    return walletDataHold.holdings.some(h => h.unit !== "lovelace" && Number(h.quantity) > 0);
+  }, [walletDataHold?.holdings]);
 
   const isTransactionLimitExceeded = useMemo(() => {
-    return walletData?.stakekeyInfo?.totalTransactions > TRANSACTION_LIMIT;
-  }, [walletData?.stakekeyInfo?.totalTransactions]);
+    return walletDataHold?.totalTransactions > TRANSACTION_LIMIT;
+  }, [walletDataHold?.totalTransactions]);
 
   const availableTabs = useMemo(() => {
     const baseTabs = ['addresses'];
@@ -54,29 +52,26 @@ function WalletPage() {
     return baseTabs;
   }, [isTransactionLimitExceeded, hasNativeTokens]);
 
-    const sortedHoldings = useMemo(() => {
-      if (!walletData?.holdings) return [];
-
-      return [...walletData.holdings].sort((a, b) => {
-        const aLabel = a.name || a.ticker || "";
-        const bLabel = b.name || b.ticker || "";
-
-        return aLabel ? (bLabel ? aLabel.localeCompare(bLabel) : -1) : (bLabel ? 1 : a.unit.localeCompare(b.unit));
-      });
-    }, [walletData?.holdings]);
-
+  const sortedHoldings = useMemo(() => {
+    if (!walletDataHold?.holdings) return [];
+    return [...walletDataHold.holdings].sort((a, b) => {
+      const aLabel = a.name || a.ticker || "";
+      const bLabel = b.name || b.ticker || "";
+      return aLabel ? (bLabel ? aLabel.localeCompare(bLabel) : -1) : (bLabel ? 1 : a.unit.localeCompare(b.unit));
+    });
+  }, [walletDataHold?.holdings]);
 
   const formattedBalance = useMemo(() => {
-    const adaHolding = walletData?.holdings?.find(h => h.unit === "lovelace");
+    const adaHolding = walletDataHold?.holdings?.find(h => h.unit === "lovelace");
     if (!adaHolding?.quantity) return { integer: "0", decimal: "" };
     
     const balance = (Number(adaHolding.quantity) / 1000000).toFixed(6);
     const [integer, decimal] = balance.split('.');
     const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     return { integer: formattedInteger, decimal };
-  }, [walletData?.holdings]);
+  }, [walletDataHold?.holdings]);
 
-  // Effect for fetching wallet data
+  // Primary data fetch
   useEffect(() => {
     const fetchWalletData = async () => {
       if (!walletAddress) {
@@ -89,6 +84,18 @@ function WalletPage() {
         setIsLoading(true);
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${walletAddress}`);
         setWalletData(response.data);
+        
+        // Immediately fetch holding data after wallet data
+        try {
+          setIsLoadingHold(true);
+          const identifier = response.data.stakekeyInfo.stakekey || response.data.stakekeyInfo.addressList[0];
+          const holdResponse = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/hold`);
+          setWalletDataHold(holdResponse.data);
+        } catch (holdError) {
+          console.error("Failed to fetch holding data:", holdError);
+        } finally {
+          setIsLoadingHold(false);
+        }
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to fetch wallet data');
       } finally {
@@ -97,10 +104,10 @@ function WalletPage() {
     };
 
     fetchWalletData();
-    
-    // Cleanup
+
     return () => {
       setWalletData(null);
+      setWalletDataHold(null);
       setDetailsData(null);
       setActiveTab('addresses');
       setLoadedTransactions(0);
@@ -108,7 +115,7 @@ function WalletPage() {
     };
   }, [walletAddress]);
 
-  // Effect for fetching details data
+  // Details data fetch
   useEffect(() => {
     const shouldFetchDetails = 
       detailsTabs.includes(activeTab) && 
@@ -127,7 +134,7 @@ function WalletPage() {
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/details`);
         
         // Progressive loading simulation
-        const totalTx = walletData.stakekeyInfo.totalTransactions;
+        const totalTx = walletDataHold?.totalTransactions || 0;
         let count = 0;
         const increment = Math.max(1, Math.floor(totalTx / 20));
         
@@ -141,7 +148,6 @@ function WalletPage() {
             setIsLoadingDetails(false);
           }
         }, 100);
-        
       } catch (error) {
         console.error("Failed to fetch details:", error);
         setIsLoadingDetails(false);
@@ -149,11 +155,9 @@ function WalletPage() {
     };
 
     fetchDetailsData();
-  }, [activeTab, walletData, detailsData, isTransactionLimitExceeded]);
+  }, [activeTab, walletData, detailsData, isTransactionLimitExceeded, walletDataHold?.totalTransactions]);
 
-
-  const [showTooltip, setShowTooltip] = useState(false);
-
+  // Click outside tooltip handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showTooltip && !event.target.closest('.relative.inline-block')) {
@@ -162,12 +166,10 @@ function WalletPage() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTooltip]);
 
-
+  // Loading and error states
   if (isLoading) {
     return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40" />;
   }
@@ -182,6 +184,7 @@ function WalletPage() {
 
   const { stakekeyInfo } = walletData;
   const mainIdentifier = stakekeyInfo.stakekey || stakekeyInfo.addressList[0];
+
 
   const getTabStyle = (tab) => {
     const baseStyle = "tab-custom cursor-pointer";
@@ -222,7 +225,7 @@ function WalletPage() {
       return (
         <div className="mt-8">
           <LoadingProgress 
-            totalTransactions={stakekeyInfo.totalTransactions} 
+            totalTransactions={walletDataHold?.stakekeyInfo.totalTransactions} 
             nbAddresses={stakekeyInfo.numberOfAddresses} 
           />
         </div>
@@ -235,11 +238,15 @@ function WalletPage() {
       
       case 'hold':
         return (
-          <WalletHold 
-            holdingsData={{ 
-              holdings: sortedHoldings,
-            }} 
-          />
+          isLoadingHold ? (
+            <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-4" />
+          ) : (
+            <WalletHold 
+              holdingsData={{ 
+                holdings: sortedHoldings,
+              }} 
+            />
+          )
         );
       
       case 'activity':
@@ -338,15 +345,19 @@ function WalletPage() {
                 <strong>Addresses:</strong> {stakekeyInfo.numberOfAddresses} |{' '}
               </>
             )}
+            {walletDataHold?.stakekeyInfo.stakekey && (
+              <>
             <strong>
               Transactions:
-              {stakekeyInfo.numberOfAddresses > 1 && (stakekeyInfo.totalTransactions < TRANSACTION_LIMIT ) && (
+              {stakekeyInfo.numberOfAddresses > 1 && (walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT ) && (
                 <QuestionMarkCircleIcon
                   className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mb-1"
                   onClick={() => setShowTooltip(!showTooltip)}
                 />
               )}
-            </strong> {stakekeyInfo.totalTransactions}
+            </strong> {walletDataHold?.stakekeyInfo.totalTransactions}
+            </>
+            )}
           </p>
           {stakekeyInfo.numberOfAddresses > 1 && showTooltip && (
             <div 
@@ -359,7 +370,7 @@ function WalletPage() {
         </div>
 
         {/* Transaction limit warning */}
-      {(isTransactionLimitExceeded || (!stakekeyInfo?.totalTransactions)) && (
+      {(isTransactionLimitExceeded || (!walletDataHold?.stakekeyInfo.totalTransactions)) && (
         <div className="flex items-center justify-center space-x-2 mb-4">
           <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
           <span className="text-xs text-red-500">
