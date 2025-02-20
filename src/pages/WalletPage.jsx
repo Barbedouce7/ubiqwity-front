@@ -35,7 +35,6 @@ function WalletPage() {
     if (!walletDataHold?.holdings) return false;
     return walletDataHold.holdings.some(h => h.unit !== "lovelace" && Number(h.quantity) > 0);
   }, [walletDataHold?.holdings]);
-
   const isTransactionLimitExceeded = useMemo(() => {
     return walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT;
   }, [walletDataHold?.stakekeyInfo.totalTransactions]);
@@ -47,7 +46,7 @@ function WalletPage() {
     }
     baseTabs.push('json');
     return baseTabs;
-  }, [isTransactionLimitExceeded, hasNativeTokens]);
+  }, [isTransactionLimitExceeded, hasNativeTokens, walletDataHold]);
 
   const sortedHoldings = useMemo(() => {
     if (!walletDataHold?.holdings) return [];
