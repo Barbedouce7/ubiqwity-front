@@ -2,11 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 import { shortener } from '../utils/utils';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 const HoldingsComponent = ({ holdingsData }) => {
   const [tokens, setTokens] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNFTs, setShowNFTs] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState(null);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
 
   const formatQuantity = (quantity, decimals = 0) => {
@@ -16,115 +18,101 @@ const HoldingsComponent = ({ holdingsData }) => {
       quantity.toString();
   };
 
-const splitPolicyAndAsset = (unit) => {
-  const policyId = unit.slice(0, 56);
-  const assetNameHex = unit.slice(56);
-  let assetName = '';
-  
-  try {
-    let i = 0;
-    while (i < assetNameHex.length) {
-      // Vérifier qu'il y a au moins 2 caractères restants
-      if (i + 1 >= assetNameHex.length) break;
-      
-      const hexPair = assetNameHex.substr(i, 2);
-      const charCode = parseInt(hexPair, 16);
-      
-      // Fonction pour vérifier si une séquence hex est un nombre valide
-      const isValidHex = (hex) => /^[0-9A-Fa-f]+$/.test(hex);
-      
-      // Si le hex n'est pas valide, passer au suivant
-      if (!isValidHex(hexPair)) {
-        i += 2;
-        continue;
-      }
-
-      // 1. Traitement des caractères ASCII imprimables
-      if (charCode >= 32 && charCode <= 126) {
-        assetName += String.fromCharCode(charCode);
-        i += 2;
-        continue;
-      }
-
-      // 2. Tentative de décodage d'emoji (séquence de 4 bytes)
-      if (i + 8 <= assetNameHex.length && 
-          assetNameHex.substr(i, 4) === 'f09f') {
-        const emojiHex = assetNameHex.substr(i, 8);
-        if (isValidHex(emojiHex)) {
-          const emojiBytes = new Uint8Array(4);
-          for (let j = 0; j < 8; j += 2) {
-            emojiBytes[j/2] = parseInt(emojiHex.substr(j, 2), 16);
-          }
-          try {
-            const emojiChar = new TextDecoder('utf-8').decode(emojiBytes);
-            if (emojiChar && emojiChar.length === 1) {
-              assetName += emojiChar;
-              i += 8;
-              continue;
-            }
-          } catch (e) {
-            // Échec du décodage d'emoji, continuer avec le traitement normal
-          }
+  const splitPolicyAndAsset = (unit) => {
+    const policyId = unit.slice(0, 56);
+    const assetNameHex = unit.slice(56);
+    let assetName = '';
+    
+    try {
+      let i = 0;
+      while (i < assetNameHex.length) {
+        if (i + 1 >= assetNameHex.length) break;
+        
+        const hexPair = assetNameHex.substr(i, 2);
+        const charCode = parseInt(hexPair, 16);
+        
+        const isValidHex = (hex) => /^[0-9A-Fa-f]+$/.test(hex);
+        
+        if (!isValidHex(hexPair)) {
+          i += 2;
+          continue;
         }
-      }
 
-      // 3. Traitement des caractères spéciaux courants
-      if (charCode === 0) {
-        i += 2; // Ignorer les bytes nuls
-        continue;
-      }
-      if (charCode === 0x0d || charCode === 0x0a) {
-        assetName += ' ';
-        i += 2;
-        continue;
-      }
+        if (charCode >= 32 && charCode <= 126) {
+          assetName += String.fromCharCode(charCode);
+          i += 2;
+          continue;
+        }
 
-      // 4. Tentative de décodage UTF-8
-      if (charCode > 0x7f) {
-        let bytesCount = 0;
-        if ((charCode & 0xE0) === 0xC0) bytesCount = 2;
-        else if ((charCode & 0xF0) === 0xE0) bytesCount = 3;
-        else if ((charCode & 0xF8) === 0xF0) bytesCount = 4;
-
-        if (bytesCount > 0 && i + (bytesCount * 2) <= assetNameHex.length) {
-          const utfHex = assetNameHex.substr(i, bytesCount * 2);
-          if (isValidHex(utfHex)) {
-            const utfBytes = new Uint8Array(bytesCount);
-            for (let j = 0; j < bytesCount * 2; j += 2) {
-              utfBytes[j/2] = parseInt(utfHex.substr(j, 2), 16);
+        if (i + 8 <= assetNameHex.length && 
+            assetNameHex.substr(i, 4) === 'f09f') {
+          const emojiHex = assetNameHex.substr(i, 8);
+          if (isValidHex(emojiHex)) {
+            const emojiBytes = new Uint8Array(4);
+            for (let j = 0; j < 8; j += 2) {
+              emojiBytes[j/2] = parseInt(emojiHex.substr(j, 2), 16);
             }
             try {
-              const char = new TextDecoder('utf-8').decode(utfBytes);
-              if (char && !char.includes('�')) {
-                assetName += char;
-                i += bytesCount * 2;
+              const emojiChar = new TextDecoder('utf-8').decode(emojiBytes);
+              if (emojiChar && emojiChar.length === 1) {
+                assetName += emojiChar;
+                i += 8;
                 continue;
               }
-            } catch (e) {
-              // Échec du décodage UTF-8
+            } catch (e) {}
+          }
+        }
+
+        if (charCode === 0) {
+          i += 2;
+          continue;
+        }
+        if (charCode === 0x0d || charCode === 0x0a) {
+          assetName += ' ';
+          i += 2;
+          continue;
+        }
+
+        if (charCode > 0x7f) {
+          let bytesCount = 0;
+          if ((charCode & 0xE0) === 0xC0) bytesCount = 2;
+          else if ((charCode & 0xF0) === 0xE0) bytesCount = 3;
+          else if ((charCode & 0xF8) === 0xF0) bytesCount = 4;
+
+          if (bytesCount > 0 && i + (bytesCount * 2) <= assetNameHex.length) {
+            const utfHex = assetNameHex.substr(i, bytesCount * 2);
+            if (isValidHex(utfHex)) {
+              const utfBytes = new Uint8Array(bytesCount);
+              for (let j = 0; j < bytesCount * 2; j += 2) {
+                utfBytes[j/2] = parseInt(utfHex.substr(j, 2), 16);
+              }
+              try {
+                const char = new TextDecoder('utf-8').decode(utfBytes);
+                if (char && !char.includes('�')) {
+                  assetName += char;
+                  i += bytesCount * 2;
+                  continue;
+                }
+              } catch (e) {}
             }
           }
         }
+
+        assetName += '_';
+        i += 2;
       }
 
-      // 5. Si aucun décodage n'a réussi, remplacer par un caractère de substitution
-      assetName += '_';
-      i += 2;
+      assetName = assetName
+        .replace(/_{2,}/g, '_')
+        .replace(/^\s+|\s+$/g, '');
+
+    } catch (error) {
+      console.warn('Error converting hex to text:', error);
+      assetName = assetNameHex;
     }
 
-    // 6. Nettoyage final
-    assetName = assetName
-      .replace(/_{2,}/g, '_') // Remplacer les suites de _ par un seul
-      .replace(/^\s+|\s+$/g, ''); // Trim les espaces
-
-  } catch (error) {
-    console.warn('Error converting hex to text:', error);
-    assetName = assetNameHex;
-  }
-
-  return { policyId, assetName };
-};
-
+    return { policyId, assetName };
+  };
 
   const getDisplayName = (token) => {
     if (token.hasMetadata) {
@@ -238,47 +226,109 @@ const splitPolicyAndAsset = (unit) => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTokens.map(token => (
-          <div key={token.unit} className="card bg-base-100 shadow-xl">
-            <div className="card-body items-center text-center space-y-3">
-              {token.logo ? (
-                <div className="w-24 h-24 rounded-full overflow-hidden">
-                  <img
-                    src={token.logo}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-base-200" />
-              )}
-              
-              <div>
-                <p className="font-semibold">
-                  {formatQuantity(token.quantity, token.decimals)}{' '}
-                  {getDisplayName(token)}
-                </p>
-                <div className="flex flex-col items-center text-xs opacity-70 mt-1">
-                  {!token.hasMetadata && (
-                    <span className="font-mono break-all mb-1">
-                      {shortener(token.policyId)}
-                      <CopyButton text={token.policyId} className="ml-1" />
-                    </span>
-                  )}
-                  <div className="flex items-center">
-                    <span className="truncate max-w-[120px]">
-                      {token.hasMetadata ? shortener(token.unit) : shortener(token.assetName)}
-                    </span>
-                    <CopyButton text={token.unit} className="ml-1" />
+      {showNFTs ? (
+        // Affichage en grille pour les NFTs
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredTokens.map(token => (
+            <div key={token.unit} className="card bg-base-100 shadow-xl">
+              <div className="card-body items-center text-center space-y-3">
+                {token.logo ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden">
+                    <img
+                      src={token.logo}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-base-200" />
+                )}
+                
+                <div>
+                  <p className="font-semibold">
+                    {formatQuantity(token.quantity, token.decimals)}{' '}
+                    {getDisplayName(token)}
+                  </p>
+                  <div className="flex flex-col items-center text-xs opacity-70 mt-1">
+                    {!token.hasMetadata && (
+                      <span className="font-mono break-all mb-1">
+                        {shortener(token.policyId)}
+                        <CopyButton text={token.policyId} className="ml-1" />
+                      </span>
+                    )}
+                    <div className="flex items-center">
+                      <span className="truncate max-w-[120px]">
+                        {token.hasMetadata ? shortener(token.unit) : shortener(token.assetName)}
+                      </span>
+                      <CopyButton text={token.unit} className="ml-1" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        // Affichage en tableau pour les tokens normaux
+        <div className="overflow-x-auto p-4 max-w-lg mx-auto">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left">Asset | Ticker</th>
+                <th className="text-right">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTokens.map((token) => (
+                <tr key={token.unit} className="hover border-t border-gray-500/30">
+                  <td className="flex items-center gap-4 p-2 ">
+                    <div className="relative">
+                      <div 
+                        className="w-10 h-10 rounded-full overflow-hidden cursor-pointer shadow-sm shadow-white"
+                        onClick={() => setActiveTooltip(activeTooltip === token.unit ? null : token.unit)}
+                      >
+                        {token.logo && (
+                          <img
+                            src={token.logo}
+                            alt=""
+                            className="w-10 h-10 object-cover"
+                            loading="lazy"
+                          />
+                        )}
+                      </div>
+                      {activeTooltip === token.unit && (
+                        <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px]  border border-sky-500/50 rounded ">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">Policy ID:</span>
+                              <span className="font-mono text-xs">
+                                {shortener(token.policyId)}
+                                <CopyButton text={token.policyId} className="ml-1" />
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">Asset Name:</span>
+                              <span className="font-mono text-xs">
+                                {shortener(token.assetName)}
+                                <CopyButton text={token.assetNamet} className="ml-1" />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <span className="font-semibold">{getDisplayName(token)}</span>
+                  </td>
+                  <td className="text-right font-mono">
+                    {formatQuantity(token.quantity, token.decimals)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

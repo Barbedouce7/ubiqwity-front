@@ -307,7 +307,7 @@ function WalletPage() {
         </div>
 
         {!stakekeyInfo.stakekey && (
-          <div className="text-sm text-gray-500">
+          <div className="text-xs text-gray-500">
             Single address (no stakekey)
           </div>
         )}
