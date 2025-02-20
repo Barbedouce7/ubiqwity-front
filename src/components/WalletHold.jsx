@@ -208,126 +208,134 @@ const HoldingsComponent = ({ holdingsData }) => {
     );
   }
 
-  return (
+return (
     <div className="space-y-6">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="flex items-center gap-4">
-          <span className={!showNFTs ? "font-bold" : "opacity-50"}>Tokens</span>
-          <input 
-            type="checkbox" 
-            className="toggle toggle-primary toggle-lg" 
-            checked={showNFTs}
-            onChange={(e) => setShowNFTs(e.target.checked)}
-          />
-          <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
+      {filteredTokens.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-lg font-semibold">No CNT ( FT/NFT ) for this wallet</p>
         </div>
-        <h2 className="text-lg font-semibold">
-          {filteredTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
-        </h2>
-      </div>
+      ) : (
+        <>
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex items-center gap-4">
+              <span className={!showNFTs ? "font-bold" : "opacity-50"}>Tokens</span>
+              <input 
+                type="checkbox" 
+                className="toggle toggle-primary toggle-lg" 
+                checked={showNFTs}
+                onChange={(e) => setShowNFTs(e.target.checked)}
+              />
+              <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
+            </div>
+            <h2 className="text-lg font-semibold">
+              {filteredTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
+            </h2>
+          </div>
 
-      {showNFTs ? (
-        // Affichage en grille pour les NFTs
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTokens.map(token => (
-            <div key={token.unit} className="card bg-base-100 shadow-xl">
-              <div className="card-body items-center text-center space-y-3">
-                {token.logo ? (
-                  <div className="w-24 h-24 rounded-full overflow-hidden">
-                    <img
-                      src={token.logo}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-base-200" />
-                )}
-                
-                <div>
-                  <p className="font-semibold">
-                    {formatQuantity(token.quantity, token.decimals)}{' '}
-                    {getDisplayName(token)}
-                  </p>
-                  <div className="flex flex-col items-center text-xs opacity-70 mt-1">
-                    {!token.hasMetadata && (
-                      <span className="font-mono break-all mb-1">
-                        {shortener(token.policyId)}
-                        <CopyButton text={token.policyId} className="ml-1" />
-                      </span>
+          {showNFTs ? (
+            // Affichage en grille pour les NFTs
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTokens.map(token => (
+                <div key={token.unit} className="card bg-base-100 shadow-xl">
+                  <div className="card-body items-center text-center space-y-3">
+                    {token.logo ? (
+                      <div className="w-24 h-24 rounded-full overflow-hidden">
+                        <img
+                          src={token.logo}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-base-200" />
                     )}
-                    <div className="flex items-center">
-                      <span className="truncate max-w-[120px]">
-                        {token.hasMetadata ? shortener(token.unit) : shortener(token.assetName)}
-                      </span>
-                      <CopyButton text={token.unit} className="ml-1" />
+                    
+                    <div>
+                      <p className="font-semibold">
+                        {formatQuantity(token.quantity, token.decimals)}{' '}
+                        {getDisplayName(token)}
+                      </p>
+                      <div className="flex flex-col items-center text-xs opacity-70 mt-1">
+                        {!token.hasMetadata && (
+                          <span className="font-mono break-all mb-1">
+                            {shortener(token.policyId)}
+                            <CopyButton text={token.policyId} className="ml-1" />
+                          </span>
+                        )}
+                        <div className="flex items-center">
+                          <span className="truncate max-w-[120px]">
+                            {token.hasMetadata ? shortener(token.unit) : shortener(token.assetName)}
+                          </span>
+                          <CopyButton text={token.unit} className="ml-1" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        // Affichage en tableau pour les tokens normaux
-        <div className="overflow-x-auto p-4 max-w-lg mx-auto">
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="text-left">Asset | Ticker</th>
-                <th className="text-right">Quantity</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTokens.map((token) => (
-                <tr key={token.unit} className="hover border-t border-gray-500/30">
-                  <td className="flex items-center gap-4 p-2 ">
-                    <div className="relative">
-                      <div 
-                        className="w-10 h-10 rounded-full overflow-hidden cursor-pointer shadow-sm shadow-white"
-                        onClick={() => setActiveTooltip(activeTooltip === token.unit ? null : token.unit)}
-                      >
-                        {token.logo && (
-                          <img
-                            src={token.logo}
-                            alt=""
-                            className="w-10 h-10 object-cover"
-                            loading="lazy"
-                          />
-                        )}
-                      </div>
-                      {activeTooltip === token.unit && (
-                        <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px]  border border-sky-500/50 rounded ">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">Policy ID:</span>
-                              <span className="font-mono text-xs">
-                                {shortener(token.policyId)}
-                                <CopyButton text={token.policyId} className="ml-1" />
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">Asset Name:</span>
-                              <span className="font-mono text-xs">
-                                {shortener(token.assetName)}
-                                <CopyButton text={token.assetNamet} className="ml-1" />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <span className="font-semibold">{getDisplayName(token)}</span>
-                  </td>
-                  <td className="text-right font-mono">
-                    {formatQuantity(token.quantity, token.decimals)}
-                  </td>
-                </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          ) : (
+            // Affichage en tableau pour les tokens normaux
+            <div className="overflow-x-auto p-4 max-w-lg mx-auto">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Asset | Ticker</th>
+                    <th className="text-right">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTokens.map((token) => (
+                    <tr key={token.unit} className="hover border-t border-gray-500/30">
+                      <td className="flex items-center gap-4 p-2 ">
+                        <div className="relative">
+                          <div 
+                            className="w-10 h-10 rounded-full overflow-hidden cursor-pointer shadow-sm shadow-white"
+                            onClick={() => setActiveTooltip(activeTooltip === token.unit ? null : token.unit)}
+                          >
+                            {token.logo && (
+                              <img
+                                src={token.logo}
+                                alt=""
+                                className="w-10 h-10 object-cover"
+                                loading="lazy"
+                              />
+                            )}
+                          </div>
+                          {activeTooltip === token.unit && (
+                            <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px]  border border-sky-500/50 rounded ">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold">Policy ID:</span>
+                                  <span className="font-mono text-xs">
+                                    {shortener(token.policyId)}
+                                    <CopyButton text={token.policyId} className="ml-1" />
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold">Asset Name:</span>
+                                  <span className="font-mono text-xs">
+                                    {shortener(token.assetName)}
+                                    <CopyButton text={token.assetNamet} className="ml-1" />
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-semibold">{getDisplayName(token)}</span>
+                      </td>
+                      <td className="text-right font-mono">
+                        {formatQuantity(token.quantity, token.decimals)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

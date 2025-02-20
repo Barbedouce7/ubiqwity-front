@@ -41,10 +41,7 @@ function WalletPage() {
   }, [walletDataHold?.stakekeyInfo.totalTransactions]);
 
   const availableTabs = useMemo(() => {
-    const baseTabs = ['addresses'];
-    if (hasNativeTokens) {
-      baseTabs.push('hold');
-    }
+    const baseTabs = ['addresses', 'hold'];
     if (walletDataHold?.stakekeyInfo.totalTransactions > 1 && !isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
