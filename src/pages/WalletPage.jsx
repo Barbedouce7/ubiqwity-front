@@ -45,7 +45,7 @@ function WalletPage() {
     if (hasNativeTokens) {
       baseTabs.push('hold');
     }
-    if (!isTransactionLimitExceeded) {
+    if (walletDataHold?.stakekeyInfo.totalTransactions > 1 && !isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
     baseTabs.push('json');
@@ -353,7 +353,9 @@ function WalletPage() {
                   onClick={() => setShowTooltip(!showTooltip)}
                 />
               )}
-            </strong> {walletDataHold?.stakekeyInfo.totalTransactions}
+            </strong> {(walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT || walletDataHold?.stakekeyInfo.totalTransactions < 1 ) 
+                ? <span className="text-red-500">> {TRANSACTION_LIMIT}</span>
+                : walletDataHold?.stakekeyInfo.totalTransactions}
             </>
             )}
           </p>
