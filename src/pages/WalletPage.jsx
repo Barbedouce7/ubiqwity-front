@@ -37,8 +37,8 @@ function WalletPage() {
   }, [walletDataHold?.holdings]);
 
   const isTransactionLimitExceeded = useMemo(() => {
-    return walletDataHold?.totalTransactions > TRANSACTION_LIMIT;
-  }, [walletDataHold?.totalTransactions]);
+    return walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT;
+  }, [walletDataHold?.stakekeyInfo.totalTransactions]);
 
   const availableTabs = useMemo(() => {
     const baseTabs = ['addresses'];
