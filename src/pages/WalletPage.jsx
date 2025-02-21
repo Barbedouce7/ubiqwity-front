@@ -343,7 +343,7 @@ function WalletPage() {
               <>
             <strong>
               Transactions:{' '}
-              {stakekeyInfo.numberOfAddresses > 1 && (walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT ) && (
+              {walletDataHold?.stakekeyInfo.numberOfAddresses > 1 && (
                 <QuestionMarkCircleIcon
                   className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mb-1"
                   onClick={() => setShowTooltip(!showTooltip)}
@@ -357,7 +357,7 @@ function WalletPage() {
             </>
             )}
           </p>
-          {stakekeyInfo.numberOfAddresses > 1 && showTooltip && (
+          {walletDataHold?.stakekeyInfo.numberOfAddresses > 1 && showTooltip && (
             <div 
               className="absolute z-10 w-64 p-2 mt-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip"
               style={{ left: '50%', transform: 'translateX(-50%)' }}

@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import ThemeToggle from './components/ThemeToggle';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
 import TransactionPage from './pages/TransactionPage';
 import PoolPage from './pages/PoolPage';
 import WalletPage from './pages/WalletPage';
@@ -42,6 +43,7 @@ function App() {
       <ThemeToggle />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/tx/:txId" element={<TransactionPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />

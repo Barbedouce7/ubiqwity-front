@@ -1,96 +1,183 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
 
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const searchRef = useRef(null);
+  const menuRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    // Fonction pour mettre à jour l'état lorsque la classe 'dark' change
     const updateTheme = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
-
-    // Ajouter un écouteur pour les mutations de la classe 'dark' sur l'élément html
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    // Nettoyage de l'observer lors du démontage du composant
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSearchOpen, isMenuOpen]);
 
   const onSearchChange = (e) => {
     setSearchInput(e.target.value);
   };
 
   const onSearchSubmit = (e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
+    if (e) e.preventDefault();
     handleSearch(searchInput);
   };
 
-
-
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+    if (!isSearchOpen) {
+      setSearchInput("");
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
-
-
 
   return (
     <div className="navbar bg-base-100 shadow-xl mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
-          <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> Ubiqwity
+          <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> 
+          Ubiqwity
         </a>
       </div>
-
       <div className="flex items-center gap-2">
-        {/* Formulaire de recherche */}
-        <form onSubmit={onSearchSubmit} className="flex">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={onSearchChange}
-            className="grow input bg-base-100 border-2 shadow-xl input-bordered w-[100px] focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md "
-            placeholder="tx, address, ..."
-          />
-          {/* Icône de recherche */}
-          <button type="submit" className="btn btn-ghost btn-square ">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="h-6 w-6 opacity-70"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"
-                clipRule="evenodd"
+        {/* Barre de recherche */}
+        <div className="relative flex items-center" ref={searchRef}>
+          <div className={`
+            transition-all duration-300 ease-in-out
+            overflow-hidden
+            ${isSearchOpen ? 'w-[200px] opacity-100' : 'w-0 opacity-0'}
+          `}>
+            <form onSubmit={onSearchSubmit} className="flex items-center">
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchInput}
+                onChange={onSearchChange}
+                className="w-full input bg-base-100 border-2 shadow-xl input-bordered focus:inline-none focus:ring-1 focus:ring-sky-600 rounded-md"
+                placeholder="tx, address, ..."
               />
+            </form>
+          </div>
+          
+          <div className="flex">
+            {isSearchOpen && (
+              <button 
+                onClick={() => setIsSearchOpen(false)} 
+                className="btn btn-ghost btn-circle rounded hover:bg-gray-400/20"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  className="w-5 h-5"
+                >
+                  <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+            <button 
+              onClick={toggleSearch}
+              className="btn btn-ghost btn-circle hover:bg-gray-400/20"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="currentColor" 
+                className="w-5 h-5"
+              >
+                <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Menu déroulant */}
+        <div className="relative" ref={menuRef}>
+          <button 
+            onClick={toggleMenu}
+            className="btn btn-ghost btn-circle hover:bg-gray-400/20"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="currentColor" 
+              className="w-5 h-5"
+            >
+              <path fillRule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
             </svg>
           </button>
-        </form>
+          
+          {/* Menu dropdown */}
+          <div className={`
+            absolute right-0 mt-2 w-48 
+            bg-base-100 rounded-lg shadow-lg 
+            transition-all duration-200 ease-in-out
+            ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+            z-50
+          `}>
+            <div className="p-2 space-y-1">
+              <Link 
+                to="/"
+                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  className="w-5 h-5 mr-3"
+                >
+                  <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                  <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+                </svg>
+                Home
+              </Link>
+              <Link 
+                to="/about"
+                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  className="w-5 h-5 mr-3"
+                >
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                About
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -23,7 +23,6 @@ const Footer = () => {
           alt="Logo" 
           className="w-24 h-24"
         />      <p className="text-xl mt-0 mb-4">Ubiqwity</p>
-        <p className="text-xs mb-20">Prices from Orcfax feed.</p>
       </div>
 
     </footer>

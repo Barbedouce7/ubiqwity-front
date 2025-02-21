@@ -214,6 +214,16 @@ const EUTXOTab = ({ inputs, outputs }) => {
   const [processedOutputs, setProcessedOutputs] = useState([]);
   const [showScriptInfo, setShowScriptInfo] = useState(false);
 
+  // Check if any UTXO has script information
+  const hasScriptInfo = useMemo(() => {
+    const allUTXOs = [...inputs, ...outputs];
+    return allUTXOs.some(utxo => 
+      utxo.inline_datum || 
+      utxo.collateral || 
+      utxo.reference_script_hash || 
+      utxo.consumed_by_tx
+    );
+  }, [inputs, outputs]);
 
   // Create a map of addresses to their GetHandle components
   const addressHandles = useMemo(() => {
@@ -294,21 +304,23 @@ const EUTXOTab = ({ inputs, outputs }) => {
     );
   }
 
- return (
+  return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-2 ">
-        <div className="form-control mx-auto">
-          <label className="label cursor-pointer gap-2">
-            <span className="text-base-content font-medium">Script Info</span>
-            <input 
-              type="checkbox" 
-              className="toggle toggle-primary" 
-              checked={showScriptInfo}
-              onChange={(e) => setShowScriptInfo(e.target.checked)}
-            />
-          </label>
+      {hasScriptInfo && (
+        <div className="flex items-center gap-2 p-2">
+          <div className="form-control mx-auto">
+            <label className="label cursor-pointer gap-2">
+              <span className="text-base-content font-medium">Script Info</span>
+              <input 
+                type="checkbox" 
+                className="toggle toggle-primary" 
+                checked={showScriptInfo}
+                onChange={(e) => setShowScriptInfo(e.target.checked)}
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>

@@ -42,11 +42,11 @@ const TransactionsTab = ({ transactions }) => {
         <button onClick={toggleSortOrder} className="flex text-xs border p-2 text-base-content rounded">
           {sortOrder === 'desc' ? (
             <>
-              <ArrowDownIcon className="w-5 h-5" /> Newest First
+              <ArrowDownIcon className="w-5 h-5 text-base-content" /> Newest First
             </>
           ) : (
             <>
-              <ArrowUpIcon className="w-5 h-5" /> Oldest First
+              <ArrowUpIcon className="w-5 h-5 text-base-content" /> Oldest First
             </>
           )}
         </button>
@@ -78,23 +78,40 @@ const TransactionsTab = ({ transactions }) => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-4">
-          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="btn btn-sm btn-outline">
-            <ChevronDoubleLeftIcon className="w-5 h-5" />
-          </button>
-          <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="btn btn-sm btn-outline">
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <span className="text-sm">Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="btn btn-sm btn-outline">
-            <ChevronRightIcon className="w-5 h-5" />
-          </button>
-          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="btn btn-sm btn-outline">
-            <ChevronDoubleRightIcon className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-4 text-base-content">
+    <button 
+      onClick={() => setCurrentPage(1)} 
+      disabled={currentPage === 1} 
+      className="btn-outline"
+    >
+      <ChevronDoubleLeftIcon className="w-5 h-5 text-base-content" />
+    </button>
+    <button 
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+      disabled={currentPage === 1} 
+      className="btn-outline"
+    >
+      <ChevronLeftIcon className="w-5 h-5 text-base-content" />
+    </button>
+    <span className="text-sm">Page {currentPage} of {totalPages}</span>
+    <button 
+      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+      disabled={currentPage === totalPages} 
+      className="btn-outline"
+    >
+      <ChevronRightIcon className="w-5 h-5 text-base-content" />
+    </button>
+    <button 
+      onClick={() => setCurrentPage(totalPages)} 
+      disabled={currentPage === totalPages} 
+      className="btn-outline"
+    >
+      <ChevronDoubleRightIcon className="w-5 h-5 text-base-content" />
+    </button>
+  </div>
+)}
+
     </div>
   );
 };
