@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import TransactionPage from './pages/TransactionPage';
 import PoolPage from './pages/PoolPage';
+import PoolsPage from './pages/PoolsPage';
 import WalletPage from './pages/WalletPage';
 import DatumPage from './pages/DatumPage';
 import { API_CONFIG } from './utils/apiConfig';
@@ -44,6 +45,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/pools" element={<PoolsPage />} />
         <Route path="/tx/:txId" element={<TransactionPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />

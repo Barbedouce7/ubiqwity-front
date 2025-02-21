@@ -1,5 +1,6 @@
 
 export const FormatNumberWithSpaces = ({ number }) => {
+    if (number === undefined || number === null) return '';
     let numStr = number.toString();
     let [integerPart, decimalPart] = numStr.split('.');
 
