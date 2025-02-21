@@ -124,12 +124,42 @@ function PoolPage() {
         {data.relays.map((relay, index) => (
           <div key={index} className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl">
             <p className="text-lg">#{relay.relay}</p>
-            <p className="text-sm">IP: <span className="font-bold">{relay.data.ipInfo.ip}</span></p>
-            <p className="text-sm">Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span></p>
-            <p className="text-sm">City: <span className="font-bold">{relay.data.ipInfo.city}</span>, <span className="font-bold">{relay.data.ipInfo.country}</span></p>
-            <p className="text-sm">Port: <span className="font-bold">{relay.data.port}</span></p>
+            
+            {relay.data.ipInfo?.ip && (
+              <p className="text-sm">
+                IP: <span className="font-bold">{relay.data.ipInfo.ip}</span>
+              </p>
+            )}
+
+            {relay.data.dns && (
+              <p className="text-sm">
+                DNS: <span className="font-bold">{relay.data.dns}</span>
+              </p>
+            )}
+
+            {relay.data.ipInfo?.hostname && (
+              <p className="text-sm">
+                Hostname: <span className="font-bold">{relay.data.ipInfo.hostname}</span>
+              </p>
+            )}
+
+            {(relay.data.ipInfo?.city || relay.data.ipInfo?.country) && (
+              <p className="text-sm">
+                City: 
+                {relay.data.ipInfo.city && <span className="font-bold"> {relay.data.ipInfo.city}</span>}
+                {relay.data.ipInfo.city && relay.data.ipInfo.country && ","}
+                {relay.data.ipInfo.country && <span className="font-bold"> {relay.data.ipInfo.country}</span>}
+              </p>
+            )}
+
+            {relay.data.port && (
+              <p className="text-sm">
+                Port: <span className="font-bold">{relay.data.port}</span>
+              </p>
+            )}
           </div>
         ))}
+
       </div>
     ) : (
       <p className="text-base-content">No relays available from on-chain data.</p>
