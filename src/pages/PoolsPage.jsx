@@ -7,16 +7,44 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
 import { shortener, convertLovelaceToAda } from '../utils/utils';
 
+const SaturationBar = ({ saturation }) => {
+  if (saturation === null || saturation === undefined || isNaN(saturation)) {
+    return null;
+  }
+  const percentage = (saturation * 100).toFixed(1);
+  
+  // Déterminer la couleur en fonction du niveau de saturation
+  const getColor = () => {
+    if (percentage > 100) return 'bg-red-500';
+    if (percentage > 80) return 'bg-orange-500';
+    return 'bg-green-500';
+  };
+
+  // Limiter la largeur de la barre à 100% maximum pour l'affichage
+  const displayWidth = Math.min(percentage, 100);
+
+  return (
+    <div className="w-full">
+      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+        <div 
+          className={`h-full ${getColor()} transition-all duration-300`} 
+          style={{ width: `${displayWidth}%` }}
+        />
+      </div>
+      <div className="text-sm mt-1 text-right">{percentage}%</div>
+    </div>
+  );
+};
+
 function PoolsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [poolsData, setPoolsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
-  const [showRawResponse, setShowRawResponse] = useState(false);
 
   const page = parseInt(searchParams.get('page')) || 1;
-  const sortBy = searchParams.get('sortBy') || 'live_stake';
+  const sortBy = searchParams.get('sort') || 'live_stake';
   const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
@@ -24,23 +52,18 @@ function PoolsPage() {
       try {
         setLoading(true);
         const response = await axios.get(`${API_CONFIG.baseUrl}pools`, {
-          params: { page, sortBy, order: sortOrder }
+          params: { 
+            sort: sortBy,
+            order: sortOrder,
+            page,
+            limit: 100
+          }
         });
 
-        const data = response.data;
-        console.log('API Response:', data);
-
-        let poolsArray = Array.isArray(data.data) ? data.data : [];
-
-        // Correction du tri numérique
-        poolsArray.sort((a, b) => {
-          const valueA = Number(a[sortBy]) || 0;
-          const valueB = Number(b[sortBy]) || 0;
-          return sortOrder === 'desc' ? valueB - valueA : valueA - valueB;
-        });
-
-        setPoolsData(poolsArray);
-        setTotalPages(data.pagination?.totalPages || 1);
+        const { data, pagination } = response.data;
+        
+        setPoolsData(data);
+        setTotalPages(pagination.pages);
       } catch (err) {
         console.error('API Error:', err.response || err);
         setError(`Failed to load pools: ${err.message}`);
@@ -57,13 +80,15 @@ function PoolsPage() {
     if (newSortBy === sortBy) {
       setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
     } else {
-      setSearchParams({ page: '1', sortBy: newSortBy });
+      setSearchParams({ page: '1', sort: newSortBy });
       setSortOrder('desc');
     }
   };
 
   const handlePageChange = (newPage) => {
-    setSearchParams({ page: newPage.toString(), sortBy });
+    if (newPage >= 1 && newPage <= totalPages) {
+      setSearchParams({ page: newPage.toString(), sort: sortBy });
+    }
   };
 
   const PaginationControls = () => (
@@ -102,51 +127,45 @@ function PoolsPage() {
             <table className="min-w-full border border-grey-500/50 rounded-lg">
               <thead>
                 <tr>
-                  <th className="px-4 py-2">Pool ID</th>
-                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Ticker & Name</th>
                   <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('live_stake')}>
                     Live Stake {sortBy === 'live_stake' && (sortOrder === 'desc' ? '↓' : '↑')}
                   </th>
                   <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('active_stake')}>
                     Active Stake {sortBy === 'active_stake' && (sortOrder === 'desc' ? '↓' : '↑')}
                   </th>
+                  <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('live_delegators')}>
+                    Delegators {sortBy === 'live_delegators' && (sortOrder === 'desc' ? '↓' : '↑')}
+                  </th>
+                  <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('blocks_minted')}>
+                    Blocks {sortBy === 'blocks_minted' && (sortOrder === 'desc' ? '↓' : '↑')}
+                  </th>
+                  <th className="px-4 py-2 cursor-pointer w-40" onClick={() => handleSort('live_saturation')}>
+                    Saturation {sortBy === 'live_saturation' && (sortOrder === 'desc' ? '↓' : '↑')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {poolsData.map((pool) => (
                   <tr key={pool.pool_id} className="border-t">
-                    <td className="px-4 py-2"> 
-                      <Link to={`/pool/${pool.pool_id || ""}`} className="text-sky-500 underline">
-                        {shortener(pool.pool_id) || '-'}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2">{pool.name || '-'}</td>
+                    <td className="px-4 py-2"><Link to={`/pool/${pool.pool_id}`} className="text-sky-500 underline">{pool.ticker || shortener(pool.pool_id)}</Link><br />{pool.name || ''} </td>
                     <td className="px-4 py-2">{convertLovelaceToAda(pool.live_stake)} ₳</td>
                     <td className="px-4 py-2">{convertLovelaceToAda(pool.active_stake)} ₳</td>
+                    <td className="px-4 py-2">{pool.live_delegators}</td>
+                    <td className="px-4 py-2">{pool.blocks_minted}</td>
+                    <td className="px-4 py-2">
+                      <SaturationBar saturation={pool.live_saturation} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <div className="mt-4">
-            <PaginationControls />
+            <PaginationControls /><p>100 pool / page</p>
           </div>
         </>
       )}
-{/*}
-      <button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => setShowRawResponse(!showRawResponse)}
-      >
-        {showRawResponse ? 'Masquer la réponse API' : 'Afficher la réponse API'}
-      </button>
-      {showRawResponse && (
-        <pre className="mt-2 p-4 bg-gray-100 rounded text-sm overflow-auto">
-          {JSON.stringify({ data: poolsData, totalPages }, null, 2)}
-        </pre>
-      )}
-
-      */}
     </div>
   );
 }
