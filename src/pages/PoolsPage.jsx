@@ -13,14 +13,12 @@ const SaturationBar = ({ saturation }) => {
   }
   const percentage = (saturation * 100).toFixed(1);
   
-  // Déterminer la couleur en fonction du niveau de saturation
   const getColor = () => {
     if (percentage > 100) return 'bg-red-500';
     if (percentage > 80) return 'bg-orange-500';
     return 'bg-green-500';
   };
 
-  // Limiter la largeur de la barre à 100% maximum pour l'affichage
   const displayWidth = Math.min(percentage, 100);
 
   return (
@@ -47,12 +45,28 @@ function PoolsPage() {
   const sortBy = searchParams.get('sort') || 'live_stake';
   const [sortOrder, setSortOrder] = useState('desc');
 
+  // Fonction helper pour convertir les valeurs en nombres pour le tri
+  const getSortValue = (pool, field) => {
+    switch (field) {
+      case 'live_stake':
+      case 'active_stake':
+        return parseFloat(pool[field]) || 0;
+      case 'live_delegators':
+      case 'blocks_minted':
+        return parseInt(pool[field]) || 0;
+      case 'live_saturation':
+        return parseFloat(pool[field]) || 0;
+      default:
+        return pool[field];
+    }
+  };
+
   useEffect(() => {
     const fetchPoolsData = async () => {
       try {
         setLoading(true);
         const response = await axios.get(`${API_CONFIG.baseUrl}pools`, {
-          params: { 
+          params: {
             sort: sortBy,
             order: sortOrder,
             page,
@@ -62,7 +76,18 @@ function PoolsPage() {
 
         const { data, pagination } = response.data;
         
-        setPoolsData(data);
+        // Tri local des données en fonction du type de champ
+        const sortedData = [...data].sort((a, b) => {
+          const aValue = getSortValue(a, sortBy);
+          const bValue = getSortValue(b, sortBy);
+          
+          if (sortOrder === 'desc') {
+            return bValue - aValue;
+          }
+          return aValue - bValue;
+        });
+        
+        setPoolsData(sortedData);
         setTotalPages(pagination.pages);
       } catch (err) {
         console.error('API Error:', err.response || err);
@@ -128,11 +153,9 @@ function PoolsPage() {
               <thead>
                 <tr>
                   <th className="px-4 py-2">Ticker & Name</th>
-                  <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('live_stake')}>
-                    Live Stake {sortBy === 'live_stake' && (sortOrder === 'desc' ? '↓' : '↑')}
-                  </th>
-                  <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('active_stake')}>
-                    Active Stake {sortBy === 'active_stake' && (sortOrder === 'desc' ? '↓' : '↑')}
+                  <th className="px-4 py-2">
+                    Live Stake<br />
+                    Active Stake
                   </th>
                   <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('live_delegators')}>
                     Delegators {sortBy === 'live_delegators' && (sortOrder === 'desc' ? '↓' : '↑')}
@@ -149,8 +172,7 @@ function PoolsPage() {
                 {poolsData.map((pool) => (
                   <tr key={pool.pool_id} className="border-t">
                     <td className="px-4 py-2"><Link to={`/pool/${pool.pool_id}`} className="text-sky-500 underline">{pool.ticker || shortener(pool.pool_id)}</Link><br />{pool.name || ''} </td>
-                    <td className="px-4 py-2">{convertLovelaceToAda(pool.live_stake)} ₳</td>
-                    <td className="px-4 py-2">{convertLovelaceToAda(pool.active_stake)} ₳</td>
+                    <td className="px-4 py-2">{convertLovelaceToAda(pool.live_stake)} ₳<br />{convertLovelaceToAda(pool.active_stake)} ₳</td>
                     <td className="px-4 py-2">{pool.live_delegators}</td>
                     <td className="px-4 py-2">{pool.blocks_minted}</td>
                     <td className="px-4 py-2">
