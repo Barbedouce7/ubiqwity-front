@@ -25,6 +25,8 @@ function WalletPage() {
   const [loadedTransactions, setLoadedTransactions] = useState(0);
   const [error, setError] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  // Nouvel état pour suivre si les détails sont en cours de chargement
+  const [isDetailsFetching, setIsDetailsFetching] = useState(false);
 
   // Constants
   const TRANSACTION_LIMIT = 3000;
@@ -35,13 +37,14 @@ function WalletPage() {
     if (!walletDataHold?.holdings) return false;
     return walletDataHold.holdings.some(h => h.unit !== "lovelace" && Number(h.quantity) > 0);
   }, [walletDataHold?.holdings]);
+
   const isTransactionLimitExceeded = useMemo(() => {
     return walletDataHold?.stakekeyInfo.totalTransactions > TRANSACTION_LIMIT;
   }, [walletDataHold?.stakekeyInfo.totalTransactions]);
 
   const availableTabs = useMemo(() => {
     const baseTabs = ['addresses', 'hold'];
-    if (walletDataHold?.stakekeyInfo.totalTransactions > 1 && !isTransactionLimitExceeded) {
+    if (walletDataHold?.stakekeyInfo.totalTransactions > 0 && !isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
     baseTabs.push('json');
@@ -81,7 +84,6 @@ function WalletPage() {
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${walletAddress}`);
         setWalletData(response.data);
         
-        // Immediately fetch holding data after wallet data
         try {
           setIsLoadingHold(true);
           const identifier = response.data.stakekeyInfo.stakekey || response.data.stakekeyInfo.addressList[0];
@@ -108,29 +110,30 @@ function WalletPage() {
       setActiveTab('addresses');
       setLoadedTransactions(0);
       setError(null);
+      setIsDetailsFetching(false);
     };
   }, [walletAddress]);
 
-  // Details data fetch
+  // Details data fetch - Modifié pour gérer la barre de progression de manière indépendante
   useEffect(() => {
     const shouldFetchDetails = 
-      detailsTabs.includes(activeTab) && 
       walletData?.stakekeyInfo && 
       !detailsData && 
-      !isTransactionLimitExceeded;
+      !isTransactionLimitExceeded && 
+      !isDetailsFetching;
 
     if (!shouldFetchDetails) return;
 
     const fetchDetailsData = async () => {
+      setIsDetailsFetching(true);
       setIsLoadingDetails(true);
-      setLoadedTransactions(0);
       
       try {
         const identifier = walletData.stakekeyInfo.stakekey || walletData.stakekeyInfo.addressList[0];
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/details`);
         
         // Progressive loading simulation
-        const totalTx = walletDataHold?.totalTransactions || 0;
+        const totalTx = walletDataHold?.stakekeyInfo.totalTransactions || 0;
         let count = 0;
         const increment = Math.max(1, Math.floor(totalTx / 20));
         
@@ -142,18 +145,19 @@ function WalletPage() {
             clearInterval(interval);
             setDetailsData(response.data);
             setIsLoadingDetails(false);
+            setIsDetailsFetching(false);
           }
         }, 100);
       } catch (error) {
         console.error("Failed to fetch details:", error);
         setIsLoadingDetails(false);
+        setIsDetailsFetching(false);
       }
     };
 
     fetchDetailsData();
-  }, [activeTab, walletData, detailsData, isTransactionLimitExceeded, walletDataHold?.totalTransactions]);
+  }, [walletData, detailsData, isTransactionLimitExceeded, walletDataHold?.stakekeyInfo.totalTransactions, isDetailsFetching]);
 
-  // Click outside tooltip handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showTooltip && !event.target.closest('.relative.inline-block')) {
@@ -165,7 +169,6 @@ function WalletPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTooltip]);
 
-  // Loading and error states
   if (isLoading) {
     return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40" />;
   }
@@ -180,7 +183,6 @@ function WalletPage() {
 
   const { stakekeyInfo } = walletData;
   const mainIdentifier = stakekeyInfo.stakekey || stakekeyInfo.addressList[0];
-
 
   const getTabStyle = (tab) => {
     const baseStyle = "tab-custom cursor-pointer";
@@ -217,12 +219,14 @@ function WalletPage() {
   );
 
   const renderContent = () => {
-    if (isLoadingDetails && detailsTabs.includes(activeTab)) {
+    // Afficher la barre de progression si les détails sont en cours de chargement
+    if (isDetailsFetching && detailsTabs.includes(activeTab)) {
       return (
         <div className="mt-8">
           <LoadingProgress 
             totalTransactions={walletDataHold?.stakekeyInfo.totalTransactions} 
             nbAddresses={stakekeyInfo.numberOfAddresses} 
+            loadedTransactions={loadedTransactions}
           />
         </div>
       );
@@ -297,12 +301,10 @@ function WalletPage() {
     <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       
-      {/* Handle */}
       <div className="mb-4">
         <GetHandle stakekey={mainIdentifier} />
       </div>
 
-      {/* Main Info */}
       <div className="mb-4">
         <div>
           <strong>{stakekeyInfo.stakekey ? "Stake Address: " : "Address: "}</strong> 
@@ -315,7 +317,6 @@ function WalletPage() {
           </div>
         )}
 
-        {/* Balance */}
         <h2 className="text-xl font-bold mb-4 text-center border border-sky-500/50 rounded inline-block mx-auto p-2">
           <img 
             src="/assets/cardano.webp" 
@@ -333,7 +334,6 @@ function WalletPage() {
           {' '}ADA
         </h2>
 
-        {/* Stats */}
         <div className="mb-2 flex gap-4 justify-center items-center relative">
           <p>
 
@@ -345,7 +345,7 @@ function WalletPage() {
               Transactions:{' '}
               {walletDataHold?.stakekeyInfo.numberOfAddresses > 1 && (
                 <QuestionMarkCircleIcon
-                  className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mb-1"
+                  className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mr-1 mb-1"
                   onClick={() => setShowTooltip(!showTooltip)}
                 />
               )}

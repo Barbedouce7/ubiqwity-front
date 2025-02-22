@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import GetHandle from './GetHandle';
 import CopyButton from './CopyButton';
 import { shortener } from '../utils/utils';
@@ -37,23 +37,62 @@ const generateDelegatorColors = (delegators) => {
 };
 
 const PoolDelegatorsTab = ({ delegators }) => {
-  const sortedDelegators = [...delegators].sort((a, b) => b.liveStake - a.liveStake);
-  const totalStake = sortedDelegators.reduce((sum, d) => sum + d.liveStake, 0);
-  
-  const [delegatorColors, setDelegatorColors] = useState(() => 
-    generateDelegatorColors(sortedDelegators)
-  );
+  const [sortedDelegators, setSortedDelegators] = useState([]);
+  const [totalStake, setTotalStake] = useState(0);
+  const [delegatorColors, setDelegatorColors] = useState({});
+  const chartRef = useRef(null);
+  const navigate = useNavigate();
+  const [lastTap, setLastTap] = useState(0);
+
+  useEffect(() => {
+    if (delegators && delegators.length > 0) {
+      const sorted = [...delegators].sort((a, b) => b.liveStake - a.liveStake);
+      const total = sorted.reduce((sum, d) => sum + d.liveStake, 0);
+      
+      setSortedDelegators(sorted);
+      setTotalStake(total);
+      setDelegatorColors(generateDelegatorColors(sorted));
+    }
+  }, [delegators]);
 
   const maxStake = sortedDelegators[0]?.liveStake || 1;
 
-  // Bubble chart configuration
+  const bubbleData = sortedDelegators.map((delegator, index) => ({
+    x: index,
+    y: delegator.liveStake,
+    r: (delegator.liveStake / maxStake) * 20 + 5,
+    liveStake: delegator.liveStake,
+    address: delegator.address
+  }));
+
+  const handlePointClick = (event, elements) => {
+    if (elements.length > 0) {
+      const idx = elements[0].index;
+      const address = bubbleData[idx].address;
+      navigate(`/wallet/${address}`);
+    }
+  };
+
+  const handleTouch = (event) => {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    
+    if (tapLength < 300 && tapLength > 0) {
+      const elements = chartRef.current.getElementsAtEventForMode(
+        event,
+        'nearest',
+        { intersect: true },
+        false
+      );
+      handlePointClick(event, elements);
+      event.preventDefault();
+    }
+    setLastTap(currentTime);
+  };
+
   const chartData = {
     datasets: [{
-      data: sortedDelegators.map((delegator, index) => ({
-        x: index,
-        y: delegator.liveStake,
-        r: (delegator.liveStake / maxStake) * 20 + 5
-      })),
+      data: bubbleData,
       backgroundColor: sortedDelegators.map(delegator => delegatorColors[delegator.address]),
       borderColor: 'transparent',
       hoverBackgroundColor: sortedDelegators.map(
@@ -78,7 +117,10 @@ const PoolDelegatorsTab = ({ delegators }) => {
         },
         ticks: {
           callback: function(value) {
-            return shortener(sortedDelegators[value]?.address || '');
+            if (bubbleData[value]) {
+              return shortener(bubbleData[value].address);
+            }
+            return '';
           }
         }
       }
@@ -88,19 +130,23 @@ const PoolDelegatorsTab = ({ delegators }) => {
         display: false
       },
       tooltip: {
+        enabled: true,
         callbacks: {
-          label: function(context) {
-            const index = context.dataIndex;
-            const delegator = sortedDelegators[index];
+          title: () => '',
+          label: (context) => {
+            const dataPoint = bubbleData[context.dataIndex];
+            if (!dataPoint) return '';
             return [
-              `Wallet: ${shortener(delegator.address)}`,
-              `Stake: ${FormatNumberWithSpaces(delegator.liveStake)} ₳`
+              `Wallet: ${shortener(dataPoint.address)}`,
+              `Stake: ${dataPoint.liveStake} ₳`,
+              'Click to view details'
             ];
           }
         }
       }
     },
-    maintainAspectRatio: false
+    maintainAspectRatio: false,
+    onClick: handlePointClick,
   };
 
   const refreshColors = () => {
@@ -109,16 +155,23 @@ const PoolDelegatorsTab = ({ delegators }) => {
 
   return (
     <div className="space-y-8 p-4">
-      <h2 className="text-xl font-semibold mb-4">Delegators Live Stake Distribution</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Delegators Live Stake Distribution ( {sortedDelegators.length} firsts )</h2>
+      </div>
 
-      {/* Bubble Chart */}
-      <div className="w-full  card bg-base-100">
-        <div className="card-body p-4">
-          <Bubble data={chartData} options={chartOptions} />
+      <div className="w-full h-96 card bg-base-100">
+        <div 
+          className="card-body p-4"
+          onTouchStart={handleTouch}
+        >
+          <Bubble 
+            ref={chartRef}
+            data={chartData} 
+            options={chartOptions}
+          />
         </div>
       </div>
 
-      {/* Color Refresh Button */}
       <div className="flex justify-center">
         <button 
           onClick={refreshColors}
@@ -131,7 +184,6 @@ const PoolDelegatorsTab = ({ delegators }) => {
         </button>
       </div>
 
-      {/* Delegators List */}
       <div className="p-0">
         {sortedDelegators.map((delegator, index) => {
           const stakeKey = delegator.address;
@@ -146,7 +198,9 @@ const PoolDelegatorsTab = ({ delegators }) => {
                 }}
               ></div>
               <div className="relative z-10 flex justify-between items-center">
-                <GetHandle stakekey={stakeKey} />
+                <div className="flex-1 text-center">
+                  <GetHandle stakekey={stakeKey} />
+                </div>
                 <p className="text-sm font-semibold text-gray-700">
                   <FormatNumberWithSpaces number={delegator.liveStake} /> ₳
                 </p>

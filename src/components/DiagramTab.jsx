@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState, useContext, useMemo, useCallback } from "react";
 import { Chart } from "chart.js/auto";
 import { SankeyController, Flow } from "chartjs-chart-sankey";
 import { shortener } from "../utils/utils";
@@ -14,11 +14,12 @@ function DiagramTab({ inputs, outputs }) {
   const [processedTokens, setProcessedTokens] = useState({});
   const [hasTransfers, setHasTransfers] = useState(true);
 
-  useEffect(() => {
-    const detectTheme = () => {
-      return document.documentElement.classList.contains("dark") ? "dark" : "light";
-    };
+  // Déplacer la détection du thème dans un useCallback
+  const detectTheme = useCallback(() => {
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  }, []);
 
+  useEffect(() => {
     setTheme(detectTheme());
 
     const observer = new MutationObserver(() => {
@@ -31,9 +32,10 @@ function DiagramTab({ inputs, outputs }) {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [detectTheme]);
 
-  const formatQuantity = (quantity, unit) => {
+  // Mémoriser les fonctions utilitaires
+  const formatQuantity = useCallback((quantity, unit) => {
     if (unit === 'lovelace') {
       return (quantity / 1000000).toFixed(6);
     }
@@ -42,27 +44,33 @@ function DiagramTab({ inputs, outputs }) {
       return (quantity / Math.pow(10, metadata.decimals)).toFixed(metadata.decimals);
     }
     return quantity.toString();
-  };
+  }, [processedTokens]);
 
-  const getDisplayUnit = (unit) => {
+  const getDisplayUnit = useCallback((unit) => {
     if (unit === 'lovelace') return 'ADA';
     const metadata = processedTokens[unit];
     return metadata?.ticker || metadata?.name || shortener(unit);
-  };
+  }, [processedTokens]);
+
+  // Mémoriser le traitement des tokens
+  const uniqueTokens = useMemo(() => {
+    if (!inputs?.length || !outputs?.length) return new Set();
+    
+    const tokens = new Set();
+    [...inputs, ...outputs].forEach(io => {
+      io.amount.forEach(amt => tokens.add(amt.unit));
+    });
+    return tokens;
+  }, [inputs, outputs]);
 
   useEffect(() => {
     const processTokens = async () => {
-      const uniqueTokens = new Set();
-      [...inputs, ...outputs].forEach(io => {
-        io.amount.forEach(amt => uniqueTokens.add(amt.unit));
-      });
-
       const processedMetadata = {};
       for (const unit of uniqueTokens) {
         try {
           if (unit === 'lovelace') {
             processedMetadata[unit] = { ticker: 'ADA', decimals: 6 };
-          } else {
+          } else if (!processedTokens[unit]) { // Vérifier si on n'a pas déjà les métadonnées
             const metadata = tokenMetadata[unit] || await fetchTokenData(unit);
             processedMetadata[unit] = metadata;
           }
@@ -70,21 +78,21 @@ function DiagramTab({ inputs, outputs }) {
           console.error(`Error processing token ${unit}:`, error);
         }
       }
-      setProcessedTokens(processedMetadata);
+      setProcessedTokens(prev => ({...prev, ...processedMetadata}));
     };
 
-    if (inputs?.length && outputs?.length) {
+    if (uniqueTokens.size > 0) {
       processTokens();
     }
-  }, [inputs, outputs, tokenMetadata, fetchTokenData]);
+  }, [uniqueTokens, tokenMetadata, fetchTokenData]);
 
-  useEffect(() => {
-    if (!chartRef.current || !inputs || !outputs || inputs.length === 0 || outputs.length === 0 || Object.keys(processedTokens).length === 0) {
-      return;
+  // Mémoriser la préparation des données pour le graphique
+  const chartData = useMemo(() => {
+    if (!inputs?.length || !outputs?.length || Object.keys(processedTokens).length === 0) {
+      return null;
     }
 
     const convertToFlow = (quantity) => quantity;
-
     const links = {};
     const allInputs = inputs.reduce((acc, input) => {
       if (input.address && Array.isArray(input.amount)) {
@@ -128,7 +136,7 @@ function DiagramTab({ inputs, outputs }) {
               if (existingUnit) {
                 existingUnit.quantity += flowQuantity;
               } else {
-                links[key].units.push({ 
+                links[key].units.push({
                   unit: outAmt.unit,
                   quantity: flowQuantity,
                   displayUnit: getDisplayUnit(outAmt.unit)
@@ -144,14 +152,15 @@ function DiagramTab({ inputs, outputs }) {
       });
     });
 
-    // Check if there are any actual transfers between different addresses
     setHasTransfers(Object.keys(links).length > 0);
+    return Object.values(links);
+  }, [inputs, outputs, processedTokens, getDisplayUnit]);
 
-    if (Object.keys(links).length === 0) {
+  // Effet pour le rendu du graphique
+  useEffect(() => {
+    if (!chartRef.current || !chartData || chartData.length === 0) {
       return;
     }
-
-    const linksArray = Object.values(links);
 
     const colorText = theme === "dark" ? "#f8f9fa" : "#212529";
     const colorFrom = theme === "dark" ? "#38bdf8" : "#007BFF";
@@ -160,7 +169,7 @@ function DiagramTab({ inputs, outputs }) {
     const data = {
       datasets: [
         {
-          data: linksArray,
+          data: chartData,
           colorFrom: colorFrom,
           colorTo: colorTo,
           color: colorText,
@@ -172,51 +181,50 @@ function DiagramTab({ inputs, outputs }) {
       ],
     };
 
-    if (chartRef.current) {
-      const ctx = chartRef.current.getContext("2d");
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
 
-      chartInstance.current = new Chart(ctx, {
-        type: "sankey",
-        data: data,
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function (tooltipItem) {
-                  const unitsData = tooltipItem.raw.units;
-                  return unitsData.map((u) => 
-                    `${formatQuantity(u.quantity, u.unit)} ${u.displayUnit}`
-                  );
-                },
+    const ctx = chartRef.current.getContext("2d");
+    chartInstance.current = new Chart(ctx, {
+      type: "sankey",
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (tooltipItem) {
+                const unitsData = tooltipItem.raw.units;
+                return unitsData.map((u) => 
+                  `${formatQuantity(u.quantity, u.unit)} ${u.displayUnit}`
+                );
               },
             },
           },
-          title: {
-            display: true,
-            text: "Transaction UTXOs",
-            font: { size: 20 },
-          },
-          interaction: {
-            mode: "nearest",
-            intersect: false,
-          },
-          onHover: (event, elements) => {
-            event.native.target.style.cursor = elements.length ? "pointer" : "default";
-          },
         },
-      });
-    }
+        title: {
+          display: true,
+          text: "Transaction UTXOs",
+          font: { size: 20 },
+        },
+        interaction: {
+          mode: "nearest",
+          intersect: false,
+        },
+        onHover: (event, elements) => {
+          event.native.target.style.cursor = elements.length ? "pointer" : "default";
+        },
+      },
+    });
+
     return () => {
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
     };
-  }, [inputs, outputs, theme, processedTokens]);
+  }, [chartData, theme, formatQuantity]);
 
   return (
     <div>
@@ -231,7 +239,7 @@ function DiagramTab({ inputs, outputs }) {
         </>
       ) : (
         <p className="mx-auto max-w-lg mt-6">
-            This transaction represents UTXO management only - no assets have changed ownership between different addresses.
+          This transaction represents UTXO management only - no assets have changed ownership between different addresses.
         </p>
       )}
     </div>

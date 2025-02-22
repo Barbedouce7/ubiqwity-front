@@ -58,7 +58,7 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
   };
 
   return (
-        <div  className="bg-base-100 p-2 text-base-content">
+        <div  className="p-2 text-base-content">
           <Chart
             type="bar"
             data={combinedData}
