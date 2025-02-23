@@ -17,10 +17,7 @@ const ThemeToggle = () => {
   }, []);
 
   const applyTheme = (newTheme) => {
-    // Supprime toutes les classes de thème
     document.documentElement.classList.remove('dark', 'vibrant');
-    
-    // Applique la nouvelle classe si nécessaire
     if (newTheme !== 'light') {
       document.documentElement.classList.add(newTheme);
     }

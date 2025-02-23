@@ -32,11 +32,11 @@
 
 
 .vibrant .bg-base-100 {
-background: rgb(49,18,44);
-background: linear-gradient(137deg, rgba(49,18,44,1) 0%, rgba(79,24,83,1) 100%);
+background: rgb(221,221,238);
+background: linear-gradient(137deg, rgba(221,221,238,1) 0%, rgba(212,201,240,1) 100%);
 }
 .vibrant .text-base-content {
-  color:white!important;
+  color:black!important;
 }
 .vibrant .text-primary {
   color: #cfa197; 

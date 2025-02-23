@@ -39,10 +39,10 @@ return (
   <div className="flex flex-col gap-6 p-1">
     {/* Bloc Chain Usage & Epoch Context */}
     <div className="flex flex-col md:flex-row gap-4">
-      <div className="flex-1 card bg-base-100 shadow-xl p-4">
+      <div className="flex-1 rounded-xl shadow-xl p-4">
         <EpochContext data={epochContext} />
       </div>
-      <div className="flex-1 card bg-base-100 shadow-xl p-4">
+      <div className="flex-1 rounded-xl shadow-xl p-4">
         {chainUsage && Object.keys(chainUsage).length > 0 ? (
           <ChainUsage data={chainUsage} />
         ) : (
@@ -53,7 +53,7 @@ return (
 
     {/* Bloc Epoch Chart & Latest Block */}
     <div className="flex flex-col md:flex-row gap-4">
-      <div className="flex-1 card bg-base-100 shadow-xl p-4">
+      <div className="flex-1 rounded-xl shadow-xl p-4">
         {epochData ? (
           <EpochChart
             epochLabels={epochData.epochLabels}
@@ -64,7 +64,7 @@ return (
           <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-30"></div>
         )}
       </div>
-      <div className="flex-1 card bg-base-100 shadow-xl">
+      <div className="flex-1 rounded-xl shadow-xl">
         <LatestBlock />
       </div>
     </div>

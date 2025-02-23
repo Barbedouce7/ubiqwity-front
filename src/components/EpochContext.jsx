@@ -36,7 +36,7 @@ const EpochContext = ({ data }) => {
   };
 
   return (
-    <div className="card p-2 text-base-content">
+    <div className="p-2 text-base-content">
       {/* Epoch Progress Bar */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">

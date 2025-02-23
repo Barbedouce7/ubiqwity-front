@@ -18,14 +18,13 @@ function WalletPage() {
   const [walletData, setWalletData] = useState(null);
   const [walletDataHold, setWalletDataHold] = useState(null);
   const [detailsData, setDetailsData] = useState(null);
-  const [activeTab, setActiveTab] = useState('hold');
+  const [activeTab, setActiveTab] = useState('holdings');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingHold, setIsLoadingHold] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [loadedTransactions, setLoadedTransactions] = useState(0);
   const [error, setError] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  // Nouvel état pour suivre si les détails sont en cours de chargement
   const [isDetailsFetching, setIsDetailsFetching] = useState(false);
 
   // Constants
@@ -43,11 +42,10 @@ function WalletPage() {
   }, [walletDataHold?.stakekeyInfo.totalTransactions]);
 
   const availableTabs = useMemo(() => {
-    const baseTabs = ['addresses', 'hold'];
+    const baseTabs = ['holdings', 'addresses'];
     if (walletDataHold?.stakekeyInfo.totalTransactions > 0 && !isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
-    baseTabs.push('json');
     return baseTabs;
   }, [isTransactionLimitExceeded, hasNativeTokens, walletDataHold]);
 
@@ -114,7 +112,7 @@ function WalletPage() {
     };
   }, [walletAddress]);
 
-  // Details data fetch - Modifié pour gérer la barre de progression de manière indépendante
+  // Details data fetch with progress handling
   useEffect(() => {
     const shouldFetchDetails = 
       walletData?.stakekeyInfo && 
@@ -132,7 +130,6 @@ function WalletPage() {
         const identifier = walletData.stakekeyInfo.stakekey || walletData.stakekeyInfo.addressList[0];
         const response = await axios.get(`${API_CONFIG.baseUrl}wallet/${identifier}/details`);
         
-        // Progressive loading simulation
         const totalTx = walletDataHold?.stakekeyInfo.totalTransactions || 0;
         let count = 0;
         const increment = Math.max(1, Math.floor(totalTx / 20));
@@ -157,6 +154,11 @@ function WalletPage() {
 
     fetchDetailsData();
   }, [walletData, detailsData, isTransactionLimitExceeded, walletDataHold?.stakekeyInfo.totalTransactions, isDetailsFetching]);
+
+  // Tab change handler
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -184,18 +186,7 @@ function WalletPage() {
   const { stakekeyInfo } = walletData;
   const mainIdentifier = stakekeyInfo.stakekey || stakekeyInfo.addressList[0];
 
-  const getTabStyle = (tab) => {
-    const baseStyle = "tab-custom cursor-pointer";
-    const isDetailsTab = detailsTabs.includes(tab);
-    const isLoading = isLoadingDetails && isDetailsTab;
-    
-    return [
-      baseStyle,
-      activeTab === tab ? "tab-custom-active" : "",
-      isLoading ? "animate-pulse" : "",
-      (!isDetailsTab || detailsData || isLoading) ? "" : "opacity-60"
-    ].filter(Boolean).join(" ");
-  };
+
 
   const renderAddressesList = () => (
     <div>
@@ -218,9 +209,28 @@ function WalletPage() {
     </div>
   );
 
-  const renderContent = () => {
-    // Afficher la barre de progression si les détails sont en cours de chargement
-    if (isDetailsFetching && detailsTabs.includes(activeTab)) {
+const renderContent = () => {
+    // Si on est sur un onglet de base (hold ou addresses), on le montre même pendant le chargement
+    if (activeTab === 'addresses') {
+      return renderAddressesList();
+    }
+    
+    if (activeTab === 'holdings') {
+      return (
+        isLoadingHold ? (
+          <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-4" />
+        ) : (
+          <WalletHold 
+            holdingsData={{ 
+              holdings: sortedHoldings,
+            }} 
+          />
+        )
+      );
+    }
+
+    // Pour les onglets de détails, on montre la progress bar pendant le chargement initial
+    if (isLoadingDetails && !detailsData) {
       return (
         <div className="mt-8">
           <LoadingProgress 
@@ -232,23 +242,8 @@ function WalletPage() {
       );
     }
 
+    // Une fois les données chargées, on affiche l'onglet de détails approprié
     switch (activeTab) {
-      case 'addresses':
-        return renderAddressesList();
-      
-      case 'hold':
-        return (
-          isLoadingHold ? (
-            <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-4" />
-          ) : (
-            <WalletHold 
-              holdingsData={{ 
-                holdings: sortedHoldings,
-              }} 
-            />
-          )
-        );
-      
       case 'activity':
         return detailsData && (
           <ActivityCharts 
@@ -282,23 +277,30 @@ function WalletPage() {
           />
         );
       
-      case 'json':
-        return (
-          <div className="shadow-xl">
-            <h2 className="text-lg font-bold mb-2">JSON Data</h2>
-            <pre className="overflow-auto max-h-[600px]">
-              {JSON.stringify(walletData, null, 2)}
-            </pre>
-          </div>
-        );
-      
       default:
         return null;
     }
   };
 
+  const getTabStyle = (tab) => {
+    const baseStyle = "tab-custom cursor-pointer";
+    const isDetailsTab = detailsTabs.includes(tab);
+    const isLoading = isLoadingDetails && isDetailsTab;
+    
+    // Ne pas désactiver les onglets de base pendant le chargement
+    const isDisabled = isDetailsTab && !detailsData && !isLoading;
+    
+    return [
+      baseStyle,
+      activeTab === tab ? "tab-custom-active" : "",
+      isLoading ? "animate-pulse" : "",
+      isDisabled ? "opacity-60" : ""
+    ].filter(Boolean).join(" ");
+  };
+
   return (
     <div className="container mx-auto p-4 text-base-content">
+      {/* Header content remains the same */}
       <h1 className="text-2xl font-bold mb-4">Wallet Details</h1>
       
       <div className="mb-4">
@@ -392,12 +394,12 @@ function WalletPage() {
       </div>
 
       {/* Tabs */}
-      <div className="tabs mt-6 mb-6 flex justify-center items-center">
+     <div className="tabs mt-6 mb-6 flex justify-center items-center">
         {availableTabs.map(tab => (
           <a 
             key={tab}
             className={getTabStyle(tab)}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabChange(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </a>

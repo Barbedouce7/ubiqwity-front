@@ -100,11 +100,13 @@ const LatestBlock = () => {
 
 
         {metadata.tx_count > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+          <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <p><strong>Transactions:</strong> {metadata.tx_count}</p>
-            <p><strong>Output:</strong> <FormatNumberWithSpaces number={(metadata.output / 1000000).toFixed(2)}/> ₳</p>
             <p><strong>Fees:</strong> <FormatNumberWithSpaces number={(metadata.fees / 1000000).toFixed(2)}/> ₳</p>
           </div>
+          <p><strong>Output:</strong> <FormatNumberWithSpaces number={(metadata.output / 1000000).toFixed(2)}/> ₳</p>
+          </>
         ) : (
           <p className="mt-4 text-gray-500">Empty block</p>
         )}

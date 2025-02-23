@@ -86,7 +86,7 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
     <div className="grid grid-cols-1 gap-2">
       <p className="text-base-content">MarketCap : {marketCap} B $</p>
       {/* ADA en haut de la liste */}
-      <div className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
+      <div className="shadow-md mt-2 p-2 flex items-center rounded-lg">
         <div className="w-1/4 text-base-content font-semibold">
           <img src="tokens/ada.png" alt="ADA" className="iconCurrency inline-block rounded-full w-8 h-8" />
           <p>ADA</p>
@@ -156,7 +156,7 @@ const CurrencyListWithCharts = ({ data, circulatingSupply }) => {
         }
 
         return (
-          <div key={currency} className="bg-base-100 shadow-md mt-2 p-2 flex items-center rounded-lg">
+          <div key={currency} className="shadow-md mt-2 p-2 flex items-center rounded-lg">
             <div className="w-1/4 text-base-content font-semibold">
               <img src={`tokens/${currency.toLowerCase()}.png`} alt={currency} className="iconCurrency inline-block rounded-full w-8 h-8" />
               <p>{currency}</p>

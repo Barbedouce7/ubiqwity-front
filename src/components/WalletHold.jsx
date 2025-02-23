@@ -198,7 +198,10 @@ const HoldingsComponent = ({ holdingsData }) => {
     processHoldings();
   }, [holdingsData, tokenMetadata, fetchTokenData]);
 
-  const filteredTokens = tokens.filter(token => token.isNFT === showNFTs);
+  const nftTokens = tokens.filter(token => token.isNFT);
+  const fungibleTokens = tokens.filter(token => !token.isNFT);
+  const filteredTokens = showNFTs ? nftTokens : fungibleTokens;
+  const hasAnyTokens = nftTokens.length > 0 || fungibleTokens.length > 0;
 
   if (isLoading) {
     return (
@@ -208,32 +211,35 @@ const HoldingsComponent = ({ holdingsData }) => {
     );
   }
 
-return (
+  return (
     <div className="space-y-6">
-      {filteredTokens.length === 0 ? (
+      {!hasAnyTokens ? (
         <div className="text-center py-8">
           <p className="text-lg font-semibold">No CNT ( FT/NFT ) for this wallet</p>
         </div>
       ) : (
         <>
           <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center gap-4">
-              <span className={!showNFTs ? "font-bold" : "opacity-50"}>Tokens</span>
-              <input 
-                type="checkbox" 
-                className="toggle toggle-primary toggle-lg" 
-                checked={showNFTs}
-                onChange={(e) => setShowNFTs(e.target.checked)}
-              />
-              <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
-            </div>
+            {/* Modifié : Le toggle s'affiche s'il y a au moins un jeton */}
+            {hasAnyTokens && (
+              <div className="flex items-center gap-4">
+                <span className={!showNFTs ? "font-bold" : "opacity-50"}>Tokens</span>
+                <input 
+                  type="checkbox" 
+                  className="toggle toggle-primary toggle-lg" 
+                  checked={showNFTs}
+                  onChange={(e) => setShowNFTs(e.target.checked)}
+                />
+                <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
+              </div>
+            )}
             <h2 className="text-lg font-semibold">
               {filteredTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
             </h2>
           </div>
 
+
           {showNFTs ? (
-            // Affichage en grille pour les NFTs
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredTokens.map(token => (
                 <div key={token.unit} className="card bg-base-100 shadow-xl">
@@ -276,7 +282,6 @@ return (
               ))}
             </div>
           ) : (
-            // Affichage en tableau pour les tokens normaux
             <div className="overflow-x-auto p-4 max-w-lg mx-auto">
               <table className="w-full">
                 <thead>
@@ -304,7 +309,7 @@ return (
                             )}
                           </div>
                           {activeTooltip === token.unit && (
-                            <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px]  border border-sky-500/50 rounded ">
+                            <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px] border border-sky-500/50 rounded">
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                   <span className="font-semibold">Policy ID:</span>
@@ -317,7 +322,7 @@ return (
                                   <span className="font-semibold">Asset Name:</span>
                                   <span className="font-mono text-xs">
                                     {shortener(token.assetName)}
-                                    <CopyButton text={token.assetNamet} className="ml-1" />
+                                    <CopyButton text={token.assetName} className="ml-1" />
                                   </span>
                                 </div>
                               </div>

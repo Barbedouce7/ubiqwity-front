@@ -5,7 +5,37 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const estimateRegion = (timeDifference) => {
+const isDataDistributionValid = (hourlyData) => {
+  // On vérifie qu'il y a au moins une heure avec peu d'activité (potentiel sommeil)
+  // et au moins une heure avec beaucoup d'activité
+  const maxCount = Math.max(...hourlyData);
+  const minCount = Math.min(...hourlyData);
+  
+  // Calculer l'écart-type pour voir si la distribution est assez variée
+  const mean = hourlyData.reduce((sum, count) => sum + count, 0) / hourlyData.length;
+  const variance = hourlyData.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) / hourlyData.length;
+  const stdDev = Math.sqrt(variance);
+  
+  // Le coefficient de variation (CV) nous aide à déterminer si la distribution est trop uniforme
+  const cv = stdDev / mean;
+  
+  // On veut un CV d'au moins 0.5 pour considérer que la distribution n'est pas trop uniforme
+  // et un ratio max/min d'au moins 3 pour avoir un contraste clair entre périodes actives/inactives
+  return cv >= 0.5 && (maxCount / (minCount + 1) >= 3);
+};
+
+const estimateRegion = (timeDifference, hourlyData, totalDataPoints) => {
+  // Vérifier qu'il y a assez de données (au moins 100 points)
+  if (totalDataPoints < 20) {
+    return "Insufficient data";
+  }
+
+  // Vérifier que la distribution des données est valide
+  if (!isDataDistributionValid(hourlyData)) {
+    return "Unable to determine region - activity pattern too uniform";
+  }
+
+  // Si les garde-fous sont passés, on peut estimer la région
   if (timeDifference >= -10 && timeDifference <= -3) return "Americas";
   if (timeDifference >= 0 && timeDifference <= 3) return "Europe and West Africa";
   if (timeDifference >= 3 && timeDifference <= 5) return "East Africa and Middle East";
@@ -57,6 +87,19 @@ const ActivityCharts = ({ detailsData }) => {
     return weekDays.map((day, index) => ({ day, count: weekDayGroups[index] }));
   };
 
+  const hourlyData = groupByHour();
+  const sleepStartUTC = hourlyData.reduce((min, curr, idx) => 
+    curr.count < min.count ? { count: curr.count, hour: idx } : min, 
+    { count: Infinity, hour: 0 }
+  ).hour;
+  
+  const timeDifference = (sleepStartUTC - 0 + 24) % 24;
+  const estimatedRegion = estimateRegion(
+    timeDifference, 
+    hourlyData.map(h => h.count),
+    dataset.length
+  );
+
   const firstActivity = Math.min(...dataset.map(item => item.timestamp));
   const lastActivity = Math.max(...dataset.map(item => item.timestamp));
 
@@ -69,10 +112,6 @@ const ActivityCharts = ({ detailsData }) => {
       borderRadius: 22 
     }],
   });
-
-  const sleepStartUTC = groupByHour().reduce((min, curr, idx) => curr.count < min.count ? { count: curr.count, hour: idx } : min, { count: Infinity, hour: 0 }).hour;
-  const timeDifference = (sleepStartUTC - 0 + 24) % 24;
-  const estimatedRegion = estimateRegion(timeDifference);
 
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -98,18 +137,21 @@ const ActivityCharts = ({ detailsData }) => {
         <div>
           <strong>Last activity:</strong> {new Date(lastActivity * 1000).toLocaleString()}
         </div>
+        <div>
+          <strong>Total activities:</strong> {dataset.length}
+        </div>
       </div>
       <div className="relative inline-block">
         <strong>Estimated Region   <QuestionMarkCircleIcon
           className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 mr-2 mb-1"
           onClick={() => setShowTooltip(!showTooltip)}
-        /> :</strong> {estimatedRegion}
+        /> :</strong><br /> {estimatedRegion}
         {showTooltip && (
           <div 
             className="absolute z-10 w-64 p-2 mt-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip"
             style={{ left: '50%', transform: 'translateX(-50%)' }}
           >
-            This feature is under development. We are trying to determine when a person sleeps to estimate where they live.
+            This estimation is based on activity patterns and requires at least 20 data points with clear active/inactive periods to make a reliable prediction.
           </div>
         )}
       </div>
@@ -125,7 +167,7 @@ const ActivityCharts = ({ detailsData }) => {
         </div>
         <div className="w-full h-80">
           <h3 className="text-lg font-semibold mb-2">By Hour of the Day</h3>
-          <Bar data={createChartData(groupByHour().map(d => d.hour), groupByHour().map(d => d.count), "Activity count")} options={{ maintainAspectRatio: false }} />
+          <Bar data={createChartData(hourlyData.map(d => d.hour), hourlyData.map(d => d.count), "Activity count")} options={{ maintainAspectRatio: false }} />
         </div>
       </div>
     </div>
