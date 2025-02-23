@@ -12,11 +12,13 @@ import WalletPage from './pages/WalletPage';
 import DatumPage from './pages/DatumPage';
 import { API_CONFIG } from './utils/apiConfig';
 import axios from 'axios';
+import { useCardano } from '@cardano-foundation/cardano-connect-with-wallet';
 
 function App() {
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+
 
   useEffect(() => {
     if (location.pathname === '/' && location.state?.from404) {

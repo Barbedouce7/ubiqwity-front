@@ -8,14 +8,18 @@ function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const [isDarkMode, setIsDarkMode] = useState(
+  document.documentElement.classList.contains('dark') || 
+  document.documentElement.classList.contains('vibrant')
+);
   const searchRef = useRef(null);
   const menuRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     const updateTheme = () => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
+      setIsDarkMode(document.documentElement.classList.contains('dark') || 
+                    document.documentElement.classList.contains('vibrant'));
     };
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
