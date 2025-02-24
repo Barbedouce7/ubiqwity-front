@@ -18,22 +18,49 @@ const isDataDistributionValid = (hourlyData) => {
   return cv >= 0.5 && (maxCount / (minCount + 1) >= 3);
 };
 
-const estimateRegion = (timeDifference, hourlyData, totalDataPoints) => {
+const estimateRegion = (hourlyData, totalDataPoints) => {
   if (totalDataPoints < 20) {
     return "Insufficient data";
   }
 
   if (!isDataDistributionValid(hourlyData)) {
-    return "Unable to determine region - activity pattern too uniform";
+    return "Unable to determine region - activity distribution too uniform";
   }
 
-  // Les plages horaires sont maintenant relatives à l'UTC
-  if (timeDifference >= -10 && timeDifference <= -3) return "Americas";
-  if (timeDifference >= 0 && timeDifference <= 3) return "Europe and West Africa";
-  if (timeDifference >= 3 && timeDifference <= 5) return "East Africa and Middle East";
-  if (timeDifference >= 5 && timeDifference <= 7) return "South and Central Asia";
-  if (timeDifference >= 7 && timeDifference <= 12) return "East Asia and Oceania";
-  if (timeDifference >= 3 && timeDifference <= 12) return "Russia (East and West)";
+  // Find periods of low activity (likely night time)
+  // Based on the idea that people usually sleep between 1am and 5am local time
+  const sleepHours = [1, 2, 3, 4, 5 , 6, 7]; // Typical sleep hours (local time)
+  
+  // Identify the activity trough over a 5-hour consecutive window
+  let minActivitySum = Infinity;
+  let sleepStartHourUTC = 0;
+  
+  for (let i = 0; i < 24; i++) {
+    let windowSum = 0;
+    for (let j = 0; j < 5; j++) {
+      const hour = (i + j) % 24;
+      windowSum += hourlyData[hour];
+    }
+    
+    if (windowSum < minActivitySum) {
+      minActivitySum = windowSum;
+      sleepStartHourUTC = i;
+    }
+  }
+  
+  // Estimate the time difference assuming sleep starts around 1am local time
+  // sleepStartHourUTC = 1am local + offset
+  // so offset = sleepStartHourUTC - 1
+  const estimatedOffset = (sleepStartHourUTC - 1 + 24) % 24;
+  
+  // Convert the estimated offset to a region
+  if (estimatedOffset >= 16 && estimatedOffset <= 23) return "Americas";
+  if (estimatedOffset >= 0 && estimatedOffset <= 3) return "Europe and West Africa";
+  if (estimatedOffset >= 3 && estimatedOffset <= 5) return "East Africa and Middle East";
+  if (estimatedOffset >= 5 && estimatedOffset <= 7) return "South and Central Asia";
+  if (estimatedOffset >= 8 && estimatedOffset <= 12) return "East Asia and Oceania";
+  if (estimatedOffset >= 3 && estimatedOffset <= 11) return "Russia (East and West)"; // Note: There's an overlap with other regions here
+  
   return "Unknown region";
 };
 
@@ -45,7 +72,7 @@ const ActivityCharts = ({ detailsData }) => {
   const dataset = detailsData.full_dataset;
 
   const getAllDates = () => {
-    // Utiliser UTC pour toutes les dates
+    // Use UTC for all dates
     const timestamps = dataset.map(item => new Date(item.timestamp * 1000));
     const minDate = new Date(Math.min(...timestamps));
     const maxDate = new Date(Math.max(...timestamps));
@@ -86,17 +113,9 @@ const ActivityCharts = ({ detailsData }) => {
   };
 
   const hourlyData = groupByHour();
-  const sleepStartUTC = hourlyData.reduce((min, curr, idx) => 
-    curr.count < min.count ? { count: curr.count, hour: idx } : min, 
-    { count: Infinity, hour: 0 }
-  ).hour;
+  const hourlyCountsOnly = hourlyData.map(h => h.count);
   
-  const timeDifference = (sleepStartUTC - 0 + 24) % 24;
-  const estimatedRegion = estimateRegion(
-    timeDifference, 
-    hourlyData.map(h => h.count),
-    dataset.length
-  );
+  const estimatedRegion = estimateRegion(hourlyCountsOnly, dataset.length);
 
   const formatUTCDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
@@ -149,7 +168,7 @@ const ActivityCharts = ({ detailsData }) => {
         </div>
       </div>{/*
       <div className="relative inline-block">
-        <strong>Estimated Region   <QuestionMarkCircleIcon
+        <strong>Estimated Region <QuestionMarkCircleIcon
           className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 mr-2 mb-1"
           onClick={() => setShowTooltip(!showTooltip)}
         /> :</strong><br /> {estimatedRegion}
@@ -158,23 +177,23 @@ const ActivityCharts = ({ detailsData }) => {
             className="absolute z-10 w-64 p-2 mt-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip"
             style={{ left: '50%', transform: 'translateX(-50%)' }}
           >
-            This estimation is based on UTC activity patterns and requires at least 20 data points with clear active/inactive periods to make a reliable prediction.
+            This estimation is based on UTC activity patterns and requires at least 20 data points with clearly active/inactive periods for a reliable prediction.
           </div>
         )}
       </div>*/}
       <div className="w-full h-80">
-        <h3 className="text-lg font-semibold mb-4">Overall Activity (UTC)</h3>
-        <Bar data={createChartData(getAllDates().map(d => d.date), getAllDates().map(d => d.count), "Activity count")} options={{ maintainAspectRatio: false }} />
+        <h3 className="text-lg font-semibold mb-4">Global Activity (UTC)</h3>
+        <Bar data={createChartData(getAllDates().map(d => d.date), getAllDates().map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
       </div>
       <div className="min-h-20"></div>
       <div className="flex flex-col md:flex-row pb-10 gap-10">
         <div className="w-full h-80">
-          <h3 className="text-lg font-semibold mb-2">By Day of the Week (UTC)</h3>
-          <Bar data={createChartData(groupByWeekDay().map(d => d.day), groupByWeekDay().map(d => d.count), "Activity count")} options={{ maintainAspectRatio: false }} />
+          <h3 className="text-lg font-semibold mb-2">By Day of Week (UTC)</h3>
+          <Bar data={createChartData(groupByWeekDay().map(d => d.day), groupByWeekDay().map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
         </div>
         <div className="w-full h-80">
-          <h3 className="text-lg font-semibold mb-2">By Hour of the Day (UTC)</h3>
-          <Bar data={createChartData(hourlyData.map(d => d.hour), hourlyData.map(d => d.count), "Activity count")} options={{ maintainAspectRatio: false }} />
+          <h3 className="text-lg font-semibold mb-2">By Hour of Day (UTC)</h3>
+          <Bar data={createChartData(hourlyData.map(d => d.hour), hourlyData.map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
         </div>
       </div>
     </div>
