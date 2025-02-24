@@ -9,9 +9,9 @@ function Navbar({ handleSearch }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
-  document.documentElement.classList.contains('dark') || 
-  document.documentElement.classList.contains('vibrant')
-);
+    document.documentElement.classList.contains('dark') || 
+    document.documentElement.classList.contains('vibrant')
+  );
   const searchRef = useRef(null);
   const menuRef = useRef(null);
   const inputRef = useRef(null);
@@ -54,9 +54,16 @@ function Navbar({ handleSearch }) {
   };
 
   const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (!isSearchOpen) {
+    if (isSearchOpen && searchInput.trim()) {
+      // Si la recherche est ouverte et qu'il y a du texte, on lance la recherche
+      onSearchSubmit();
+    } else if (isSearchOpen && !searchInput.trim()) {
+      // Si la recherche est ouverte mais vide, on ferme
+      setIsSearchOpen(false);
       setSearchInput("");
+    } else {
+      // Si la recherche est fermée, on ouvre
+      setIsSearchOpen(true);
     }
   };
 
@@ -73,7 +80,6 @@ function Navbar({ handleSearch }) {
         </a>
       </div>
       <div className="flex items-center gap-2">
-        {/* Barre de recherche */}
         <div className="relative flex items-center" ref={searchRef}>
           <div className={`
             transition-all duration-300 ease-in-out
@@ -95,7 +101,10 @@ function Navbar({ handleSearch }) {
           <div className="flex">
             {isSearchOpen && (
               <button 
-                onClick={() => setIsSearchOpen(false)} 
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchInput("");
+                }} 
                 className="btn btn-ghost btn-circle rounded hover:bg-gray-400/20"
               >
                 <svg 
