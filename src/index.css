@@ -30,7 +30,6 @@
   color: green !important; /* Use !important for immediate priority */
 }
 
-
 .vibrant .bg-base-100 {
 background: rgb(49,18,44);
 background: linear-gradient(137deg, rgba(49,18,44,1) 0%, rgba(79,24,83,1) 100%);

@@ -5,7 +5,7 @@ import WalletConnect from '../components/WalletConnect';
 const AboutPage = () => {
   return (
     <>
-      <div className="text-base-content max-w-lg mx-auto mt-20 text-left">
+      <div className="text-base-content max-w-lg mx-auto mt-20 text-left p-6">
             {/*<WalletConnect />*/}
 
         <h2 className="text-xl mb-3">About</h2>
