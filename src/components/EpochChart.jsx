@@ -1,35 +1,41 @@
-import React from "react";
-import { Card, CardContent } from "@mui/material";
-import {
-  Chart as ChartJS,
-  LineElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-  BarController,
-  LineController, 
-  Filler
-} from "chart.js";
+import React, { useState, useEffect, useCallback } from "react";
 import { Chart } from "react-chartjs-2";
-
-ChartJS.register(
-  LineController,
-  BarController,
-  LineElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-  Filler
-);
 
 
 const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
+  const detectTheme = useCallback(() => {
+    if (typeof document !== "undefined" && document.documentElement) {
+      return document.documentElement.classList.contains("dark") || 
+             document.documentElement.classList.contains("vibrant") 
+             ? "dark" 
+             : "light";
+    }
+    return "light";
+  }, []);
+
+  const [theme, setTheme] = useState(detectTheme());
+
+  // Met à jour immédiatement le thème si la détection initiale est incorrecte
+  useEffect(() => {
+    setTheme(detectTheme());
+  }, [detectTheme]);
+
+  // Surveiller les changements de thème dynamiquement
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(detectTheme());
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, [detectTheme]);
+
+  const colorText = theme === "dark" ? "#f8f9fa" : "#212529";
+
   const combinedData = {
     labels: epochLabels,
     datasets: [
@@ -38,11 +44,10 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
         label: "Transaction Counts",
         data: (txCounts || []).map((value) => value / 1_000),
         borderColor: "rgba(52, 165, 230, 1)",
-        backgroundColor: "rgba(52, 165, 230, 0.9",
+        backgroundColor: "rgba(52, 165, 230, 0.9)",
         borderWidth: 1,
         yAxisID: "y1",
         borderRadius: 10,
-
       },
       {
         type: "line",
@@ -58,29 +63,44 @@ const EpochChart = ({ epochLabels, txCounts, activeStakes }) => {
   };
 
   return (
-        <div  className="p-2 text-base-content">
-          <Chart
-            type="bar"
-            data={combinedData}
-            options={{
-              responsive: true,
-              scales: {
-                y1: { 
-                  type: "linear",
-                  position: "left",
-                },
-                y2: { 
-                  type: "linear",
-                  position: "right",
-                },
+    <div className="p-2 text-base-content">
+      <Chart
+        type="bar"
+        data={combinedData}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: colorText, // Couleur des labels de la légende
               },
-            }}
-          />
-        </div>
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: colorText, // Couleur des labels de l'axe X
+              },
+            },
+            y1: { 
+              type: "linear",
+              position: "left",
+              ticks: {
+                color: colorText, // Couleur des labels de l'axe Y gauche
+              },
+            },
+            y2: { 
+              type: "linear",
+              position: "right",
+              ticks: {
+                color: colorText, // Couleur des labels de l'axe Y droit
+              },
+            },
+          },
+        }}
+      />
+    </div>
   );
 };
 
-
-
 export default EpochChart;
-

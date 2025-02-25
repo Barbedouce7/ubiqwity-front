@@ -108,7 +108,7 @@ const LatestBlock = () => {
           <p><strong>Output:</strong> <FormatNumberWithSpaces number={(metadata.output / 1000000).toFixed(2)}/> ₳</p>
           </>
         ) : (
-          <p className="mt-4 text-gray-500">Empty block</p>
+          <p className="mt-4 text-base-content opacity-60">Empty block</p>
         )}
 
         <p className="mt-4">
@@ -134,7 +134,7 @@ const LatestBlock = () => {
                   ))
                 ) : (
                   <tr>
-                    <td className="p-2 text-center text-gray-500">Empty block</td>
+                    <td className="p-2 text-center text-base-content opacity-60">Empty block</td>
                   </tr>
                 )}
               </tbody>
