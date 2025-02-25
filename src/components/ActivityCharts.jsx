@@ -1,92 +1,101 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const isDataDistributionValid = (hourlyData) => {
   const maxCount = Math.max(...hourlyData);
   const minCount = Math.min(...hourlyData);
-  
   const mean = hourlyData.reduce((sum, count) => sum + count, 0) / hourlyData.length;
   const variance = hourlyData.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) / hourlyData.length;
   const stdDev = Math.sqrt(variance);
-  
   const cv = stdDev / mean;
-  
-  return cv >= 0.5 && (maxCount / (minCount + 1) >= 3);
+  return cv >= 0.5 && maxCount / (minCount + 1) >= 3;
 };
 
 const estimateRegion = (hourlyData, totalDataPoints) => {
-  if (totalDataPoints < 20) {
-    return "Insufficient data";
-  }
+  if (totalDataPoints < 20) return "Insufficient data";
+  if (!isDataDistributionValid(hourlyData)) return "Unable to determine region - activity distribution too uniform";
 
-  if (!isDataDistributionValid(hourlyData)) {
-    return "Unable to determine region - activity distribution too uniform";
-  }
-
-  // Find periods of low activity (likely night time)
-  // Based on the idea that people usually sleep between 1am and 5am local time
-  const sleepHours = [1, 2, 3, 4, 5 , 6, 7]; // Typical sleep hours (local time)
-  
-  // Identify the activity trough over a 5-hour consecutive window
   let minActivitySum = Infinity;
   let sleepStartHourUTC = 0;
-  
   for (let i = 0; i < 24; i++) {
     let windowSum = 0;
     for (let j = 0; j < 5; j++) {
       const hour = (i + j) % 24;
       windowSum += hourlyData[hour];
     }
-    
     if (windowSum < minActivitySum) {
       minActivitySum = windowSum;
       sleepStartHourUTC = i;
     }
   }
-  
-  // Estimate the time difference assuming sleep starts around 1am local time
-  // sleepStartHourUTC = 1am local + offset
-  // so offset = sleepStartHourUTC - 1
   const estimatedOffset = (sleepStartHourUTC - 1 + 24) % 24;
-  
-  // Convert the estimated offset to a region
+
   if (estimatedOffset >= 16 && estimatedOffset <= 23) return "Americas";
   if (estimatedOffset >= 0 && estimatedOffset <= 3) return "Europe and West Africa";
   if (estimatedOffset >= 3 && estimatedOffset <= 5) return "East Africa and Middle East";
   if (estimatedOffset >= 5 && estimatedOffset <= 7) return "South and Central Asia";
   if (estimatedOffset >= 8 && estimatedOffset <= 12) return "East Asia and Oceania";
-  if (estimatedOffset >= 3 && estimatedOffset <= 11) return "Russia (East and West)"; // Note: There's an overlap with other regions here
-  
+  if (estimatedOffset >= 3 && estimatedOffset <= 11) return "Russia (East and West)";
   return "Unknown region";
 };
 
 const ActivityCharts = ({ detailsData }) => {
+  const detectTheme = useCallback(() => {
+    if (typeof document !== "undefined" && document.documentElement) {
+      return document.documentElement.classList.contains("dark") || 
+             document.documentElement.classList.contains("vibrant") 
+             ? "dark" 
+             : "light";
+    }
+    return "light";
+  }, []);
+
+  const [theme, setTheme] = useState(detectTheme());
+
+  const themeColors = {
+    light: {
+      text: "#111111",        // gray-800
+      bar: "#34A5E6",        // bleu original
+      background: "#FFFFFF",  // blanc
+      gridLines: "#eaeaea",   // gray-200
+    },
+    dark: {
+      text: "#eeeeee",        // gray-200
+      bar: "#60A5FA",        // bleu plus clair pour dark mode
+      background: "#1F2937",  // gray-800
+      gridLines: "#656565",   // gray-600
+    }
+  };
+
+  useEffect(() => {
+    const handleThemeChange = () => setTheme(detectTheme());
+    handleThemeChange(); // Mise à jour immédiate
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [detectTheme]);
+
   if (!detailsData?.full_dataset) {
-    return <p>No data available.</p>;
+    return <p className="text-base-content">No data available.</p>;
   }
 
   const dataset = detailsData.full_dataset;
 
   const getAllDates = () => {
-    // Use UTC for all dates
     const timestamps = dataset.map(item => new Date(item.timestamp * 1000));
     const minDate = new Date(Math.min(...timestamps));
     const maxDate = new Date(Math.max(...timestamps));
     const dateMap = new Map();
-    
     for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
       dateMap.set(d.toISOString().split('T')[0], 0);
     }
-    
     dataset.forEach(item => {
       const date = new Date(item.timestamp * 1000).toISOString().split('T')[0];
       dateMap.set(date, (dateMap.get(date) || 0) + 1);
     });
-    
     return Array.from(dateMap.entries()).map(([date, count]) => ({ date, count }));
   };
 
@@ -114,7 +123,6 @@ const ActivityCharts = ({ detailsData }) => {
 
   const hourlyData = groupByHour();
   const hourlyCountsOnly = hourlyData.map(h => h.count);
-  
   const estimatedRegion = estimateRegion(hourlyCountsOnly, dataset.length);
 
   const formatUTCDate = (timestamp) => {
@@ -134,39 +142,48 @@ const ActivityCharts = ({ detailsData }) => {
     datasets: [{ 
       label, 
       data: values, 
-      backgroundColor: "#34A5E6", 
+      backgroundColor: themeColors[theme].bar,
       borderRadius: 22 
     }],
   });
 
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showTooltip && !event.target.closest('.relative.inline-block')) {
-        setShowTooltip(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showTooltip]);
+  const chartOptions = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        labels: {
+          color: themeColors[theme].text,
+          font: { size: 14 },
+        },
+      },
+      tooltip: {
+        backgroundColor: themeColors[theme].background,
+        titleColor: themeColors[theme].text,
+        bodyColor: themeColors[theme].text,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: themeColors[theme].text },
+        grid: { color: themeColors[theme].gridLines },
+      },
+      y: {
+        ticks: { color: themeColors[theme].text },
+        grid: { color: themeColors[theme].gridLines },
+      },
+    },
+  };
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 text-base-content">
       <div className="flex flex-col md:flex-row justify-between">
-        <div>
-          <strong>First activity:</strong> {formatUTCDate(firstActivity)}
-        </div>
-        <div>
-          <strong>Last activity:</strong> {formatUTCDate(lastActivity)}
-        </div>
-        <div>
-          <strong>Total activities:</strong> {dataset.length}
-        </div>
-      </div>{/*
+        <div><strong>First activity:</strong> {formatUTCDate(firstActivity)}</div>
+        <div><strong>Last activity:</strong> {formatUTCDate(lastActivity)}</div>
+        <div><strong>Total activities:</strong> {dataset.length}</div>
+      </div>
+
+     {/*
       <div className="relative inline-block">
         <strong>Estimated Region <QuestionMarkCircleIcon
           className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 mr-2 mb-1"
@@ -180,20 +197,34 @@ const ActivityCharts = ({ detailsData }) => {
             This estimation is based on UTC activity patterns and requires at least 20 data points with clearly active/inactive periods for a reliable prediction.
           </div>
         )}
-      </div>*/}
+      </div>
+      */}
+      
       <div className="w-full h-80">
         <h3 className="text-lg font-semibold mb-4">Global Activity (UTC)</h3>
-        <Bar data={createChartData(getAllDates().map(d => d.date), getAllDates().map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
+        <Bar 
+          key={`global-${theme}`} // Forcer le re-rendu
+          data={createChartData(getAllDates().map(d => d.date), getAllDates().map(d => d.count), "Number of activities")} 
+          options={chartOptions}
+        />
       </div>
       <div className="min-h-20"></div>
       <div className="flex flex-col md:flex-row pb-10 gap-10">
         <div className="w-full h-80">
           <h3 className="text-lg font-semibold mb-2">By Day of Week (UTC)</h3>
-          <Bar data={createChartData(groupByWeekDay().map(d => d.day), groupByWeekDay().map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
+          <Bar 
+            key={`weekday-${theme}`} // Forcer le re-rendu
+            data={createChartData(groupByWeekDay().map(d => d.day), groupByWeekDay().map(d => d.count), "Number of activities")} 
+            options={chartOptions}
+          />
         </div>
         <div className="w-full h-80">
           <h3 className="text-lg font-semibold mb-2">By Hour of Day (UTC)</h3>
-          <Bar data={createChartData(hourlyData.map(d => d.hour), hourlyData.map(d => d.count), "Number of activities")} options={{ maintainAspectRatio: false }} />
+          <Bar 
+            key={`hourly-${theme}`} // Forcer le re-rendu
+            data={createChartData(hourlyData.map(d => d.hour), hourlyData.map(d => d.count), "Number of activities")} 
+            options={chartOptions}
+          />
         </div>
       </div>
     </div>

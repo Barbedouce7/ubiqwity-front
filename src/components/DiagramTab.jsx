@@ -9,14 +9,22 @@ Chart.register(SankeyController, Flow);
 function DiagramTab({ inputs, outputs }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(
+    document.documentElement.classList.contains('dark') || 
+    document.documentElement.classList.contains('vibrant')
+  );
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
   const [processedTokens, setProcessedTokens] = useState({});
   const [hasTransfers, setHasTransfers] = useState(true);
 
-  // Déplacer la détection du thème dans un useCallback
   const detectTheme = useCallback(() => {
-    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+    if (document.documentElement.classList.contains("dark")) {
+      return "dark";
+    } else if (document.documentElement.classList.contains("vibrant")) {
+      return "dark";
+    } else {
+      return "light";
+    }
   }, []);
 
   useEffect(() => {

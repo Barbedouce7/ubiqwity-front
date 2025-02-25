@@ -46,6 +46,31 @@ const WalletFriends = ({ stakekey, friendsData }) => {
   const [walletColors, setWalletColors] = useState(() => 
     generateWalletColors(sortedStakeKeys)
   );
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const detectTheme = () => {
+      if (typeof document !== "undefined" && document.documentElement) {
+        if (document.documentElement.classList.contains("dark")) {
+          setTheme("dark");
+        } else if (document.documentElement.classList.contains("vibrant")) {
+          setTheme("dark");
+        } else {
+          setTheme("light");
+        }
+      }
+    };
+
+    detectTheme(); // Initialisation
+    const observer = new MutationObserver(detectTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
+
+  const textColor = theme === "dark" ? "#ffffff" : "#000000";
+  const gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+  const tooltipBg = theme === "dark" ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.8)";
 
   const maxFrequency = sortedStakeKeys[0]?.[1] || 1;
 
@@ -69,18 +94,30 @@ const WalletFriends = ({ stakekey, friendsData }) => {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Frequency'
+          text: 'Frequency',
+          color: textColor
+        },
+        ticks: {
+          color: textColor
+        },
+        grid: {
+          color: gridColor
         }
       },
       x: {
         title: {
           display: true,
-          text: 'Wallets'
+          text: 'Wallets',
+          color: textColor
         },
         ticks: {
+          color: textColor,
           callback: function(value) {
             return shortener(sortedStakeKeys[value]?.[0] || '');
           }
+        },
+        grid: {
+          color: gridColor
         }
       }
     },
@@ -89,6 +126,9 @@ const WalletFriends = ({ stakekey, friendsData }) => {
         display: false
       },
       tooltip: {
+        backgroundColor: tooltipBg,
+        titleColor: textColor,
+        bodyColor: textColor,
         callbacks: {
           label: function(context) {
             const index = context.dataIndex;
@@ -112,7 +152,7 @@ const WalletFriends = ({ stakekey, friendsData }) => {
   return (
     <div className="space-y-8 p-4">
       {/* Bubble Chart */}
-      <div className="w-full card bg-base-100">
+      <div className="w-full">
         <div className="card-body p-4">
           <Bubble data={chartData} options={chartOptions} />
         </div>
@@ -134,7 +174,7 @@ const WalletFriends = ({ stakekey, friendsData }) => {
       {/* Wallet Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedStakeKeys.map(([stakeKey, frequency]) => (
-          <div key={stakeKey} className="card bg-base-100 shadow-xl">
+          <div key={stakeKey} className="shadow-xl">
             <div
               className="h-2 rounded-t-2xl"
               style={{ 
@@ -152,7 +192,9 @@ const WalletFriends = ({ stakekey, friendsData }) => {
                   {shortener(stakeKey)}
                 </Link>
               </h3>
-              <p className="text-gray-500 opacity-80">Frequency : {frequency}</p>
+              <p style={{ color: textColor }} className="opacity-80">
+                Frequency: {frequency}
+              </p>
             </div>
           </div>
         ))}
