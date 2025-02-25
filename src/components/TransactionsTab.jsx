@@ -10,6 +10,42 @@ import {
   ArrowDownIcon, 
   ArrowUpIcon 
 } from '@heroicons/react/24/solid';
+import scriptMappings from '../utils/scriptMapping'
+
+const getScriptName = (scriptHash) => {
+  return scriptMappings[scriptHash] || "Unknown script";
+};
+
+const ScriptBadge = ({ script }) => {
+  const [showHash, setShowHash] = useState(false);
+  const [isMobileClicked, setIsMobileClicked] = useState(false);
+  
+  const handleClick = () => {
+    // Sur mobile, le clic alterne l'affichage du hash
+    setIsMobileClicked(!isMobileClicked);
+  };
+
+  return (
+    <div className="relative inline-block">
+      <span 
+        className="badge badge-sm cursor-pointer"
+        onMouseEnter={() => setShowHash(true)}
+        onMouseLeave={() => setShowHash(false)}
+        onClick={handleClick}
+      >
+        {getScriptName(script)}
+      </span>
+      
+      {/* Tooltip qui apparaît au survol sur desktop ou au clic sur mobile */}
+      {(showHash || isMobileClicked) && (
+        <div className="absolute z-10 top-full left-0 mt-1 px-2 py-1 text-xs bg-base-300 rounded shadow-md whitespace-nowrap">
+          {script}
+          <CopyButton text={script} className="ml-1 scale-75" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ITEMS_PER_PAGE = 10;
 
@@ -86,6 +122,7 @@ const TransactionsTab = ({ transactions }) => {
             <tr>
               <th>Date</th>
               <th>Hash</th>
+              <th>Scripts</th>
             </tr>
           </thead>
           <tbody>
@@ -98,6 +135,17 @@ const TransactionsTab = ({ transactions }) => {
                   </Link>
                   <CopyButton text={tx.hash} />
                 </td>
+                            <td>
+              <div className="flex flex-wrap gap-1">
+                {tx.scripts && tx.scripts.length > 0 ? (
+                  tx.scripts.map((script, scriptIndex) => (
+                    <ScriptBadge key={scriptIndex} script={script} />
+                  ))
+                ) : (
+                  <span className="text-xs opacity-60">No scripts</span>
+                )}
+              </div>
+            </td>
               </tr>
             ))}
           </tbody>

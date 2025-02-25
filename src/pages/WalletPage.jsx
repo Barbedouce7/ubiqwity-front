@@ -273,6 +273,7 @@ const renderContent = () => {
             transactions={detailsData.full_dataset.map(tx => ({
               hash: tx.txHash,
               timestamp: tx.timestamp,
+              scripts: tx.scripts,
             }))} 
           />
         );
