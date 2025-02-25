@@ -189,7 +189,8 @@ const HistoricChart = ({ data }) => {
                         borderWidth: 2,
                         tension: 0.1,
                         fill: false,
-                        hidden: !preferredWithData.includes(token)
+                        hidden: !preferredWithData.includes(token),
+                        stepped: 'before'
                     };
                 });
 
