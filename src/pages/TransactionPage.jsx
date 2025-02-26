@@ -11,7 +11,7 @@ import TxTabScriptAndDatums from '../components/TxTabScriptAndDatums';
 import { TokenContext } from '../utils/TokenContext';
 import CopyButton from '../components/CopyButton';
 import { shortener } from '../utils/utils';
-
+import CheckBridges from '../components/CheckBridges';
 
 function TransactionPage() {
   const { txId } = useParams();
@@ -107,7 +107,7 @@ function TransactionPage() {
           <span className="text-orange-500"> {data.utxos.outputs.length} Output{data.utxos.outputs.length !== 1 ? 's' : ''}</span>
         </p>
       </div>
-
+       {data.metadata && (<CheckBridges metadata={data.metadata} />)}
       <div className="tabs mt-6 mb-6 flex justify-center items-center">
         <div className="tabs mb-4 flex justify-center items-center">
           <a className={`tab-custom ${activeTab === 'diagram' ? 'tab-custom-active' : ''}`} onClick={() => setActiveTab('diagram')}>Diagram</a>

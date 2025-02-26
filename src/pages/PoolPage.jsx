@@ -73,10 +73,10 @@ function PoolPage() {
 
 
       <div className="text-center mb-6 mt-6">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span>
+        <p className="text-lg">Ticker: <span className="font-bold text-sky-500">{data.metadata.ticker}</span>
 {data.metadata.homepage && (<span className="font-bold text-sky-500 ml-2 mt-2"><a href={data.metadata.homepage} className="inline-flex items-center"><GlobeAltIcon className="w-4 h-4" /></a></span>)}
         </p>
-        <p className="text-lg text-gray-700 dark:text-gray-300">Pool id: <CopyButton text={data.metadata.pool_id} /><span className="font-bold text-sky-500">{shortener(data.metadata.pool_id)}</span></p>
+        <p className="text-lg">Pool id: <CopyButton text={data.metadata.pool_id} /><span className="font-bold text-sky-500">{shortener(data.metadata.pool_id)}</span></p>
         <p className="text-lg">Fixed Cost: <span className="font-bold">{data.stats.fixedCost} ₳</span></p>
         <p className="text-lg">Margin Cost: <span className="font-bold">{data.stats.marginPercentage}</span></p>
         <p className="text-lg">Live Pledge: <span className="font-bold"><FormatNumberWithSpaces number={data.stats.pledge.live}/> ₳</span></p>
