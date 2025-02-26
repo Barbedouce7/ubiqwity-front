@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from 'react-router-dom';
 import { shortener } from '../utils/utils';
+import GetHandle from '../components/GetHandle';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -183,6 +185,7 @@ const WalletFriends = ({ stakekey, friendsData }) => {
               }}
             ></div>
             <div className="card-body p-4">
+            <GetHandle stakekey={stakeKey} />
               <h3 className="card-title break-all">
                 <Link 
                   className="hover:opacity-80 transition-opacity"
