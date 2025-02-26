@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
-import { ServerIcon, HomeIcon, FingerPrintIcon } from '@heroicons/react/24/solid';
+import { ServerIcon, HomeIcon, FingerPrintIcon, BanknotesIcon } from '@heroicons/react/24/solid';
 
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
@@ -166,6 +166,14 @@ function Navbar({ handleSearch }) {
                 <HomeIcon className="w-5 h-5 mr-3" />
                 Home
               </Link>
+              <Link 
+                to="/prices"
+                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BanknotesIcon className="w-5 h-5 mr-3"/>
+                Prices
+              </Link> 
               <Link 
                 to="/pools"
                 className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
