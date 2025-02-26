@@ -96,4 +96,8 @@ const scriptMappings = {
   'a76f0fb801a29f591e9871576508d85b0b5f3c38774f65032f58fdad': 'Wayup', // wayup marketplace contract
 };
 
+export const getScriptName = (scriptHash) => {
+  return scriptMappings[scriptHash] || "Unknown script";
+};
+
 export default scriptMappings;

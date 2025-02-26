@@ -10,6 +10,8 @@ import { TokenContext } from '../utils/TokenContext';
 import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
 import CopyButton from '../components/CopyButton';
+import { getScriptName } from '../utils/scriptMapping';
+import ScriptBadge from '../components/ScriptBadge';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => (
   <div className="flex justify-center items-center gap-1 mt-1">
@@ -172,7 +174,7 @@ const UTXOCard = ({ data, type, index, handleComponent, showScriptInfo }) => {
               <div className="flex items-center justify-between text-sm">
                 <span className="opacity-70">Reference Script:</span>
                 <div className="flex items-center gap-1">
-                  <span className="truncate max-w-[200px]">{shortener(data.reference_script_hash)}</span>
+                  <ScriptBadge script={data.reference_script_hash} />
                   <CopyButton text={data.reference_script_hash} />
                 </div>
               </div>
