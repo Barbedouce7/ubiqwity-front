@@ -15,7 +15,6 @@ import { getScriptName } from '../utils/scriptMapping';
 import ScriptBadge from '../components/ScriptBadge';
 
 
-const scriptName = getScriptName(script);
 
 const ITEMS_PER_PAGE = 10;
 
