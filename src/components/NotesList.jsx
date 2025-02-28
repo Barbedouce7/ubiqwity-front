@@ -193,7 +193,7 @@ const NotesList = () => {
       <div className="space-y-6">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note._id} className="shadow-md">
+            <div key={note._id} className="shadow-xl mt-4">
               <div className="p-4">
                 {/* En-tête inspiré du second composant */}
                 <div className="flex justify-between items-start mb-4">

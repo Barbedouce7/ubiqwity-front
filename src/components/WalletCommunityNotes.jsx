@@ -147,7 +147,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Filters - Conditional display based on user rights */}
+        {/* Filters - Conditional display based on user rights 
         <div className="tabs mb-6">
           <a 
             className={`tab-custom cursor-pointer ${statusFilter === 'approved' ? 'tab-active' : ''}`}
@@ -181,7 +181,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
               </a>
             </>
           )}
-        </div>
+        </div>*/}
 
         {/* Notes list */}
         <div className="space-y-4 mb-4">
