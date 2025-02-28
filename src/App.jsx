@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ThemeToggle from './components/ThemeToggle';
 import Footer from './components/Footer';
@@ -11,9 +11,33 @@ import PoolsPage from './pages/PoolsPage';
 import PricesPage from './pages/PricesPage';
 import WalletPage from './pages/WalletPage';
 import DatumPage from './pages/DatumPage';
+import CommunityNotesPage from './pages/CommunityNotesPage';
+import ProfilPage from './pages/ProfilPage';
+import ModerationPage from './pages/ModerationPage';
 import { API_CONFIG } from './utils/apiConfig';
 import axios from 'axios';
 import { useCardano } from '@cardano-foundation/cardano-connect-with-wallet';
+import { AuthProvider, useAuth } from './utils/AuthContext';
+
+
+const ProtectedRoute = ({ children, requiredRole = 'user' }) => {
+  const { isAuthenticated, isModerator, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="p-6 text-center">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" />;
+  }
+  
+  if (requiredRole === 'moderator' && !isModerator) {
+    return <Navigate to="/profil" />;
+  }
+  
+  return children;
+};
+
 
 function App() {
   const [searchInput, setSearchInput] = useState('');
@@ -42,6 +66,7 @@ function App() {
   };
 
   return (
+    <AuthProvider>
     <div className="w-full bg-base-100 mx-auto text-center min-h-screen">
       <Navbar handleSearch={handleSearch} setSearchInput={setSearchInput} searchInput={searchInput} />
       <ThemeToggle />
@@ -54,9 +79,13 @@ function App() {
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
         <Route path="/datum/:datumHash" element={<DatumPage />} />
+        <Route path="/communitynotes" element={<CommunityNotesPage />} />
+        <Route path="/profil" element={ <ProtectedRoute><ProfilPage /> </ProtectedRoute> }  />
+        <Route path="/moderation" element={ <ProtectedRoute requiredRole="moderator"><ModerationPage /></ProtectedRoute> } />
       </Routes>
       <Footer />
     </div>
+    </AuthProvider>
       );
 }
 

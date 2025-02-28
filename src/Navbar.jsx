@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
-import { ServerIcon, HomeIcon, FingerPrintIcon, BanknotesIcon } from '@heroicons/react/24/solid';
+import { ServerIcon, HomeIcon, FingerPrintIcon, BanknotesIcon, UserIcon, ShieldCheckIcon, PencilSquareIcon } from '@heroicons/react/24/solid';
+import axios from 'axios';
+import { API_CONFIG } from './utils/apiConfig';
+import { AuthProvider, useAuth } from './utils/AuthContext';
+import WalletConnect from './components/WalletConnect';
+
+
 
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
@@ -12,9 +18,13 @@ function Navbar({ handleSearch }) {
     document.documentElement.classList.contains('dark') || 
     document.documentElement.classList.contains('vibrant')
   );
+  const { isAuthenticated, isModerator, checkAuthStatus } = useAuth();
+
+
   const searchRef = useRef(null);
   const menuRef = useRef(null);
   const inputRef = useRef(null);
+
 
   useEffect(() => {
     const updateTheme = () => {
@@ -150,8 +160,8 @@ function Navbar({ handleSearch }) {
           </button>
           
           {/* Menu dropdown */}
-<div className={`
-            absolute right-0 mt-2 w-48 
+          <div className={`
+            absolute right-0 mt-2 w-60 
             bg-base-100 rounded-lg shadow-lg 
             transition-all duration-200 ease-in-out
             ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
@@ -166,6 +176,14 @@ function Navbar({ handleSearch }) {
                 <HomeIcon className="w-5 h-5 mr-3" />
                 Home
               </Link>
+              <Link 
+                to="/communitynotes"
+                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <PencilSquareIcon className="w-5 h-5 mr-3"/>
+                Community Notes
+              </Link> 
               <Link 
                 to="/prices"
                 className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
@@ -190,13 +208,32 @@ function Navbar({ handleSearch }) {
                 <FingerPrintIcon className="w-5 h-5 mr-3" />
                 About
               </Link>
+              
+              {/* Conditional links based on authentication */}
+              {isAuthenticated && (
+                <Link 
+                  to="/profil"
+                  className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-blue-100/20"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <UserIcon className="w-5 h-5 mr-3" />
+                  My Profile
+                </Link>
+              )}
+              
+              {isModerator && (
+                <Link 
+                  to="/moderation"
+                  className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-green-100/20"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ShieldCheckIcon className="w-5 h-5 mr-3" />
+                  Moderation
+                </Link>
+              )}
+              <WalletConnect />
             </div>
           </div>
-
-
-
-
-
         </div>
       </div>
     </div>

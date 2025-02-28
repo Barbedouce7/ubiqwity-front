@@ -12,6 +12,8 @@ import LoadingProgress from '../components/LoadingProgress';
 import { shortener } from '../utils/utils';
 import GetHandle from '../components/GetHandle';
 import { ExclamationTriangleIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import WalletCommunityNotes from '../components/WalletCommunityNotes';
+
 
 function WalletPage() {
   const { walletAddress } = useParams();
@@ -42,7 +44,7 @@ function WalletPage() {
   }, [walletDataHold?.stakekeyInfo.totalTransactions]);
 
   const availableTabs = useMemo(() => {
-    const baseTabs = ['holdings', 'addresses'];
+    const baseTabs = ['holdings', 'addresses', 'notes'];
     if (walletDataHold?.stakekeyInfo.totalTransactions > 0 && !isTransactionLimitExceeded) {
       baseTabs.push(...detailsTabs);
     }
@@ -228,7 +230,11 @@ const renderContent = () => {
         )
       );
     }
-
+    if (activeTab === 'notes') {
+      return (
+      <WalletCommunityNotes walletAddress={mainIdentifier} />
+        )
+    }
     // Pour les onglets de détails, on montre la progress bar pendant le chargement initial
     if (isLoadingDetails && !detailsData) {
       return (
@@ -379,6 +385,7 @@ const renderContent = () => {
           </span>
         </div>
       )}
+
 
         {/* Pool Info */}
         {stakekeyInfo.stakepool && (
