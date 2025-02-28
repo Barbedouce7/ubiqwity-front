@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ChevronLeftIcon, ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon, UserCircleIcon, FunnelIcon } from '@heroicons/react/24/solid';
 import { shortener } from '../utils/utils';
 import { useAuth } from '../utils/AuthContext';
 
@@ -24,8 +24,9 @@ const NotesList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { isModerator, isLoading: authLoading } = useAuth();
-
+  
   const currentPage = parseInt(searchParams.get('page')) || 1;
+  const statusFilter = searchParams.get('status') || 'all';
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -33,11 +34,18 @@ const NotesList = () => {
         setLoading(true);
         setError(null);
 
+        // Include the status filter in the API request if it's not 'all'
+        const params = {
+          page: currentPage,
+          limit: pagination.limit,
+        };
+        
+        if (statusFilter !== 'all') {
+          params.status = statusFilter;
+        }
+
         const response = await axios.get(`${API_CONFIG.baseUrl}api/notes`, {
-          params: {
-            page: currentPage,
-            limit: pagination.limit,
-          },
+          params,
         });
 
         const fetchedNotes = Array.isArray(response.data.notes) ? response.data.notes : [];
@@ -58,7 +66,7 @@ const NotesList = () => {
     if (!authLoading) {
       fetchNotes();
     }
-  }, [currentPage, pagination.limit, authLoading]);
+  }, [currentPage, pagination.limit, authLoading, statusFilter]);
 
   const handleDeleteNote = async (noteId) => {
     if (!window.confirm('Are you sure you want to delete this note?')) return;
@@ -130,15 +138,21 @@ const NotesList = () => {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.pages) {
-      setSearchParams({ page: newPage });
+      setSearchParams({ page: newPage, status: statusFilter });
     }
+  };
+
+  const handleStatusFilterChange = (status) => {
+    setSearchParams({ page: 1, status });
   };
 
   const renderPagination = () => {
     const { page, pages, total } = pagination;
 
+    if (total === 0) return null;
+
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between my-6 gap-4">
         <div className="text-sm text-base-content">
           Showing {(page - 1) * pagination.limit + 1} to{' '}
           {Math.min(page * pagination.limit, total)} of {total} notes
@@ -166,6 +180,25 @@ const NotesList = () => {
     );
   };
 
+  const renderStatusFilter = () => {
+    return (
+      <div className="flex items-center space-x-2 mb-6">
+        <FunnelIcon className="h-5 w-5 text-primary" />
+        <span className="text-sm font-medium">Filter by status:</span>
+        <select 
+          value={statusFilter} 
+          onChange={(e) => handleStatusFilterChange(e.target.value)}
+          className="select-bordered select-sm text-black rounded-lg"
+        >
+          <option value="all">All notes</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    );
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'approved':
@@ -187,7 +220,12 @@ const NotesList = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 text-base-content max-w-lg">
+    <div className="container mx-auto py-6 text-base-content max-w-lgx2">
+      {/* Status filter dropdown */}
+      {renderStatusFilter()}
+      
+      {/* Top pagination */}
+      {renderPagination()}
 
       <div className="space-y-6">
         {notes.length > 0 ? (
@@ -196,9 +234,6 @@ const NotesList = () => {
               <div className="p-4">
                 {/* En-tête inspiré du second composant */}
                 <div className="flex justify-between items-start mb-4">
-
-
-
                   <div className={getStatusBadgeClass(note.status)}>
                     {note.status === 'approved'
                       ? 'Approved'
@@ -206,35 +241,37 @@ const NotesList = () => {
                       ? 'Rejected'
                       : 'Pending'}
                   </div>
-                  <div className="badge badge-lg ">Score: {note.score}</div>
+                  <div className="badge badge-lg">Score: {note.score}</div>
                 </div>
 
                 {/* Contenu */}
                 <p className="text-lg">{note.content}</p>
-                 <div>
-                      <span className="font-semibold">Target: </span>
+                <div>
+                  <span className="font-semibold">Target: </span>
+                  <Link
+                    to={`/wallet/${note.walletAddress}`}
+                    className="link primary"
+                  >
+                    {shortener(note.walletAddress)}
+                  </Link>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4">
+                  <div className="flex">
+                      <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
                       <Link
-                        to={`/wallet/${note.walletAddress}`}
-                        className="link primary"
+                        to={`/wallet/${note.author}`}
+                        className="text-sm opacity-75 hover:underline"
                       >
-                        {shortener(note.walletAddress)}
+                        Author: {shortener(note.author)}
                       </Link>
                     </div>
-                
-                  <div className="flex items-center justify-end mt-4">
-                    <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
-                    <Link
-                      to={`/wallet/${note.author}`}
-                      className="text-sm opacity-75 hover:underline"
-                    >
-                      Author : {shortener(note.author)}
-                    </Link>
                     <span className="text-xs opacity-50 ml-2">
-                      {new Date(note.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                    {new Date(note.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
 
-                  <div className="flex  items-center">
+                <div className="flex items-center">
                   {/* Actions pour modérateurs */}
                   {isModerator && (
                     <div className="flex items-center space-x-2 mx-auto mt-6">
@@ -265,7 +302,8 @@ const NotesList = () => {
         )}
       </div>
 
-      {pagination.total > 0 && renderPagination()}
+      {/* Bottom pagination (same as top) */}
+      {renderPagination()}
     </div>
   );
 };

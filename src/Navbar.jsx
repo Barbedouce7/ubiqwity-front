@@ -93,11 +93,10 @@ function Navbar({ handleSearch }) {
     <div className="navbar bg-base-100 shadow-xl mx-auto max-w-lg h-[40px] text-base-content rounded-full mb-4">
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
-          <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> 
-          <span className="hidden md:inline">Ubiqwity</span>
+          <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity" /> 
+          <span>Ubiqwity</span>
         </a>
       </div>
-      <WalletConnect />
       <div className="flex items-center gap-2">
         <div className="relative flex items-center" ref={searchRef}>
           <div className={`
@@ -180,7 +179,7 @@ function Navbar({ handleSearch }) {
               {/* Menu content */}
               <div className="relative bg-base-100 shadow-2xl h-full w-64 overflow-y-auto z-10 animate-slide-in-right">
                 <div className="flex justify-between items-center p-4">
-                  <h3 className="text-lg font-medium"></h3>
+                  
                   <button 
                     onClick={() => setIsMenuOpen(false)}
                     className="btn btn-ghost btn-sm btn-circle"
@@ -254,6 +253,10 @@ function Navbar({ handleSearch }) {
                     </Link>
                   )}
                 </div>
+                      <WalletConnect />
+                  <div className="flex justify-center mx-auto w-auto mt-20">
+                      <h3 className="mx-auto text-lg font-medium flex"><img src={isDarkMode ? logow : logob} className="logo w-14 mb-4 mr-4" alt="Ubiqwity logo" /> Ubiqwity</h3>
+                  </div>
               </div>
             </div>
           )}

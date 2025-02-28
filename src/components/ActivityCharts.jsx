@@ -234,6 +234,8 @@ const ActivityCharts = ({ detailsData }) => {
   const dailyData = getAllDates();
   const weekdayData = groupByWeekDay();
 
+  const hasMultipleApps = uniqueApps.length > 1;
+
   const formatUTCDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleString('en-US', { 
@@ -383,7 +385,8 @@ const ActivityCharts = ({ detailsData }) => {
           options={globalChartOptions}
         />
       </div>
-      <div className="h-10"></div>
+    {hasMultipleApps && (<>
+      <div className="h-20"></div>
       <div className="w-full h-80">
         <h3 className="text-lg font-semibold mb-4">App Usage Frequency</h3>
         <Bar 
@@ -391,8 +394,8 @@ const ActivityCharts = ({ detailsData }) => {
           data={createAppUsageChartData()}
           options={basicChartOptions}
         />
-      </div>
-      
+      </div></>
+      )}
       <div className="min-h-20"></div>
       
       <div className="flex flex-col md:flex-row pb-10 gap-10">

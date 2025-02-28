@@ -3,6 +3,8 @@ import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { useAuth } from '../utils/AuthContext'; 
 import NotesList from '../components/NotesList';
+import WalletConnect from '../components/WalletConnect';
+
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -68,32 +70,11 @@ const ProfilPage = () => {
   if (!isAuthenticated && !isLoading) {
     return (
       <div className="rounded-xl shadow-xl p-6 text-center">
-        <button 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => window.location.href = '/login'}
-        >
-          Connect
-        </button>
+        <WalletConnect />
       </div>
     );
   }
 
-  // Affichage en cas d'erreur
-  if (error && !isLoading) {
-    return (
-      <div className="rounded-xl shadow-xl p-4 text-center">
-        <p className="text-red-500">{error}</p>
-        {error.includes("connecter") && (
-          <button 
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={() => window.location.href = '/login'}
-          >
-            Se connecter
-          </button>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-6 p-1">
@@ -102,7 +83,7 @@ const ProfilPage = () => {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
         </div>
       ) : (
-        <div className="rounded-xl shadow-xl p-6">
+        <div className="rounded-xl text-base-content shadow-xl p-6">
           <h2 className="text-xl font-bold mb-4">Profil User</h2>
           
    

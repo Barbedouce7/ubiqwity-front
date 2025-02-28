@@ -56,7 +56,7 @@ const CommunityNotesPage = () => {
 
   return (
     <div className="flex flex-col gap-6 p-1">
-      <div className="rounded-xl p-6">
+      <div className="rounded-xl">
         <h2 className="text-xl font-bold mb-4 text-base-content">Community Notes</h2>
         <NotesList />
       </div>

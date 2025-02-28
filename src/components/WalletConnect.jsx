@@ -5,6 +5,7 @@ import { useAuth } from '../utils/AuthContext';
 import MessageModal from '../components/ModalPopup';
 import { WalletIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { shortener } from '../utils/utils';
 
 const wallets = [
     { name: 'Eternl', id: 'eternl' },
@@ -130,8 +131,8 @@ const WalletAuth = () => {
                     onClick={toggleWalletModal}
                 >
                     {isAuthenticated ? (
-                        <span className="truncate max-w-[120px]">
-                            {stakeAddress || 'Connected'}
+                        <span className="truncate">
+                            {shortener(stakeAddress) || 'Connected'}
                         </span>
                     ) : (
                      <>

@@ -127,7 +127,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           <h1 className="text-2xl font-bold">Community Notes</h1>
           <div className="badge badge-primary badge-lg">Beta</div>
         </div>
-        <p className="text-sm max-w-lg mx-auto">This is what the community noted about this wallet.<br />Take care with this informations.</p>
+        <p className="text-sm max-w-lg mx-auto mb-4">This is what the community noted about this wallet.<br />Take care with this informations.</p>
 
         {loading && <div className="flex justify-center my-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div></div>}
         {error && (
@@ -169,14 +169,18 @@ const WalletCommunityNotes = ({ walletAddress }) => {
                 <input
                   type="text"
                   placeholder="Share your knowledge about this wallet"
-                  className="bg-base-content input-bordered border-2 border-sky-500 rounded-lg w-full pl-4"
+                  className="bg-base-content text-black input-bordered border-2 border-sky-500 rounded-lg w-full pl-4"
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
+                  maxLength={255} 
                 />
                 <button type="submit" className="btn btn-primary">
                   <PlusCircleIcon className="h-5 w-5 mr-2" />
                   Add
                 </button>
+              </div>
+               <div className="text-sm text-base-content opacity-70 mt-1">
+                {newNote.length}/255 characters
               </div>
             </div>
           </form>
@@ -241,17 +245,17 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
           </div>
         </div>
 
-        <p className="text-lg mt-10 mb-10">{note.content}</p>
-        <div className="flex items-center mb-2 justify-between">
+        <p className="text-lg mt-2 mb-2">{note.content}</p>
+        <div className="flex items-center justify-between">
             <div className="flex">
-            <UserCircleIcon className="h-6 w-6 mr-2 mb-2 text-primary" />
+            <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
             <span className="text-sm opacity-75">Author : {formatAuthorId(note.author)}</span>
             </div>
             <span className="text-xs opacity-50 ml-2">
               {new Date(note.createdAt).toLocaleDateString()}
             </span>
           </div>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-center items-center">
           {isAuthenticated ? (
             <div className="flex items-center space-x-4">
               <button 
