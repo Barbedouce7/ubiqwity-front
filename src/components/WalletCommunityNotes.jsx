@@ -150,7 +150,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
         {/* Filters - Conditional display based on user rights */}
         <div className="tabs mb-6">
           <a 
-            className={`tab ${statusFilter === 'approved' ? 'tab-active' : ''}`}
+            className={`tab-custom cursor-pointer ${statusFilter === 'approved' ? 'tab-active' : ''}`}
             onClick={() => setStatusFilter('approved')}
           >
             Approved
@@ -158,7 +158,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           
           {isAuthenticated && (
             <a 
-              className={`tab ${statusFilter === 'pending' ? 'tab-active' : ''}`}
+              className={`tab-custom cursor-pointer ${statusFilter === 'pending' ? 'tab-active' : ''}`}
               onClick={() => setStatusFilter('pending')}
             >
               Pending
@@ -168,13 +168,13 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           {isModerator && (
             <>
               <a 
-                className={`tab ${statusFilter === 'rejected' ? 'tab-active' : ''}`}
+                className={`tab-custom cursor-pointer ${statusFilter === 'rejected' ? 'tab-active' : ''}`}
                 onClick={() => setStatusFilter('rejected')}
               >
                 Rejected
               </a>
               <a 
-                className={`tab ${!statusFilter ? 'tab-active' : ''}`}
+                className={`tab-custom cursor-pointer ${!statusFilter ? 'tab-active' : ''}`}
                 onClick={() => setStatusFilter('')}
               >
                 All

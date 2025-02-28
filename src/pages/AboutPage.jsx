@@ -9,9 +9,10 @@ const AboutPage = () => {
         <p>  Some features may not work, may work poorly, or have interface bugs. There’s still work to be done.
         </p>
         <h2 className="text-xl mt-14">Integrations</h2>
-        <p><img src="/assets/orcfax.svg" className="w-24" />
-          Prices from Orcfax public feed.</p>
-          <p>AdaHandle</p>
+          <p>Orcfax ( prices from public feed )</p>
+          <p>AdaHandle ( May not work properly )</p>
+          <p>Rosen bridge</p>
+          <p>INDY Staking ( for wallet historc charts)</p>
       </div>
     </>
   );
