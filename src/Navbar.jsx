@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
-import { ServerIcon, HomeIcon, FingerPrintIcon, BanknotesIcon, UserIcon, ShieldCheckIcon, PencilSquareIcon } from '@heroicons/react/24/solid';
+import { ServerIcon, HomeIcon, FingerPrintIcon, BanknotesIcon, UserIcon, ShieldCheckIcon, PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 import { API_CONFIG } from './utils/apiConfig';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import WalletConnect from './components/WalletConnect';
-
-
 
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
@@ -20,11 +18,9 @@ function Navbar({ handleSearch }) {
   );
   const { isAuthenticated, isModerator, checkAuthStatus } = useAuth();
 
-
   const searchRef = useRef(null);
   const menuRef = useRef(null);
   const inputRef = useRef(null);
-
 
   useEffect(() => {
     const updateTheme = () => {
@@ -53,6 +49,18 @@ function Navbar({ handleSearch }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSearchOpen, isMenuOpen]);
+
+  // Prevent body scrolling when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMenuOpen]);
 
   const onSearchChange = (e) => {
     setSearchInput(e.target.value);
@@ -86,10 +94,10 @@ function Navbar({ handleSearch }) {
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
           <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> 
-              <span className="hidden md:inline">Ubiqwity</span>
+          <span className="hidden md:inline">Ubiqwity</span>
         </a>
       </div>
-        <WalletConnect />
+      <WalletConnect />
       <div className="flex items-center gap-2">
         <div className="relative flex items-center" ref={searchRef}>
           <div className={`
@@ -144,7 +152,7 @@ function Navbar({ handleSearch }) {
           </div>
         </div>
 
-        {/* Menu déroulant */}
+        {/* Menu button */}
         <div className="relative" ref={menuRef}>
           <button 
             onClick={toggleMenu}
@@ -160,81 +168,95 @@ function Navbar({ handleSearch }) {
             </svg>
           </button>
           
-          {/* Menu dropdown */}
-          <div className={`
-            absolute right-0 mt-2 w-60 
-            bg-base-100 rounded-lg shadow-lg 
-            transition-all duration-200 ease-in-out shadow-xl
-            ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
-            z-50
-          `}>
-            <div className="p-2 space-y-1">
-              <Link 
-                to="/"
-                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+          {/* Modal Menu with blurred overlay */}
+          {isMenuOpen && (
+            <div className="fixed inset-0 z-50 flex justify-end">
+              {/* Blurred backdrop overlay */}
+              <div 
+                className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
                 onClick={() => setIsMenuOpen(false)}
-              >
-                <HomeIcon className="w-5 h-5 mr-3" />
-                Home
-              </Link>
-              <Link 
-                to="/communitynotes"
-                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <PencilSquareIcon className="w-5 h-5 mr-3"/>
-                Community Notes
-              </Link> 
-              <Link 
-                to="/prices"
-                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <BanknotesIcon className="w-5 h-5 mr-3"/>
-                Prices
-              </Link> 
-              <Link 
-                to="/pools"
-                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <ServerIcon className="w-5 h-5 mr-3"/>
-                Pools
-              </Link> 
-              <Link 
-                to="/about"
-                className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FingerPrintIcon className="w-5 h-5 mr-3" />
-                About
-              </Link>
+              ></div>
               
-              {/* Conditional links based on authentication */}
-              {isAuthenticated && (
-                <Link 
-                  to="/profil"
-                  className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-blue-100/20"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <UserIcon className="w-5 h-5 mr-3" />
-                  My Profile
-                </Link>
-              )}
-              
-              {isModerator && (
-                <Link 
-                  to="/moderation"
-                  className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-green-100/20"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <ShieldCheckIcon className="w-5 h-5 mr-3" />
-                  Moderation
-                </Link>
-              )}
-
+              {/* Menu content */}
+              <div className="relative bg-base-100 shadow-2xl h-full w-64 overflow-y-auto z-10 animate-slide-in-right">
+                <div className="flex justify-between items-center p-4">
+                  <h3 className="text-lg font-medium"></h3>
+                  <button 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="btn btn-ghost btn-sm btn-circle"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-3 space-y-1">
+                  <Link 
+                    to="/"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <HomeIcon className="w-5 h-5 mr-3" />
+                    Home
+                  </Link>
+                  <Link 
+                    to="/communitynotes"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <PencilSquareIcon className="w-5 h-5 mr-3"/>
+                    Community Notes
+                  </Link> 
+                  <Link 
+                    to="/prices"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <BanknotesIcon className="w-5 h-5 mr-3"/>
+                    Prices
+                  </Link> 
+                  <Link 
+                    to="/pools"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <ServerIcon className="w-5 h-5 mr-3"/>
+                    Pools
+                  </Link> 
+                  <Link 
+                    to="/about"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FingerPrintIcon className="w-5 h-5 mr-3" />
+                    About
+                  </Link>
+                  
+                  {/* Conditional links based on authentication */}
+                  {isAuthenticated && (
+                    <Link 
+                      to="/profil"
+                      className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-blue-100/20"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserIcon className="w-5 h-5 mr-3" />
+                      My Profile
+                    </Link>
+                  )}
+                  
+                  {isModerator && (
+                    <Link 
+                      to="/moderation"
+                      className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150 bg-green-100/20"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <ShieldCheckIcon className="w-5 h-5 mr-3" />
+                      Moderation
+                    </Link>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -242,3 +264,4 @@ function Navbar({ handleSearch }) {
 }
 
 export default Navbar;
+

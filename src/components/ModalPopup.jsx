@@ -38,7 +38,7 @@ const MessageModal = ({ message, isOpen, onClose }) => {
         <div className="space-y-3">
           <div className={`p-3 rounded ${isError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
             
-            {isError && (<p className="mt-1 break-words">{message}</p>)}<p className="mt-1 break-words">{message}</p>
+            <p className="mt-1 break-words">{message}</p>
           </div>
           
           {!isError && message.includes('stake') && (

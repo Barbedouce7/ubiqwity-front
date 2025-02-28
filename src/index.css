@@ -106,3 +106,18 @@ background: linear-gradient(137deg, rgba(49,18,44,1) 0%, rgba(79,24,83,1) 100%);
     @apply border-sky-300 dark:border-sky-600 text-sky-500 dark:text-sky-200;
   }
 }
+
+
+/* Add this at-rule to your CSS */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}

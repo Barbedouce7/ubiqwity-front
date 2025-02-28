@@ -121,15 +121,13 @@ const WalletCommunityNotes = ({ walletAddress }) => {
   });
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="rounded-box p-6 shadow-lg">
+    <div className="mx-auto max-w-4xl">
+      <div className="mt-10 mb-10">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">
-            Community Notes
-            {wallet && <span className="text-sm ml-2 opacity-70">for {wallet.address.substring(0, 8)}...</span>}
-          </h1>
+          <h1 className="text-2xl font-bold">Community Notes</h1>
           <div className="badge badge-primary badge-lg">Beta</div>
         </div>
+        <p className="text-sm max-w-lg mx-auto">This is what the community noted about this wallet.<br />Take care with this informations.</p>
 
         {loading && <div className="flex justify-center my-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div></div>}
         {error && (
@@ -229,25 +227,30 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
   const statusInfo = getStatusInfo(note.status);
   
   return (
-    <div className="shadow-md">
+    <div className="shadow-lg rounded-lg mt-10 mb-10 ">
       <div className="p-4">
         <div className="flex justify-between items-start">
-          <div className="flex items-center mb-2">
-            <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
-            <span className="text-sm opacity-75">Author : {formatAuthorId(note.author)}</span>
-            <span className="text-xs opacity-50 ml-2">
-              {new Date(note.createdAt).toLocaleDateString()}
-            </span>
-          </div>
+
           <div className={`badge ${statusInfo.className} gap-1`}>
             {statusInfo.icon}
             {note.status === 'approved' ? 'Approved' : 
              note.status === 'rejected' ? 'Rejected' : 'Pending'}
           </div>
+          <div className="badge badge-lg">
+            Score: {note.score}
+          </div>
         </div>
-        
-        <p className="text-lg mb-4">{note.content}</p>
-        
+
+        <p className="text-lg mt-10 mb-10">{note.content}</p>
+        <div className="flex items-center mb-2 justify-between">
+            <div className="flex">
+            <UserCircleIcon className="h-6 w-6 mr-2 mb-2 text-primary" />
+            <span className="text-sm opacity-75">Author : {formatAuthorId(note.author)}</span>
+            </div>
+            <span className="text-xs opacity-50 ml-2">
+              {new Date(note.createdAt).toLocaleDateString()}
+            </span>
+          </div>
         <div className="flex justify-between items-center">
           {isAuthenticated ? (
             <div className="flex items-center space-x-4">
@@ -256,7 +259,7 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
                 className="btn btn-sm btn-outline btn-success gap-1"
               >
                 <HandThumbUpIcon className="h-5 w-5" />
-                Yes
+                Up
               </button>
               
               <button 
@@ -264,16 +267,14 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
                 className="btn btn-sm btn-outline btn-error gap-1"
               >
                 <HandThumbDownIcon className="h-5 w-5" />
-                No
+                Down
               </button>
             </div>
           ) : (
             <div></div>
           )}
           
-          <div className="badge badge-lg">
-            Score: {note.score}
-          </div>
+
         </div>
       </div>
     </div>

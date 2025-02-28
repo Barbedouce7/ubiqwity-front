@@ -4,6 +4,7 @@ import { Buffer } from 'buffer';
 import { useAuth } from '../utils/AuthContext';
 import MessageModal from '../components/ModalPopup';
 import { WalletIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const wallets = [
     { name: 'Eternl', id: 'eternl' },
@@ -11,21 +12,22 @@ const wallets = [
     { name: 'Typhon', id: 'typhoncip30' },
     { name: 'Vespr', id: 'vespr' },
     { name: 'Nami', id: 'nami' },
+    { name: 'Gero', id: 'gerowallet' },
+    { name: 'Nufi', id: 'nufi' },
 ];
-
 
 const WalletAuth = () => {
     const [wallet, setWallet] = useState(null);
     const [stakeAddress, setStakeAddress] = useState('');
     const [message, setMessage] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     
     const { isAuthenticated, authenticateWallet, logout, checkAuthStatus } = useAuth();
 
     useEffect(() => {
         if (isAuthenticated && stakeAddress) {
-            setIsDropdownOpen(false); 
+            setIsWalletModalOpen(false);
         }
     }, [isAuthenticated, stakeAddress]);
 
@@ -55,7 +57,6 @@ const WalletAuth = () => {
     const hideMessage = () => {
         setIsModalOpen(false);
     };
-
    
     const connectAndAuthenticate = async (walletId) => {
         if (!window.cardano) {
@@ -96,6 +97,8 @@ const WalletAuth = () => {
             setWallet(null);
             setStakeAddress('');
         }
+        
+        setIsWalletModalOpen(false);
     };
 
     const disconnect = async () => {
@@ -103,24 +106,28 @@ const WalletAuth = () => {
         setStakeAddress('');
         await logout();
         showMessage('Disconnected');
-        setIsDropdownOpen(false);
+        setIsWalletModalOpen(false);
     };
 
-    const toggleDropdown = () => {
+    const toggleWalletModal = () => {
         if (!isAuthenticated && !window.cardano) {
             showMessage('No Cardano wallet extension detected');
             return;
         }
-        setIsDropdownOpen(!isDropdownOpen);
+        setIsWalletModalOpen(!isWalletModalOpen);
+    };
+
+    // Helper function to get the correct logo path
+    const getWalletLogoPath = (walletId) => {
+        return `/assets/${walletId}.png`;
     };
 
     return (
         <div className="p-2 max-w-md">
-            <div className="dropdown dropdown-end text-xs">
-                <label
-                    tabIndex={0}
+            <div className="text-xs">
+                <button
                     className="btn-connect btn-primary w-full flex items-center gap-2"
-                    onClick={toggleDropdown}
+                    onClick={toggleWalletModal}
                 >
                     {isAuthenticated ? (
                         <span className="truncate max-w-[120px]">
@@ -131,36 +138,63 @@ const WalletAuth = () => {
                           <WalletIcon className="w-5 h-5" /> Log in
                       </>
                     )}
-                </label>
-
-                <ul
-                    tabIndex={0}
-                    className={`dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-52 mt-1 z-10 ${
-                        isDropdownOpen ? 'block' : 'hidden'
-                    }`}
-                >
-                    {!isAuthenticated ? (
-                        wallets.map((w) => (
-                            <li key={w.id}>
-                                <button
-                                    onClick={() => connectAndAuthenticate(w.id)}
-                                    className="w-full text-left hover:bg-primary hover:text-white"
+                </button>
+                
+                {/* Modal with backdrop overlay */}
+                {isWalletModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        {/* Blurred backdrop overlay */}
+                        <div 
+                            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+                            onClick={() => setIsWalletModalOpen(false)}
+                        ></div>
+                        
+                        {/* Modal content */}
+                        <div className="relative z-10 bg-base-100 rounded-box shadow-xl p-4 w-64 max-w-md">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-medium">
+                                    {isAuthenticated ? 'Wallet Options' : 'Select Wallet'}
+                                </h3>
+                                <button 
+                                    onClick={() => setIsWalletModalOpen(false)}
+                                    className="text-gray-500 hover:text-gray-700"
                                 >
-                                    {w.name}
+                                    <XMarkIcon className="h-5 w-5" />
                                 </button>
-                            </li>
-                        ))
-                    ) : (
-                        <li>
-                            <button
-                                onClick={disconnect}
-                                className="w-full text-left text-error hover:bg-error hover:text-white"
-                            >
-                                Disconnect
-                            </button>
-                        </li>
-                    )}
-                </ul>
+                            </div>
+                            
+                            <ul className="p-2 w-full">
+                                {!isAuthenticated ? (
+                                    wallets.map((w) => (
+                                        <li key={w.id} className="mb-1">
+                                            <button
+                                                onClick={() => connectAndAuthenticate(w.id)}
+                                                className="w-full text-left py-2 px-3 rounded hover:bg-primary hover:text-white flex items-center gap-3"
+                                            >
+                                                <img 
+                                                    src={getWalletLogoPath(w.id)} 
+                                                    alt={`${w.name} logo`} 
+                                                    className="w-6 h-6 object-contain"
+                                                />
+                                                {w.name}
+                                            </button>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li>
+                                        <button
+                                            onClick={disconnect}
+                                            className="w-full text-left py-2 px-3 rounded text-error hover:bg-error hover:text-white flex items-center gap-3"
+                                        >
+                                            <WalletIcon className="w-5 h-5" />
+                                            Disconnect
+                                        </button>
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <MessageModal 
