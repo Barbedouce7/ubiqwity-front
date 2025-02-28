@@ -158,13 +158,13 @@ const NotesList = () => {
                 </div>
                 <div>
                   <span className="font-semibold">Author: </span>
-                  <Link className="link link-primary" to={`/address/${note.author}`}>
+                  <Link className="link link-primary" to={`/wallet/${note.author}`}>
                     {shortener(note.author)}
                   </Link>
                 </div>
                 <div>
                   <span className="font-semibold">Wallet: </span>
-                  <Link className="link link-primary" to={`/address/${note.walletAddress}`}>
+                  <Link className="link link-primary" to={`/wallet/${note.walletAddress}`}>
                     {shortener(note.walletAddress)}
                   </Link>
                 </div>
