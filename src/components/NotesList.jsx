@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import { shortener } from '../utils/utils';
 import { useAuth } from '../utils/AuthContext';
 
@@ -94,6 +94,40 @@ const NotesList = () => {
     }
   };
 
+  const handleApproveNote = async (noteId, walletAddress) => {
+    try {
+      setLoading(true);
+      const token = getCookie('authToken');
+      const response = await axios.put(
+        `${API_CONFIG.baseUrl}api/wallets/${walletAddress}/notes/${noteId}/approve`,
+        {},
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+          validateStatus: (status) => true,
+        }
+      );
+
+      if (response.status === 200) {
+        setNotes(notes.map(note =>
+          note._id === noteId ? { ...note, status: 'approved', approvedAt: new Date() } : note
+        ));
+      } else if (response.status === 403) {
+        setError('Forbidden: Only moderators can approve notes.');
+      } else if (response.status === 404) {
+        setError('Note not found or not in pending status.');
+      } else {
+        setError(`Error ${response.status}: ${response.data.message || 'Failed to approve note'}`);
+      }
+    } catch (err) {
+      console.error('Error approving note:', err);
+      setError('An error occurred while approving the note.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.pages) {
       setSearchParams({ page: newPage });
@@ -132,6 +166,18 @@ const NotesList = () => {
     );
   };
 
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'badge badge-success';
+      case 'rejected':
+        return 'badge badge-error';
+      case 'pending':
+      default:
+        return 'badge badge-warning';
+    }
+  };
+
   if (authLoading || loading) {
     return <div className="text-center py-4">Loading...</div>;
   }
@@ -147,49 +193,72 @@ const NotesList = () => {
       <div className="space-y-6">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div
-              key={note._id}
-              className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-base-200"
-            >
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <span className="font-semibold">Content: </span>
-                  <span className="break-words">{note.content}</span>
+            <div key={note._id} className="shadow-md">
+              <div className="p-4">
+                {/* En-tête inspiré du second composant */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center">
+                    <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
+                    <Link
+                      to={`/wallet/${note.author}`}
+                      className="text-sm opacity-75 hover:underline"
+                    >
+                      {shortener(note.author)}
+                    </Link>
+                    <span className="text-xs opacity-50 ml-2">
+                      {new Date(note.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className={getStatusBadgeClass(note.status)}>
+                    {note.status === 'approved'
+                      ? 'Approved'
+                      : note.status === 'rejected'
+                      ? 'Rejected'
+                      : 'Pending'}
+                  </div>
                 </div>
-                <div>
-                  <span className="font-semibold">Author: </span>
-                  <Link className="link link-primary" to={`/wallet/${note.author}`}>
-                    {shortener(note.author)}
-                  </Link>
-                </div>
-                <div>
-                  <span className="font-semibold">Wallet: </span>
-                  <Link className="link link-primary" to={`/wallet/${note.walletAddress}`}>
-                    {shortener(note.walletAddress)}
-                  </Link>
-                </div>
-                <div>
-                  <span className="font-semibold">Created: </span>
-                  <span>{new Date(note.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="font-semibold">Score: </span>
-                  <span>{note.score}</span>
-                </div>
-                <div>
-                  <span className="font-semibold">Status: </span>
-                  <span>{note.status}</span>
+
+                {/* Contenu */}
+                <p className="text-lg mb-4">{note.content}</p>
+
+                {/* Informations supplémentaires et actions */}
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <span className="font-semibold">Wallet: </span>
+                      <Link
+                        to={`/wallet/${note.walletAddress}`}
+                        className="link link-primary"
+                      >
+                        {shortener(note.walletAddress)}
+                      </Link>
+                    </div>
+                    <div className="badge badge-lg">Score: {note.score}</div>
+                  </div>
+
+                  {/* Actions pour modérateurs */}
+                  {isModerator && (
+                    <div className="flex items-center space-x-2">
+                      {note.status === 'pending' && (
+                        <button
+                          onClick={() => handleApproveNote(note._id, note.walletAddress)}
+                          className="btn btn-sm btn-success"
+                          disabled={loading}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteNote(note._id)}
+                        className="btn btn-sm btn-error"
+                        disabled={loading}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-              {isModerator && (
-                <button
-                  onClick={() => handleDeleteNote(note._id)}
-                  className="btn btn-sm btn-error self-end md:self-start"
-                  disabled={loading}
-                >
-                  Delete
-                </button>
-              )}
             </div>
           ))
         ) : (
