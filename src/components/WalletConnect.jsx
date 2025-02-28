@@ -116,26 +116,26 @@ const WalletAuth = () => {
 
     return (
         <div className="p-2 max-w-md">
-            <div className="dropdown dropdown-end">
+            <div className="dropdown dropdown-end text-xs">
                 <label
                     tabIndex={0}
-                    className="btn btn-accent btn-primary w-full flex items-center gap-2"
+                    className="btn-connect btn-primary w-full flex items-center gap-2"
                     onClick={toggleDropdown}
                 >
                     {isAuthenticated ? (
-                        <span className="truncate text-xs max-w-[140px]">
+                        <span className="truncate max-w-[120px]">
                             {stakeAddress || 'Connected'}
                         </span>
                     ) : (
                      <>
-                          <WalletIcon className="w-5 h-5" /> Connect Wallet
+                          <WalletIcon className="w-5 h-5" /> Log in
                       </>
                     )}
                 </label>
 
                 <ul
                     tabIndex={0}
-                    className={`dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1 z-10 ${
+                    className={`dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-52 mt-1 z-10 ${
                         isDropdownOpen ? 'block' : 'hidden'
                     }`}
                 >

@@ -21,16 +21,13 @@ const WalletCommunityNotes = ({ walletAddress }) => {
   const [statusFilter, setStatusFilter] = useState('approved');
   const [newNote, setNewNote] = useState('');
 
-  // Function to load wallet data and its notes
   const fetchWalletData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Get wallet information
       const walletRes = await axios.get(`${API_CONFIG.baseUrl}api/wallets/${walletAddress}`);
       setWallet(walletRes.data.wallet);
       
-      // Get notes with status filter
       const notesRes = await axios.get(`${API_CONFIG.baseUrl}api/wallets/${walletAddress}/notes`, {
         params: { status: statusFilter },
         headers: {
@@ -38,7 +35,6 @@ const WalletCommunityNotes = ({ walletAddress }) => {
         }
       });
 
-      // Ensure notes is an array
       if (Array.isArray(notesRes.data)) {
         setNotes(notesRes.data);
       } else if (notesRes.data && notesRes.data.notes && Array.isArray(notesRes.data.notes)) {
@@ -57,16 +53,13 @@ const WalletCommunityNotes = ({ walletAddress }) => {
     }
   }, [walletAddress, statusFilter]);
 
-  // Helper to get a cookie (copied from AuthContext)
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
   };
 
-  // Load data on component mount and when filters change
   useEffect(() => {
-    // Reset filter to 'approved' if user is not moderator and using a restricted filter
     if (!isModerator && (statusFilter === 'rejected' || statusFilter === '')) {
       setStatusFilter('approved');
     } else {
@@ -74,7 +67,6 @@ const WalletCommunityNotes = ({ walletAddress }) => {
     }
   }, [fetchWalletData, isModerator, statusFilter]);
 
-  // Function to vote on a note (only for authenticated users)
   const handleVote = async (noteId, value) => {
     if (!isAuthenticated) return;
     
@@ -86,14 +78,12 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           Authorization: `Bearer ${getCookie('authToken')}`
         }
       });
-      // Refresh notes after voting
       fetchWalletData();
     } catch (err) {
       setError('Error when voting: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  // Function to submit a new note (only for authenticated users)
   const handleSubmitNote = async (e) => {
     e.preventDefault();
     if (!isAuthenticated || !newNote.trim()) return;
@@ -107,14 +97,12 @@ const WalletCommunityNotes = ({ walletAddress }) => {
         }
       });
       setNewNote('');
-      // Refresh notes after submission
       fetchWalletData();
     } catch (err) {
       setError('Error when submitting: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  // Wait for authentication to be verified
   if (authLoading) {
     return (
       <div className="container mx-auto p-4 max-w-4xl">
@@ -125,11 +113,16 @@ const WalletCommunityNotes = ({ walletAddress }) => {
     );
   }
 
-  // Interface rendering
+  // Fonction pour trier les notes (approved en haut)
+  const sortedNotes = [...notes].sort((a, b) => {
+    if (a.status === 'approved' && b.status !== 'approved') return -1; // a avant b
+    if (b.status === 'approved' && a.status !== 'approved') return 1;  // b avant a
+    return 0; // Pas de changement pour les autres cas
+  });
+
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <div className="rounded-box p-6 shadow-lg">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">
             Community Notes
@@ -138,7 +131,6 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           <div className="badge badge-primary badge-lg">Beta</div>
         </div>
 
-        {/* Loading state and errors */}
         {loading && <div className="flex justify-center my-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div></div>}
         {error && (
           <div className="alert alert-error mb-4">
@@ -147,45 +139,8 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Filters - Conditional display based on user rights 
-        <div className="tabs mb-6">
-          <a 
-            className={`tab-custom cursor-pointer ${statusFilter === 'approved' ? 'tab-active' : ''}`}
-            onClick={() => setStatusFilter('approved')}
-          >
-            Approved
-          </a>
-          
-          {isAuthenticated && (
-            <a 
-              className={`tab-custom cursor-pointer ${statusFilter === 'pending' ? 'tab-active' : ''}`}
-              onClick={() => setStatusFilter('pending')}
-            >
-              Pending
-            </a>
-          )}
-          
-          {isModerator && (
-            <>
-              <a 
-                className={`tab-custom cursor-pointer ${statusFilter === 'rejected' ? 'tab-active' : ''}`}
-                onClick={() => setStatusFilter('rejected')}
-              >
-                Rejected
-              </a>
-              <a 
-                className={`tab-custom cursor-pointer ${!statusFilter ? 'tab-active' : ''}`}
-                onClick={() => setStatusFilter('')}
-              >
-                All
-              </a>
-            </>
-          )}
-        </div>*/}
-
-        {/* Notes list */}
         <div className="space-y-4 mb-4">
-          {Array.isArray(notes) && notes.length === 0 && !loading ? (
+          {Array.isArray(sortedNotes) && sortedNotes.length === 0 && !loading ? (
             <div className="alert alert-info">
               <div className="flex-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
@@ -195,7 +150,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
               </div>
             </div>
           ) : (
-            Array.isArray(notes) && notes.map(note => (
+            Array.isArray(sortedNotes) && sortedNotes.map(note => (
               <NoteCard 
                 key={note._id} 
                 note={note} 
@@ -206,18 +161,17 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           )}
         </div>
 
-        {/* Note submission form - Only for authenticated users */}
         {isAuthenticated && (
           <form onSubmit={handleSubmitNote} className="mb-8">
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Add your comment:</span>
+                <span className="text-base-content font-medium">Add your comment:</span>
               </label>
               <div className="flex space-x-2">
                 <input
                   type="text"
                   placeholder="Share your knowledge about this wallet"
-                  className="input input-bordered w-full"
+                  className="bg-base-content input-bordered border-2 border-sky-500 rounded-lg w-full pl-4"
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
                 />
@@ -230,7 +184,6 @@ const WalletCommunityNotes = ({ walletAddress }) => {
           </form>
         )}
 
-        {/* Message for non-authenticated users */}
         {!isAuthenticated && (
           <div className="alert alert-info mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
@@ -239,22 +192,19 @@ const WalletCommunityNotes = ({ walletAddress }) => {
             <span>Log in to add comments and vote.</span>
           </div>
         )}
-
       </div>
     </div>
   );
 };
 
-// Component to display a note
+// Le composant NoteCard reste inchangé
 const NoteCard = ({ note, onVote, isAuthenticated }) => {
-  // Function to truncate author ID
   const formatAuthorId = (authorId) => {
     return typeof authorId === 'string' 
       ? authorId.substring(0, 8) + '...'
       : 'Anonymous';
   };
   
-  // Get status icon and class
   const getStatusInfo = (status) => {
     switch(status) {
       case 'approved':
@@ -284,7 +234,7 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
         <div className="flex justify-between items-start">
           <div className="flex items-center mb-2">
             <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
-            <span className="text-sm opacity-75">{formatAuthorId(note.author)}</span>
+            <span className="text-sm opacity-75">Author : {formatAuthorId(note.author)}</span>
             <span className="text-xs opacity-50 ml-2">
               {new Date(note.createdAt).toLocaleDateString()}
             </span>
@@ -318,7 +268,7 @@ const NoteCard = ({ note, onVote, isAuthenticated }) => {
               </button>
             </div>
           ) : (
-            <div></div> // Placeholder to maintain layout when buttons are hidden
+            <div></div>
           )}
           
           <div className="badge badge-lg">

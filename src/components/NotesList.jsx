@@ -187,28 +187,18 @@ const NotesList = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 text-base-content">
-      <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Notes List</h1>
+    <div className="container mx-auto px-4 py-6 text-base-content max-w-lg">
 
       <div className="space-y-6">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note._id} className="shadow-xl mt-4">
+            <div key={note._id} className="shadow-xl rounded-xl mb-24">
               <div className="p-4">
                 {/* En-tête inspiré du second composant */}
                 <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center">
-                    <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
-                    <Link
-                      to={`/wallet/${note.author}`}
-                      className="text-sm opacity-75 hover:underline"
-                    >
-                      {shortener(note.author)}
-                    </Link>
-                    <span className="text-xs opacity-50 ml-2">
-                      {new Date(note.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
+
+
+
                   <div className={getStatusBadgeClass(note.status)}>
                     {note.status === 'approved'
                       ? 'Approved'
@@ -216,29 +206,38 @@ const NotesList = () => {
                       ? 'Rejected'
                       : 'Pending'}
                   </div>
+                  <div className="badge badge-lg ">Score: {note.score}</div>
                 </div>
 
                 {/* Contenu */}
-                <p className="text-lg mb-4">{note.content}</p>
-
-                {/* Informations supplémentaires et actions */}
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col gap-2">
-                    <div>
-                      <span className="font-semibold">Wallet: </span>
+                <p className="text-lg">{note.content}</p>
+                 <div>
+                      <span className="font-semibold">Target: </span>
                       <Link
                         to={`/wallet/${note.walletAddress}`}
-                        className="link link-primary"
+                        className="link primary"
                       >
                         {shortener(note.walletAddress)}
                       </Link>
                     </div>
-                    <div className="badge badge-lg">Score: {note.score}</div>
+                
+                  <div className="flex items-center justify-end mt-4">
+                    <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
+                    <Link
+                      to={`/wallet/${note.author}`}
+                      className="text-sm opacity-75 hover:underline"
+                    >
+                      Author : {shortener(note.author)}
+                    </Link>
+                    <span className="text-xs opacity-50 ml-2">
+                      {new Date(note.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
 
+                  <div className="flex  items-center">
                   {/* Actions pour modérateurs */}
                   {isModerator && (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 mx-auto mt-6">
                       {note.status === 'pending' && (
                         <button
                           onClick={() => handleApproveNote(note._id, note.walletAddress)}

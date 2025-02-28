@@ -86,9 +86,10 @@ function Navbar({ handleSearch }) {
       <div className="flex-1">
         <a href="/" className="text-xl ml-2 flex items-center">
           <img src={isDarkMode ? logow : logob} className="logo w-10 mr-4" alt="Ubiqwity logo" /> 
-          Ubiqwity
+              <span className="hidden md:inline">Ubiqwity</span>
         </a>
       </div>
+        <WalletConnect />
       <div className="flex items-center gap-2">
         <div className="relative flex items-center" ref={searchRef}>
           <div className={`
@@ -107,7 +108,7 @@ function Navbar({ handleSearch }) {
               />
             </form>
           </div>
-          
+                      
           <div className="flex">
             {isSearchOpen && (
               <button 
@@ -163,7 +164,7 @@ function Navbar({ handleSearch }) {
           <div className={`
             absolute right-0 mt-2 w-60 
             bg-base-100 rounded-lg shadow-lg 
-            transition-all duration-200 ease-in-out
+            transition-all duration-200 ease-in-out shadow-xl
             ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
             z-50
           `}>
@@ -231,7 +232,7 @@ function Navbar({ handleSearch }) {
                   Moderation
                 </Link>
               )}
-              <WalletConnect />
+
             </div>
           </div>
         </div>
