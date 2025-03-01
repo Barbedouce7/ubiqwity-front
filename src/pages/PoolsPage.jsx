@@ -47,7 +47,7 @@ function PoolsPage() {
   const searchTimeout = useRef(null);
 
   const page = parseInt(searchParams.get('page')) || 1;
-  const sortBy = searchParams.get('sort') || 'live_stake';
+  const sortBy = searchParams.get('sort') || 'live_saturation';
   const searchTicker = searchParams.get('ticker') || '';
   const [sortOrder, setSortOrder] = useState('desc');
 
