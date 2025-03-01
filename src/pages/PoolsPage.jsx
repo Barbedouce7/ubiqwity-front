@@ -223,7 +223,7 @@ function PoolsPage() {
           value={inputTicker}
           onChange={handleSearchChange}
           placeholder="Search by ticker (e.g., YOADA)"
-          className="w-full max-w-md p-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full max-w-[240px] p-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
       
