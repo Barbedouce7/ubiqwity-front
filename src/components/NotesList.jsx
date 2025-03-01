@@ -212,7 +212,11 @@ const NotesList = () => {
   };
 
   if (authLoading || loading) {
-    return <div className="text-center py-4">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-40">
+        <span className="loading loading-spinner loading-md text-primary"></span>
+      </div>
+    );
   }
 
   if (error) {
@@ -221,88 +225,85 @@ const NotesList = () => {
 
   return (
     <div className="container mx-auto py-6 text-base-content max-w-lgx2">
+
+      
       {/* Status filter dropdown */}
       {renderStatusFilter()}
       
       {/* Top pagination */}
       {renderPagination()}
 
-      <div className="space-y-6">
-        {notes.length > 0 ? (
-          notes.map((note) => (
-            <div key={note._id} className="shadow-xl rounded-xl mb-24">
-              <div className="p-4">
-                {/* En-tête inspiré du second composant */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className={getStatusBadgeClass(note.status)}>
-                    {note.status === 'approved'
-                      ? 'Approved'
-                      : note.status === 'rejected'
-                      ? 'Rejected'
-                      : 'Pending'}
-                  </div>
-                  <div className="badge badge-lg">Score: {note.score}</div>
-                </div>
-
-                {/* Contenu */}
-                <p className="text-lg">{note.content}</p>
-                <div>
-                  <span className="font-semibold">Target: </span>
-                  <Link
-                    to={`/wallet/${note.walletAddress}`}
-                    className="link primary"
-                  >
-                    {shortener(note.walletAddress)}
-                  </Link>
-                </div>
-                
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex">
-                      <UserCircleIcon className="h-6 w-6 mr-2 text-primary" />
-                      <Link
-                        to={`/wallet/${note.author}`}
-                        className="text-sm opacity-75 hover:underline"
-                      >
-                        Author: {shortener(note.author)}
-                      </Link>
-                    </div>
-                    <span className="text-xs opacity-50 ml-2">
-                    {new Date(note.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <div className="flex items-center">
-                  {/* Actions pour modérateurs */}
+      {notes.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th>Target Wallet</th>
+                <th>Content</th>
+                <th>Status</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Score</th>
+                {isModerator && <th>Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {notes.map((note) => (
+                <tr key={note._id}>
+                  <td className="font-mono text-xs">
+                    <Link to={`/wallet/${note.walletAddress}`} className="link">
+                      {shortener(note.walletAddress)}
+                    </Link>
+                  </td>
+                  <td>{note.content.length > 50 ? `${note.content.substring(0, 50)}...` : note.content}</td>
+                  <td>
+                    <span className={getStatusBadgeClass(note.status)}>
+                      {note.status.charAt(0).toUpperCase() + note.status.slice(1)}
+                    </span>
+                  </td>
+                  <td>
+                    <Link to={`/wallet/${note.author}`} className="flex items-center">
+                      <UserCircleIcon className="h-4 w-4 mr-1 text-primary" />
+                      {shortener(note.author)}
+                    </Link>
+                  </td>
+                  <td>{new Date(note.createdAt).toLocaleDateString()}</td>
+                  <td>{note.score}</td>
                   {isModerator && (
-                    <div className="flex items-center space-x-2 mx-auto mt-6">
-                      {note.status === 'pending' && (
+                    <td>
+                      <div className="flex items-center gap-2">
+                        {note.status === 'pending' && (
+                          <button
+                            onClick={() => handleApproveNote(note._id, note.walletAddress)}
+                            className="btn btn-xs btn-success"
+                            disabled={loading}
+                          >
+                            Approve
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleApproveNote(note._id, note.walletAddress)}
-                          className="btn btn-sm btn-success"
+                          onClick={() => handleDeleteNote(note._id)}
+                          className="btn btn-xs btn-error"
                           disabled={loading}
                         >
-                          Approve
+                          Delete
                         </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteNote(note._id)}
-                        className="btn btn-sm btn-error"
-                        disabled={loading}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                      </div>
+                    </td>
                   )}
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-4">No notes found</div>
-        )}
-      </div>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="alert alert-info">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>No notes found</span>
+        </div>
+      )}
 
-      {/* Bottom pagination (same as top) */}
+      {/* Bottom pagination */}
       {renderPagination()}
     </div>
   );

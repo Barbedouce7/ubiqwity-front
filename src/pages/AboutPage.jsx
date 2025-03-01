@@ -15,6 +15,9 @@ const AboutPage = () => {
           <p>AdaHandle ( may not work properly )</p>
           <p>Rosen bridge</p>
           <p>INDY Staking ( for wallet historic charts)</p>
+        <h2 className="text-xl mt-14">Team</h2>
+         <p>Barbedouce</p>
+         <p>Full list not disclosed yet.</p>
       </div>
     </>
   );

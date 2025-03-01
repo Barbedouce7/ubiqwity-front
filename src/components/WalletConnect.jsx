@@ -136,7 +136,7 @@ const WalletAuth = () => {
                         </span>
                     ) : (
                      <>
-                          <WalletIcon className="w-5 h-5" /> Log in
+                          <WalletIcon className="w-5 h-5" /> Connect Wallet
                       </>
                     )}
                 </button>
