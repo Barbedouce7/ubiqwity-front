@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import TransactionPage from './pages/TransactionPage';
+import AssetPage from './pages/AssetPage';
 import PoolPage from './pages/PoolPage';
 import PoolsPage from './pages/PoolsPage';
 import PricesPage from './pages/PricesPage';
@@ -51,11 +52,32 @@ function App() {
     }
   }, [location, navigate]);
 
-  const handleSearch = async (searchTerm) => {
-    let searchUrl = searchTerm.length === 56 ? `/pool/${searchTerm}`
-                   : searchTerm.length === 64 ? `/tx/${searchTerm}`
-                   : `/wallet/${searchTerm}`;
-
+const handleSearch = async (searchTerm) => {
+    // Vérifie si le terme commence par stake, addr, ae ou ddz
+    const walletPrefixes = /^(stake|addr|ae|ddz)/i;
+    const termLength = searchTerm.length;
+    
+    // Conditions pour wallet en priorité
+    let searchUrl;
+    if (
+        walletPrefixes.test(searchTerm) ||        // Commence par stake, addr, ae ou ddz
+        termLength < 20 ||                        // Moins de 20 caractères
+        termLength === 103 ||                     // Exactement 103 caractères
+        termLength === 56 ||                      // Garder la condition existante pour pool
+        termLength === 64                         // Garder la condition existante pour tx
+    ) {
+        if (termLength === 56) {
+            searchUrl = `/pool/${searchTerm}`;
+        } else if (termLength === 64) {
+            searchUrl = `/tx/${searchTerm}`;
+        } else {
+            searchUrl = `/wallet/${searchTerm}`;
+        }
+    } else {
+        // Tout le reste est considéré comme asset
+        searchUrl = `/asset/${searchTerm}`;
+    }
+  
     try {
       const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
       navigate(searchUrl, { state: { data: response.data, from404: searchUrl } });
@@ -76,6 +98,7 @@ function App() {
         <Route path="/pools" element={<PoolsPage />} />
         <Route path="/prices" element={<PricesPage />} />
         <Route path="/tx/:txId" element={<TransactionPage />} />
+        <Route path="/asset/:asset" element={<AssetPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
         <Route path="/datum/:datumHash" element={<DatumPage />} />

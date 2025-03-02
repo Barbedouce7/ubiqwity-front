@@ -17,7 +17,8 @@ const AboutPage = () => {
           <p>INDY Staking ( for wallet historic charts)</p>
         <h2 className="text-xl mt-14">Team</h2>
          <p>Barbedouce</p>
-         <p>Full list not disclosed yet.</p>
+         <p>Beerus</p>
+         <p className="text-xs mt-4">Please feel free to contact us via X & discord.</p>
       </div>
     </>
   );
