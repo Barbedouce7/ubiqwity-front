@@ -178,66 +178,24 @@ const HoldingsComponent = ({ holdingsData }) => {
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   
-  // Fonction pour traiter les assets par lots
-  const fetchAssetsBatch = async (units, batchSize = 10) => {
-    let assetsData = {};
-    
-    // Diviser les unités en lots de la taille spécifiée
-    for (let i = 0; i < units.length; i += batchSize) {
-      const batchUnits = units.slice(i, i + batchSize);
-      try {
-        const response = await fetch(`${API_CONFIG.baseUrl}assets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(batchUnits),
-        });
-
-        if (response.ok) {
-          const batchData = await response.json();
-          assetsData = { ...assetsData, ...batchData };
-          
-          // Mise à jour progressive des tokens avec les métadonnées du lot
-          setTokens(prevTokens => {
-            const updatedTokens = [...prevTokens];
-            for (const unit of batchUnits) {
-              const tokenIndex = updatedTokens.findIndex(t => t.unit === unit);
-              if (tokenIndex !== -1 && batchData[unit]) {
-                const token = updatedTokens[tokenIndex];
-                const assetData = batchData[unit];
-                
-                updatedTokens[tokenIndex] = {
-                  ...token,
-                  decimals: token.decimals || assetData.decimals || 0,
-                  name: token.name || assetData.name,
-                  ticker: token.ticker || assetData.ticker,
-                  hasMetadata: token.hasMetadata || !!Object.keys(assetData).length,
-                  onchainMetadata: token.onchainMetadata || assetData.onchain_metadata,
-                  isLoadingMetadata: false
-                };
-              }
-            }
-            return updatedTokens;
-          });
-        }
-        
-        // Petite pause entre les lots pour éviter de surcharger le serveur
-        await delay(100);
-        
-      } catch (error) {
-        console.error(`Error fetching batch assets data (${i}-${i+batchSize}):`, error);
-      }
+  const fetchAssetsBatch = async (units) => {
+    try {
+      const response = await fetch(`${API_CONFIG.baseUrl}assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(units),
+      });
+      return response.ok ? await response.json() : {};
+    } catch (error) {
+      console.error('Error fetching assets batch:', error);
+      return {};
     }
-    
-    return assetsData;
   };
 
-  // Effet pour mettre à jour les listes filtrées quand tokens change
   useEffect(() => {
     if (tokens.length > 0) {
       setNftTokens(tokens.filter(token => token.isNFT));
       setFungibleTokens(tokens.filter(token => !token.isNFT));
-      
-      // Quand tous les tokens sont prêts (plus aucun en chargement)
       const allTokensReady = !tokens.some(token => token.isLoadingMetadata);
       if (allTokensReady) {
         setIsDataReady(true);
@@ -254,50 +212,46 @@ const HoldingsComponent = ({ holdingsData }) => {
         return;
       }
 
-      // Traitement initial des holdings
+      setIsInitialLoading(true);
       const mergedTokens = holdingsData.holdings.reduce((acc, holding) => {
         if (holding.unit === "lovelace") return acc;
         const quantity = BigInt(holding.quantity);
-        if (acc[holding.unit]) {
-          acc[holding.unit].quantity += quantity;
-        } else {
-          acc[holding.unit] = { ...holding, quantity };
-        }
+        acc[holding.unit] = acc[holding.unit] || { ...holding, quantity: 0n };
+        acc[holding.unit].quantity += quantity;
         return acc;
       }, {});
 
-      // Traitement initial rapide sans attendre les métadonnées
-      const initialTokens = await Promise.all(
-        Object.values(mergedTokens).map(async (holding, index) => {
-          await delay(Math.min(index * 10, 500)); // Limite le délai maximum à 500ms
-          const { policyId, assetName } = splitPolicyAndAsset(holding.unit);
-          return {
-            unit: holding.unit,
-            quantity: Number(holding.quantity),
-            decimals: 0,
-            policyId,
-            assetName,
-            hasMetadata: false,
-            isNFT: Number(holding.quantity) === 1,
-            isLoadingMetadata: true
-          };
-        })
-      );
+      const initialTokens = Object.values(mergedTokens).map(holding => {
+        const { policyId, assetName } = splitPolicyAndAsset(holding.unit);
+        return {
+          unit: holding.unit,
+          quantity: Number(holding.quantity),
+          decimals: 0,
+          policyId,
+          assetName,
+          hasMetadata: false,
+          isNFT: Number(holding.quantity) === 1,
+          isLoadingMetadata: true
+        };
+      });
 
       setTokens(initialTokens);
       setIsInitialLoading(false);
       setIsAssetsLoading(true);
 
-      // Chargement des métadonnées en arrière-plan avec traitement par lots
-      const units = Object.keys(mergedTokens);
-      const assetsData = await fetchAssetsBatch(units, 10);
+      // Charger les métadonnées uniquement pour les éléments visibles
+      const loadMetadataForPage = async () => {
+        const displayTokens = showNFTs ? initialTokens.filter(t => t.isNFT) : initialTokens.filter(t => !t.isNFT);
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, displayTokens.length);
+        const unitsToFetch = displayTokens.slice(startIndex, endIndex).map(t => t.unit);
 
-      // Traitement supplémentaire pour les images et autres données non incluses dans la mise à jour progressive
-      const processedTokens = await Promise.all(
-        initialTokens.map(async (token, index) => {
-          // Espacer les requêtes pour éviter de surcharger le client
-          await delay(Math.min(index * 10, 500)); // Limite le délai maximum à 500ms
-          try {
+        const assetsData = await fetchAssetsBatch(unitsToFetch);
+
+        const processedTokens = await Promise.all(
+          initialTokens.map(async token => {
+            if (!unitsToFetch.includes(token.unit)) return token;
+            
             const metadata = tokenMetadata[token.unit] || await fetchTokenData(token.unit);
             const assetData = assetsData[token.unit] || {};
             
@@ -309,7 +263,7 @@ const HoldingsComponent = ({ holdingsData }) => {
               try {
                 const response = await fetch(imgUrl, { method: 'HEAD' });
                 if (response.ok) logoUrl = imgUrl;
-              } catch (error) {}
+              } catch (_) {}
             }
 
             if (token.isNFT && (token.onchainMetadata?.image || assetData.onchain_metadata?.image)) {
@@ -321,41 +275,38 @@ const HoldingsComponent = ({ holdingsData }) => {
 
             return {
               ...token,
-              decimals: metadata?.decimals || assetData.decimals || token.decimals || 0,
-              name: metadata?.name || assetData.name || token.name,
-              ticker: metadata?.ticker || assetData.ticker || token.ticker,
+              decimals: metadata?.decimals || assetData.decimals || 0,
+              name: metadata?.name || assetData.name,
+              ticker: metadata?.ticker || assetData.ticker,
               logo: logoUrl,
-              hasMetadata: !!metadata || !!Object.keys(assetData).length || token.hasMetadata,
+              hasMetadata: !!metadata || !!Object.keys(assetData).length,
               onchainMetadata: token.onchainMetadata || assetData.onchain_metadata || metadata?.onchain_metadata,
               imageUrl,
               isLoadingMetadata: false
             };
-          } catch (error) {
-            console.error(`Error processing token ${token.unit}:`, error);
-            return {
-              ...token,
-              isLoadingMetadata: false
-            };
-          }
-        })
-      );
+          })
+        );
 
-      const validTokens = processedTokens.filter(Boolean).sort((a, b) => {
-        if (a.isNFT && b.isNFT) return (b.imageUrl ? 1 : 0) - (a.imageUrl ? 1 : 0);
-        if (a.hasMetadata !== b.hasMetadata) return b.hasMetadata ? 1 : -1;
-        return (b.logo ? 1 : 0) - (a.logo ? 1 : 0);
-      });
+        setTokens(processedTokens.sort((a, b) => {
+          if (a.isNFT && b.isNFT) return (b.imageUrl ? 1 : 0) - (a.imageUrl ? 1 : 0);
+          if (a.hasMetadata !== b.hasMetadata) return b.hasMetadata ? 1 : -1;
+          return (b.logo ? 1 : 0) - (a.logo ? 1 : 0);
+        }));
+        setIsAssetsLoading(false);
+      };
 
-      setTokens(validTokens);
-      setIsAssetsLoading(false);
+      loadMetadataForPage();
     };
 
     setIsDataReady(false);
     processHoldings();
-  }, [holdingsData, tokenMetadata, fetchTokenData]);
+  }, [holdingsData, showNFTs, currentPage, tokenMetadata, fetchTokenData]);
 
-  // Sélectionne les tokens à afficher en fonction du choix de l'utilisateur
   const displayTokens = showNFTs ? nftTokens : fungibleTokens;
+  const totalItems = displayTokens.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedTokens = displayTokens.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const hasAnyTokens = nftTokens.length > 0 || fungibleTokens.length > 0;
 
   if (isInitialLoading) {
@@ -382,18 +333,22 @@ const HoldingsComponent = ({ holdingsData }) => {
                   type="checkbox" 
                   className="toggle toggle-primary toggle-lg" 
                   checked={showNFTs}
-                  onChange={(e) => setShowNFTs(e.target.checked)}
+                  onChange={(e) => {
+                    setShowNFTs(e.target.checked);
+                    setCurrentPage(1);
+                  }}
                 />
                 <span className={showNFTs ? "font-bold" : "opacity-50"}>NFTs</span>
               </div>
             )}
             <h2 className="text-lg font-semibold">
-              {displayTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
+              {totalItems} {showNFTs ? 'NFTs' : 'Native Tokens'}
             </h2>
           </div>
 
           {/* Affichage conditionnel basé sur le type de tokens (NFT vs FT) */}
           {showNFTs ? (
+            <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {displayTokens.map(token => (
                 <div 
@@ -489,7 +444,16 @@ const HoldingsComponent = ({ holdingsData }) => {
                 </div>
               ))}
             </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </div>
           ) : (
+            <div>
             <div className="overflow-x-auto p-4 max-w-lg mx-auto">
               <table className="w-full">
                 <thead>
@@ -499,7 +463,7 @@ const HoldingsComponent = ({ holdingsData }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayTokens.map((token) => (
+                  {paginatedTokens.map((token) => (
                     <tr key={token.unit} className="hover border-t border-gray-500/30">
                       <td className="flex items-center gap-4 p-2">
                         <div className="relative">
@@ -560,6 +524,14 @@ const HoldingsComponent = ({ holdingsData }) => {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </div>
           )}
         </>

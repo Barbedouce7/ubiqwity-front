@@ -103,43 +103,47 @@ const AssetExplorer = () => {
     }
   };
 
-  const renderMetadataTable = (metadata) => {
-    if (!metadata || Object.keys(metadata).length === 0) {
-      return <p className="text-gray-500">No metadata available</p>;
-    }
+ const renderMetadataTable = (metadata) => {
+  if (!metadata || Object.keys(metadata).length === 0) {
+    return <p className="text-gray-500">No metadata available</p>;
+  }
 
-    // Filter out image and files which are handled separately
-    const filteredEntries = Object.entries(metadata).filter(
-      ([key]) => !['image', 'files'].includes(key)
-    );
+  // Filter out image and files which are handled separately
+  const filteredEntries = Object.entries(metadata).filter(
+    ([key]) => !['image', 'files'].includes(key)
+  );
 
-    return (
-      <table className="w-full">
-        <tbody>
-          {filteredEntries.map(([key, value]) => (
-            <tr key={key} className="border-b border-base-300 last:border-none">
-              <td className="py-2 font-bold">{key}</td>
-              <td className="py-2 break-words">
-                {typeof value === 'string' && value.startsWith('http') ? (
-                  <a 
-                    href={value} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="link link-primary flex items-center justify-center gap-1"
-                  >
-                    {value}
-                    <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                  </a>
-                ) : (
-                  <span>{value.toString()}</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  };
+  return (
+    <table className="w-full">
+      <tbody>
+        {filteredEntries.map(([key, value]) => (
+          <tr key={key} className="border-b border-base-300 last:border-none">
+            <td className="py-2 font-bold">{key}</td>
+            <td className="py-2 break-words">
+              {typeof value === 'string' && value.startsWith('http') ? (
+                <a 
+                  href={value} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="link link-primary flex items-center justify-center gap-1"
+                >
+                  {value}
+                  <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                </a>
+              ) : typeof value === 'object' && value !== null ? (
+                <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto">
+                  {JSON.stringify(value, null, 2)}
+                </pre>
+              ) : (
+                <span>{String(value)}</span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
   if (isLoading) {
     return (
