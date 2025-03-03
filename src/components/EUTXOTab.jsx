@@ -81,8 +81,18 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
                     )}
                     <div className="flex flex-col min-w-0">
                       <span className="text-sm font-medium truncate">
-                        {shortener(asset.displayUnit)}
-                      </span>
+                      {asset.unit !== 'lovelace' ? (
+                        <Link
+                          to={`/asset/${asset.unit}`}
+                          className="text-sky-500 hover:text-sky-600 transition-colors"
+                        >
+                          {shortener(asset.displayUnit)}
+                        </Link>
+                      ) : (
+                        shortener(asset.displayUnit)
+                      )}
+                    </span>
+                      
                       {extractedName && (
                         <span className="text-xs opacity-70 truncate">
                           {extractedName}
