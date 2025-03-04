@@ -1,45 +1,18 @@
+// HoldingsContainer.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { TokenContext } from '../utils/TokenContext';
-import CopyButton from '../components/CopyButton';
-import { shortener } from '../utils/utils';
-import { InformationCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import TokenList from './TokenList';
+import NFTGallery from './NFTGallery';
 import { API_CONFIG } from '../utils/apiConfig';
-import { Link } from 'react-router-dom';
 
-// Composant de pagination
-const Pagination = ({ currentPage, totalPages, onPageChange }) => (
-  <div className="flex justify-center items-center gap-2 mt-4">
-    <button
-      onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-      disabled={currentPage === 1}
-      className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 transition-colors"
-    >
-      <ChevronLeftIcon className="h-5 w-5" />
-    </button>
-    <span className="text-sm font-medium">
-      {currentPage} / {totalPages}
-    </span>
-    <button
-      onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-      disabled={currentPage === totalPages}
-      className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 transition-colors"
-    >
-      <ChevronRightIcon className="h-5 w-5" />
-    </button>
-  </div>
-);
-
-const HoldingsComponent = ({ holdingsData }) => {
-  const ITEMS_PER_PAGE = 20;
+const HoldingsContainer = ({ holdingsData }) => {
   const [tokens, setTokens] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isAssetsLoading, setIsAssetsLoading] = useState(false);
   const [showNFTs, setShowNFTs] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [activeNFTDetails, setActiveNFTDetails] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const { tokenMetadata, fetchTokenData } = useContext(TokenContext);
-  
   const [nftTokens, setNftTokens] = useState([]);
   const [fungibleTokens, setFungibleTokens] = useState([]);
   const [isDataReady, setIsDataReady] = useState(false);
@@ -177,12 +150,10 @@ const HoldingsComponent = ({ holdingsData }) => {
   };
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  
-  // Fonction pour traiter les assets par lots
+
   const fetchAssetsBatch = async (units, batchSize = 10) => {
     let assetsData = {};
     
-    // Diviser les unités en lots de la taille spécifiée
     for (let i = 0; i < units.length; i += batchSize) {
       const batchUnits = units.slice(i, i + batchSize);
       try {
@@ -196,7 +167,6 @@ const HoldingsComponent = ({ holdingsData }) => {
           const batchData = await response.json();
           assetsData = { ...assetsData, ...batchData };
           
-          // Mise à jour progressive des tokens avec les métadonnées du lot
           setTokens(prevTokens => {
             const updatedTokens = [...prevTokens];
             for (const unit of batchUnits) {
@@ -220,7 +190,6 @@ const HoldingsComponent = ({ holdingsData }) => {
           });
         }
         
-        // Petite pause entre les lots pour éviter de surcharger le serveur
         await delay(100);
         
       } catch (error) {
@@ -231,13 +200,10 @@ const HoldingsComponent = ({ holdingsData }) => {
     return assetsData;
   };
 
-  // Effet pour mettre à jour les listes filtrées quand tokens change
   useEffect(() => {
     if (tokens.length > 0) {
       setNftTokens(tokens.filter(token => token.isNFT));
       setFungibleTokens(tokens.filter(token => !token.isNFT));
-      
-      // Quand tous les tokens sont prêts (plus aucun en chargement)
       const allTokensReady = !tokens.some(token => token.isLoadingMetadata);
       if (allTokensReady) {
         setIsDataReady(true);
@@ -254,7 +220,6 @@ const HoldingsComponent = ({ holdingsData }) => {
         return;
       }
 
-      // Traitement initial des holdings
       const mergedTokens = holdingsData.holdings.reduce((acc, holding) => {
         if (holding.unit === "lovelace") return acc;
         const quantity = BigInt(holding.quantity);
@@ -266,10 +231,9 @@ const HoldingsComponent = ({ holdingsData }) => {
         return acc;
       }, {});
 
-      // Traitement initial rapide sans attendre les métadonnées
       const initialTokens = await Promise.all(
         Object.values(mergedTokens).map(async (holding, index) => {
-          await delay(Math.min(index * 10, 500)); // Limite le délai maximum à 500ms
+          await delay(Math.min(index * 10, 500));
           const { policyId, assetName } = splitPolicyAndAsset(holding.unit);
           return {
             unit: holding.unit,
@@ -288,15 +252,12 @@ const HoldingsComponent = ({ holdingsData }) => {
       setIsInitialLoading(false);
       setIsAssetsLoading(true);
 
-      // Chargement des métadonnées en arrière-plan avec traitement par lots
       const units = Object.keys(mergedTokens);
       const assetsData = await fetchAssetsBatch(units, 10);
 
-      // Traitement supplémentaire pour les images et autres données non incluses dans la mise à jour progressive
       const processedTokens = await Promise.all(
         initialTokens.map(async (token, index) => {
-          // Espacer les requêtes pour éviter de surcharger le client
-          await delay(Math.min(index * 10, 500)); // Limite le délai maximum à 500ms
+          await delay(Math.min(index * 10, 500));
           try {
             const metadata = tokenMetadata[token.unit] || await fetchTokenData(token.unit);
             const assetData = assetsData[token.unit] || {};
@@ -354,8 +315,10 @@ const HoldingsComponent = ({ holdingsData }) => {
     processHoldings();
   }, [holdingsData, tokenMetadata, fetchTokenData]);
 
-  // Sélectionne les tokens à afficher en fonction du choix de l'utilisateur
-  const displayTokens = showNFTs ? nftTokens : fungibleTokens;
+  const displayTokens = showNFTs ? nftTokens : fungibleTokens.map(token => ({
+    ...token,
+    displayName: getDisplayName(token) // Ajoute displayName pour TokenList
+  }));
   const hasAnyTokens = nftTokens.length > 0 || fungibleTokens.length > 0;
 
   if (isInitialLoading) {
@@ -392,175 +355,22 @@ const HoldingsComponent = ({ holdingsData }) => {
             </h2>
           </div>
 
-          {/* Affichage conditionnel basé sur le type de tokens (NFT vs FT) */}
           {showNFTs ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {displayTokens.map(token => (
-                <div 
-                  key={token.unit} 
-                  className="card bg-base-100 shadow-xl cursor-pointer relative"
-                  onClick={() => !token.isLoadingMetadata && setActiveNFTDetails(activeNFTDetails === token.unit ? null : token.unit)}
-                >
-                  <div className="card-body items-center text-center space-y-4">
-                    {!isDataReady || token.isLoadingMetadata ? (
-                      <div className="flex justify-center items-center h-24">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
-                      </div>
-                    ) : token.imageUrl || token.logo ? (
-                      <div className="w-24 h-24 overflow-hidden">
-                        <img
-                          src={token.imageUrl || token.logo}
-                          alt={getDisplayName(token)}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl">
-                        <span className="text-sm opacity-50">No image</span>
-                      </div>
-                    )}
-                    
-                    <div>
-                      <p className="font-semibold">
-                        {getDisplayName(token)}
-                        {(!isDataReady || token.isLoadingMetadata) && (
-                          <span className="ml-2 inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500"></span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Overlay pleine écran pour les détails NFT */}
-                  {activeNFTDetails === token.unit && token.onchainMetadata && (
-                    <div 
-                      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                      onClick={() => setActiveNFTDetails(null)}
-                    >
-                      <div 
-                        className="bg-base-100 rounded-xl shadow-2xl max-w-xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          className="btn btn-circle btn-sm absolute top-2 right-2"
-                          onClick={() => setActiveNFTDetails(null)}
-                        >
-                          ✕
-                        </button>
-
-                        <div className="space-y-6">
-                          {/* Header avec image */}
-                          <div className="flex flex-col items-center gap-4">
-                            {token.imageUrl && (
-                              <div className="w-32 h-32 overflow-hidden rounded-lg">
-                                <img
-                                  src={token.imageUrl}
-                                  alt={getDisplayName(token)}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
-                              </div>
-                            )}
-                            <h3 className="text-2xl font-bold text-center">
-                              {getDisplayName(token)}
-                            </h3>
-                          </div>
-
-                          {/* Détails */}
-                          <div className="space-y-3">
-                            {Object.entries(token.onchainMetadata).map(([key, value]) => (
-                              <div 
-                                key={key} 
-                                className="flex flex-col sm:flex-row sm:items-start gap-2 border-b border-gray-200 pb-2"
-                              >
-                                <span className="font-semibold capitalize whitespace-nowrap">
-                                  {key}:
-                                </span>
-                                <span className="break-words text-sm truncate">
-                                  {typeof value === 'object' ? JSON.stringify(value) : value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <NFTGallery 
+              tokens={displayTokens}
+              isDataReady={isDataReady}
+              activeNFTDetails={activeNFTDetails}
+              setActiveNFTDetails={setActiveNFTDetails}
+              getDisplayName={getDisplayName}
+            />
           ) : (
-            <div className="overflow-x-auto p-4 max-w-lg mx-auto">
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="text-left">Asset | Ticker</th>
-                    <th className="text-right">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayTokens.map((token) => (
-                    <tr key={token.unit} className="hover border-t border-gray-500/30">
-                      <td className="flex items-center gap-4 p-2">
-                        <div className="relative">
-                          {!isDataReady || token.isLoadingMetadata ? (
-                            <div className="w-10 h-10 flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
-                            </div>
-                          ) : (
-                            <div 
-                              className="w-10 h-10 rounded-full overflow-hidden cursor-pointer shadow-sm shadow-white"
-                              onClick={() => setActiveTooltip(activeTooltip === token.unit ? null : token.unit)}
-                            >
-                              {(token.logo || token.imageUrl) && (
-                                <img
-                                  src={token.logo || token.imageUrl}
-                                  alt=""
-                                  className="w-10 h-10 object-cover"
-                                  loading="lazy"
-                                />
-                              )}
-                            </div>
-                          )}
-                          {activeTooltip === token.unit && (
-                            <div className="card bg-base-100 shadow-xl absolute z-10 left-0 mt-2 p-4 min-w-[400px] border border-sky-500/50 rounded">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold">Policy ID:</span>
-                                  <span className="font-mono text-xs">
-                                    {shortener(token.policyId)}
-                                    <CopyButton text={token.policyId} className="ml-1" />
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold">Asset Name:</span>
-                                  <span className="font-mono text-xs">
-                                    {shortener(token.assetName)}
-                                    <CopyButton text={token.assetName} className="ml-1" />
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <Link 
-                          to={`/asset/${token.unit}`} 
-                          className="font-semibold hover:text-primary"
-                        >
-                          {getDisplayName(token)}
-                          {(!isDataReady || token.isLoadingMetadata) && (
-                            <span className="ml-2 inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500"></span>
-                          )}
-                        </Link>
-                      </td>
-                      <td className="text-right font-mono">
-                        {formatQuantity(token.quantity, token.decimals)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TokenList 
+              tokens={displayTokens}
+              isDataReady={isDataReady}
+              activeTooltip={activeTooltip}
+              setActiveTooltip={setActiveTooltip}
+              formatQuantity={formatQuantity}
+            />
           )}
         </>
       )}
@@ -568,4 +378,4 @@ const HoldingsComponent = ({ holdingsData }) => {
   );
 };
 
-export default HoldingsComponent;
+export default HoldingsContainer;
