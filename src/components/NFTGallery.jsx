@@ -42,8 +42,8 @@ const NFTGallery = ({ activeNFTDetails, setActiveNFTDetails }) => {
               </div>
             )}
             
-            <div>
-              <p className="font-semibold">
+            <div className="w-[200px]">
+              <p className="font-semibold truncate">
                 {getDisplayName(token)}
               </p>
             </div>

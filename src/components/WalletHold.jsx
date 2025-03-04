@@ -25,9 +25,14 @@ const HoldingsContainer = ({ holdingsData }) => {
     return token.assetName || '???';
   };
 
-  useEffect(() => {
-    processHoldings(holdingsData);
-  }, [holdingsData, processHoldings]);
+useEffect(() => {
+  if (holdingsData?.holdings?.length) {
+    processHoldings(holdingsData).then((processed) => {
+      setProcessedHoldings(processed);
+    });
+  }
+}, [holdingsData, processHoldings]);
+
 
   const tokens = processedHoldings.tokens || [];
   const nftTokens = processedHoldings.nftTokens || [];
