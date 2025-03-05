@@ -40,7 +40,7 @@ const EpochContext = ({ data }) => {
       {/* Epoch Progress Bar */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
-          <span>Epoch {data.epoch} Progress</span>
+          <span>Epoch {data.epoch}</span>
           <span>{progressPercentage.toFixed(1)}%</span>
         </div>
         <div className="w-full bg-base-300 h-1.5 rounded-sm">
@@ -50,8 +50,8 @@ const EpochContext = ({ data }) => {
           ></div>
         </div>
         <div className="flex justify-between text-sm mt-1">
-          <span>{formatNumber(timeElapsed)}s / {formatNumber(EPOCH_DURATION)}s</span>
-          <span>Time Remaining: {formatTime(timeRemaining)}</span>
+          <p><span>{formatNumber(timeElapsed)}s</span> / <span className="opacity-70">{formatNumber(EPOCH_DURATION)}s</span></p>
+          <span>{formatTime(timeRemaining)}</span>
         </div>
       </div>
 

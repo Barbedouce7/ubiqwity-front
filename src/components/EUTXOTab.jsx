@@ -79,12 +79,12 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
                         onError={(e) => e.target.style.display = 'none'}
                       />
                     )}
-                    <div className="flex flex-col min-w-0">
+                    <div className="flex flex-col min-w-0 truncate">
                       <span className="text-sm font-medium truncate">
                       {asset.unit !== 'lovelace' ? (
                         <Link
                           to={`/asset/${asset.unit}`}
-                          className="text-sky-500 hover:text-sky-600 transition-colors"
+                          className="text-sky-500 hover:text-sky-600 transition-colors truncate"
                         >
                           {shortener(asset.displayUnit)}
                         </Link>
@@ -94,14 +94,11 @@ const AssetsTable = ({ assets, pageSize = 5 }) => {
                     </span>
                       
                       {extractedName && (
-                        <span className="text-xs opacity-70 truncate">
+                        <span className="text-xs opacity-70 ">
                           {extractedName}
                         </span>
                       )}
                     </div>
-                    {asset.unit !== 'lovelace' && (
-                      <CopyButton text={asset.unit} />
-                    )}
                   </div>
                 </td>
                 <td className="py-1 px-2 text-right font-mono text-sm">
@@ -137,32 +134,27 @@ const UTXOCard = ({ data, type, index, handleComponent, showScriptInfo }) => {
         {handleComponent}
       </div>
       
-      <div className="p-3 space-y-2">
-        <div className="flex items-center justify-between text-sm">
+      <div className="pb-1">
+        <div className="px-3 flex items-center justify-between text-sm">
           <span className="opacity-70">Address:</span>
           <div className="flex items-center gap-1">
+            <CopyButton text={data.address} />
             <Link 
               to={`/wallet/${data.address}`}
               className="text-sky-500 hover:text-sky-600 transition-colors"
             >
               {shortener(data.address)}
             </Link>
-            <CopyButton text={data.address} />
-            <Link 
-              to={`/wallet/${data.address}`} 
-              target="_blank"
-              className="hover:bg-gray-100 rounded transition-colors"
-            >
-            </Link>
+            
           </div>
         </div>
 
-        <div className={`border-t border-${borderColor}-500/30 pt-2`}>
+        <div className={`border-t border-${borderColor}-500/30 `}>
           <AssetsTable assets={data.processedAmount} />
         </div>
 
         {hasScriptInfo && showScriptInfo && (
-          <div className={`space-y-2 pt-2 border-t border-${borderColor}-500/30`}>
+          <div className={`space-y-2 pt-2 px-2 border-t border-${borderColor}-500/30`}>
             {data.inline_datum && (
               <div className="flex items-center justify-between text-sm">
                 <span className="opacity-70">Inline Datum:</span>
@@ -174,14 +166,14 @@ const UTXOCard = ({ data, type, index, handleComponent, showScriptInfo }) => {
             )}
             
             {data.collateral && (
-              <div className="flex items-center justify-between text-sm">
+              <div className="px-2 flex items-center justify-between text-sm">
                 <span className="opacity-70">Collateral:</span>
                 <span>Yes</span>
               </div>
             )}
             
             {data.reference_script_hash && (
-              <div className="flex items-center justify-between text-sm">
+              <div className=" px-2 flex items-center justify-between text-sm">
                 <span className="opacity-70">Reference Script:</span>
                 <div className="flex items-center gap-1">
                   <ScriptBadge script={data.reference_script_hash} />
@@ -191,7 +183,7 @@ const UTXOCard = ({ data, type, index, handleComponent, showScriptInfo }) => {
             )}
             
             {data.consumed_by_tx && (
-              <div className="flex items-center justify-between text-sm">
+              <div className="px-2 flex items-center justify-between text-sm">
                 <span className="opacity-70">Consumed By TX:</span>
                 <div className="flex items-center gap-1">
                   <Link

@@ -17,7 +17,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="footer footer-center pt-10 text-base-content rounded">
+    <footer className="footer footer-center pt-10 text-base-content rounded mt-10">
        <p className="text-xl">        <img 
           src={isDarkMode ? logow : logob} 
           alt="Logo" 
