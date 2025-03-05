@@ -7,6 +7,7 @@ const HoldingsContainer = ({ holdingsData }) => {
   const [showNFTs, setShowNFTs] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [activeNFTDetails, setActiveNFTDetails] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { processHoldings, processedHoldings } = useContext(TokenContext);
 
   const formatQuantity = (quantity, decimals = 0) => {
@@ -25,35 +26,46 @@ const HoldingsContainer = ({ holdingsData }) => {
     return token.assetName || '???';
   };
 
-useEffect(() => {
-  if (holdingsData?.holdings?.length) {
-    processHoldings(holdingsData).then((processed) => {
-      setProcessedHoldings(processed);
-    });
-  }
-}, [holdingsData, processHoldings]);
+  useEffect(() => {
+    if (!holdingsData?.holdings?.length) {
+      setIsProcessing(false);
+      return;
+    }
 
+    setIsProcessing(true);
+    processHoldings(holdingsData)
+      .then(() => {
+        setIsProcessing(false);
+      })
+      .catch((error) => {
+        console.error('Error processing holdings:', error);
+        setIsProcessing(false);
+      });
+  }, [holdingsData, processHoldings]);
 
   const tokens = processedHoldings.tokens || [];
   const nftTokens = processedHoldings.nftTokens || [];
   const fungibleTokens = processedHoldings.fungibleTokens || [];
   const hasAnyTokens = nftTokens.length > 0 || fungibleTokens.length > 0;
-  const isLoading = tokens.some(token => token.isLoadingMetadata);
+  const isLoadingMetadata = tokens.some(token => token.isLoadingMetadata);
 
-  const displayTokens = showNFTs ? nftTokens : fungibleTokens.map(token => ({
-    ...token,
-    displayName: getDisplayName(token)
-  }));
+  const displayTokens = showNFTs 
+    ? nftTokens 
+    : fungibleTokens.map(token => ({
+        ...token,
+        displayName: getDisplayName(token)
+      }));
 
   return (
     <div className="space-y-6">
-      {tokens.length === 0 && isLoading ? (
+      {(isProcessing || (tokens.length === 0 && isLoadingMetadata)) ? (
         <div className="flex justify-center items-center min-h-40">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
+          <span className="ml-2">Loading holdings...</span>
         </div>
       ) : !hasAnyTokens ? (
         <div className="text-center py-8">
-          <p className="text-lg font-semibold">No CNT ( FT/NFT ) for this wallet</p>
+          <p className="text-lg font-semibold">No CNT (FT/NFT) for this wallet</p>
         </div>
       ) : (
         <>
@@ -72,7 +84,7 @@ useEffect(() => {
             )}
             <h2 className="text-lg font-semibold">
               {displayTokens.length} {showNFTs ? 'NFTs' : 'Native Tokens'}
-              {isLoading && ' (loading more...)'}
+              {isLoadingMetadata && ' (loading metadata...)'}
             </h2>
           </div>
 
