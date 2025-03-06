@@ -9,8 +9,10 @@ import TransactionPage from './pages/TransactionPage';
 import AssetPage from './pages/AssetPage';
 import PoolPage from './pages/PoolPage';
 import PoolsPage from './pages/PoolsPage';
+import DRepsPage from './pages/DRepsPage';
 import PricesPage from './pages/PricesPage';
 import WalletPage from './pages/WalletPage';
+import DRepPage from './pages/DRepPage';
 import DatumPage from './pages/DatumPage';
 import CommunityNotesPage from './pages/CommunityNotesPage';
 import ProfilPage from './pages/ProfilPage';
@@ -53,13 +55,15 @@ function App() {
   }, [location, navigate]);
 
 const handleSearch = async (searchTerm) => {
-    // Vérifie si le terme commence par stake, addr, ae ou ddz
+    // Vérifie si le terme commence par stake, addr, ae, ddz ou drep
     const walletPrefixes = /^(stake|addr|ae|ddz)/i;
     const termLength = searchTerm.length;
     
     // Conditions pour wallet en priorité
     let searchUrl;
-    if (
+    if (searchTerm.startsWith('drep')) {
+        searchUrl = `/drep/${searchTerm}`;
+    } else if (
         walletPrefixes.test(searchTerm) ||        // Commence par stake, addr, ae ou ddz
         termLength < 20 ||                        // Moins de 20 caractères
         termLength === 103 ||                     // Exactement 103 caractères
@@ -74,10 +78,8 @@ const handleSearch = async (searchTerm) => {
             searchUrl = `/wallet/${searchTerm}`;
         }
     } else {
-        // Tout le reste est considéré comme asset
         searchUrl = `/asset/${searchTerm}`;
     }
-  
     try {
       const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
       navigate(searchUrl, { state: { data: response.data, from404: searchUrl } });
@@ -100,6 +102,8 @@ const handleSearch = async (searchTerm) => {
         <Route path="/tx/:txId" element={<TransactionPage />} />
         <Route path="/asset/:asset" element={<AssetPage />} />
         <Route path="/pool/:poolId" element={<PoolPage />} />
+        <Route path="/drep/:drepId" element={<DRepPage />} />
+        <Route path="/dreps" element={<DRepsPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
         <Route path="/datum/:datumHash" element={<DatumPage />} />
         <Route path="/communitynotes" element={<CommunityNotesPage />} />

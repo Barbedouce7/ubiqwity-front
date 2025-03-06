@@ -1,4 +1,3 @@
-// components/Pagination.jsx
 import React from 'react';
 import { 
   ChevronLeftIcon, 
@@ -10,7 +9,6 @@ import {
 const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, totalItems }) => {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   
-  // Calculer les numéros de page à afficher (5 pages max autour de la page courante)
   const getPageNumbers = () => {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
@@ -23,16 +21,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
     
     return pages.slice(startPage - 1, endPage);
   };
-
+  
   const visiblePages = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between gap-4 p-4">
-      <div className="flex items-center gap-2 text-sm opacity-70">
-        <span>
-          {(currentPage - 1) * itemsPerPage + 1}-
-          {Math.min(currentPage * itemsPerPage, totalItems)} sur {totalItems}
-        </span>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 my-4">
+      <div className="text-sm text-base-content">
+        Affichage {(currentPage - 1) * itemsPerPage + 1}-
+        {Math.min(currentPage * itemsPerPage, totalItems)} sur {totalItems}
       </div>
       
       <div className="flex items-center gap-2">
@@ -53,19 +49,17 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
-        
-        <div className="flex gap-1">
-          {visiblePages.map((page) => (
-            <button
-              key={page}
-              onClick={() => onPageChange(page)}
-              className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-ghost'}`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-        
+
+        {visiblePages.map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-ghost'}`}
+          >
+            {page}
+          </button>
+        ))}
+
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}

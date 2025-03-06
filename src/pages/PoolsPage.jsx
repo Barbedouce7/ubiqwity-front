@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
+import Pagination from '../components/Pagination'; // Import du composant Pagination
 import { shortener, convertLovelaceToAda } from '../utils/utils';
 
 const SaturationBar = ({ saturation }) => {
@@ -11,7 +11,7 @@ const SaturationBar = ({ saturation }) => {
     return null;
   }
   const percentage = (saturation * 100).toFixed(1);
-  
+
   const getColor = () => {
     if (percentage > 100) return 'bg-red-500';
     if (percentage > 80) return 'bg-orange-500';
@@ -23,8 +23,8 @@ const SaturationBar = ({ saturation }) => {
   return (
     <div className="w-full">
       <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-        <div 
-          className={`h-full ${getColor()} transition-all duration-300`} 
+        <div
+          className={`h-full ${getColor()} transition-all duration-300`}
           style={{ width: `${displayWidth}%` }}
         />
       </div>
@@ -40,7 +40,7 @@ function PoolsPage() {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  
+
   // État local pour le champ de recherche
   const [inputTicker, setInputTicker] = useState(searchParams.get('ticker') || '');
   // Délai de debounce pour la recherche
@@ -51,6 +51,8 @@ function PoolsPage() {
   const searchTicker = searchParams.get('ticker') || '';
   const [sortOrder, setSortOrder] = useState('desc');
 
+  const ITEMS_PER_PAGE = 100;
+
   // Fonction de fetch des données
   const fetchPoolsData = async (params) => {
     try {
@@ -60,7 +62,7 @@ function PoolsPage() {
           sort: params.sortBy,
           order: params.sortOrder,
           page: params.page,
-          limit: 100,
+          limit: ITEMS_PER_PAGE,
           ticker: params.searchTicker || undefined
         }
       });
@@ -99,8 +101,7 @@ function PoolsPage() {
     if (newSortBy === sortBy) {
       const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
       setSortOrder(newOrder);
-      
-      // Mettre à jour les données avec le nouvel ordre
+
       fetchPoolsData({
         sortBy,
         sortOrder: newOrder,
@@ -108,8 +109,8 @@ function PoolsPage() {
         searchTicker
       });
     } else {
-      setSearchParams({ 
-        page: '1', 
+      setSearchParams({
+        page: '1',
         sort: newSortBy,
         ...(searchTicker && { ticker: searchTicker })
       });
@@ -119,8 +120,8 @@ function PoolsPage() {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setSearchParams({ 
-        page: newPage.toString(), 
+      setSearchParams({
+        page: newPage.toString(),
         sort: sortBy,
         ...(searchTicker && { ticker: searchTicker })
       });
@@ -131,42 +132,19 @@ function PoolsPage() {
   const handleSearchChange = (e) => {
     const newValue = e.target.value;
     setInputTicker(newValue);
-    
-    // Annuler le timeout précédent si existe
+
     if (searchTimeout.current) {
       clearTimeout(searchTimeout.current);
     }
-    
-    // Définir un nouveau timeout
+
     searchTimeout.current = setTimeout(() => {
-      // Mettre à jour l'URL et déclencher la recherche
       setSearchParams({
         page: '1',
         sort: sortBy,
         ...(newValue && { ticker: newValue })
       });
-    }, 500); // Délai de 500ms avant déclenchement de la recherche
+    }, 500);
   };
-
-  const PaginationControls = () => (
-    <div className="flex justify-center items-center gap-2">
-      <button
-        onClick={() => handlePageChange(page - 1)}
-        disabled={page === 1}
-        className="px-4 py-2 rounded disabled:opacity-50"
-      >
-        <ChevronLeftIcon className="h-5 w-5" />
-      </button>
-      <span>{page} of {totalPages}</span>
-      <button
-        onClick={() => handlePageChange(page + 1)}
-        disabled={page === totalPages}
-        className="px-4 py-2 rounded disabled:opacity-50"
-      >
-        <ChevronRightIcon className="h-5 w-5" />
-      </button>
-    </div>
-  );
 
   // Fonction pour générer les lignes de tableau pour le chargement
   const renderSkeletonRows = () => {
@@ -194,7 +172,6 @@ function PoolsPage() {
     ));
   };
 
-  // État d'erreur
   if (error) {
     return (
       <div className="container mx-auto p-4 text-base-content">
@@ -216,7 +193,7 @@ function PoolsPage() {
   return (
     <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Pools</h1>
-      
+
       <div className="mb-2">
         <input
           type="text"
@@ -226,16 +203,16 @@ function PoolsPage() {
           className="w-full max-w-[240px] p-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
-      
-      {/* Affichage du nombre total de résultats */}
-      <div className="mb-4 text-sm text-gray-600">
-        {loading ? 
-          <span>Searching pools...</span> : 
-          <span>{totalResults} pool{totalResults !== 1 ? 's' : ''} found{searchTicker ? ` for "${searchTicker}"` : ''}</span>
-        }
-      </div>
 
-      <PaginationControls />
+      <div className="mb-4 text-sm text-gray-600">
+        {loading ? (
+          <span>Searching pools...</span>
+        ) : (
+          <span>
+            {totalResults} pool{totalResults !== 1 ? 's' : ''} found{searchTicker ? ` for "${searchTicker}"` : ''}
+          </span>
+        )}
+      </div>
 
       {poolsData.length === 0 && !loading ? (
         <div className="mt-4">No valid pool data available{searchTicker ? ` for "${searchTicker}"` : ''}.</div>
@@ -257,16 +234,22 @@ function PoolsPage() {
                     Live Stake<br />
                     Active Stake
                   </th>
-                  <th className={`px-4 py-2 cursor-pointer text-center ${columnStyles.delegatorsColumn}`}
-                     onClick={() => handleSort('live_delegators')}>
+                  <th
+                    className={`px-4 py-2 cursor-pointer text-center ${columnStyles.delegatorsColumn}`}
+                    onClick={() => handleSort('live_delegators')}
+                  >
                     Delegators {sortBy === 'live_delegators' && (sortOrder === 'desc' ? '↓' : '↑')}
                   </th>
-                  <th className={`px-4 py-2 cursor-pointer text-center ${columnStyles.blocksColumn}`}
-                     onClick={() => handleSort('blocks_minted')}>
+                  <th
+                    className={`px-4 py-2 cursor-pointer text-center ${columnStyles.blocksColumn}`}
+                    onClick={() => handleSort('blocks_minted')}
+                  >
                     Blocks {sortBy === 'blocks_minted' && (sortOrder === 'desc' ? '↓' : '↑')}
                   </th>
-                  <th className={`px-4 py-2 cursor-pointer ${columnStyles.saturationColumn}`}
-                     onClick={() => handleSort('live_saturation')}>
+                  <th
+                    className={`px-4 py-2 cursor-pointer ${columnStyles.saturationColumn}`}
+                    onClick={() => handleSort('live_saturation')}
+                  >
                     Saturation {sortBy === 'live_saturation' && (sortOrder === 'desc' ? '↓' : '↑')}
                   </th>
                 </tr>
@@ -300,8 +283,14 @@ function PoolsPage() {
             </table>
           </div>
           <div className="mt-4">
-            <PaginationControls />
-            <p>100 pools / page</p>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={totalResults}
+            />
+            <p>{ITEMS_PER_PAGE} pools / page</p>
           </div>
         </>
       )}
