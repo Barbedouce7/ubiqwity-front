@@ -7,31 +7,36 @@ class ErrorBoundary extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Met à jour l'état pour afficher l'UI de secours
-    return { hasError: true };
+    console.log('ErrorBoundary: Caught error in getDerivedStateFromError:', error);
+    return { hasError: true, error }; // Conserver l'erreur dans l'état
   }
 
   componentDidCatch(error, errorInfo) {
-    // Tu peux aussi loguer l'erreur quelque part si nécessaire
-    this.setState({ error, errorInfo });
+    console.log('ErrorBoundary: componentDidCatch - error:', error, 'errorInfo:', errorInfo);
+    this.setState({ error, errorInfo }); // Mettre à jour l'état avec l'erreur et les infos
   }
 
   render() {
     if (this.state.hasError) {
-      // Tu peux personnaliser l'affichage de l'UI d'erreur
+      console.log('ErrorBoundary: Rendering error state - error:', this.state.error);
+      const errorMessage = this.state.error
+        ? typeof this.state.error === 'object' && '@value' in this.state.error
+          ? String(this.state.error['@value'])
+          : String(this.state.error)
+        : 'Unknown error';
       return (
         <div className="error-boundary">
           <h2>Something went wrong.</h2>
           <details style={{ whiteSpace: 'pre-wrap' }}>
-            {this.state.error && this.state.error.toString()}
+            {errorMessage}
             <br />
-            {this.state.errorInfo.componentStack}
+            {this.state.errorInfo?.componentStack || 'No stack trace available'}
           </details>
         </div>
       );
     }
-
-    return this.props.children; 
+    console.log('ErrorBoundary: Rendering children');
+    return this.props.children;
   }
 }
 
