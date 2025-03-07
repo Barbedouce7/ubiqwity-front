@@ -31,21 +31,24 @@ const generateDelegatorColors = (delegators) => {
 };
 
 function getReferenceIcon(uri) {
+  if (typeof uri !== 'string' || !uri) {
+    return <GlobeAltIcon className="h-5 w-5" />;
+  }
+
   const lowercaseUri = uri.toLowerCase();
   if (lowercaseUri.includes('x.com') || lowercaseUri.includes('twitter.com')) {
-    return <XMarkIcon className="h-6 w-6" />;
+    return <XMarkIcon className="h-5 w-5" />;
   } else if (lowercaseUri.includes('youtube.com') || lowercaseUri.includes('youtu.be')) {
-    return <PlayCircleIcon className="h-6 w-6" />;
+    return <PlayCircleIcon className="h-5 w-5" />;
   } else if (lowercaseUri.includes('github.com')) {
-    return <CodeBracketIcon className="h-6 w-6" />;
+    return <CodeBracketIcon className="h-5 w-5" />;
   } else if (lowercaseUri.includes('discord.com') || lowercaseUri.includes('discord.gg')) {
-    return <ChatBubbleLeftRightIcon className="h-6 w-6" />;
+    return <ChatBubbleLeftRightIcon className="h-5 w-5" />;
   } else {
-    return <GlobeAltIcon className="h-6 w-6" />;
+    return <GlobeAltIcon className="h-5 w-5" />;
   }
 }
 
-// Fonction utilitaire pour extraire la valeur d'un champ avec @value
 const getValue = (field) => {
   if (field && typeof field === 'object' && '@value' in field) {
     return field['@value'];
@@ -208,7 +211,7 @@ function DRepPage() {
       return <p className="text-base-content">No metadata available for this DRep.</p>;
     }
 
-    const { objectives, motivations, qualifications, references, paymentAddress } = data.metadata.body;
+    const { objectives, motivations, qualifications, references } = data.metadata.body;
 
     return (
       <div className="bg-base-400 rounded-lg p-4">
@@ -234,24 +237,31 @@ function DRepPage() {
           {references && references.length > 0 && (
             <div className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl">
               <p className="text-lg font-semibold">References</p>
-              <div className="flex gap-4 mt-2">
-                {references.map((ref, index) => (
-                  <a key={index} href={ref.uri} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-cyan-100">
-                    {getReferenceIcon(ref.uri)}
-                  </a>
-                ))}
+              <div className="flex flex-col gap-2 mt-2">
+                {references.map((ref, index) => {
+                  const uriValue = getValue(ref.uri);
+                  return uriValue ? (
+                    <div key={index} className="flex items-center gap-2">
+                      <a
+                        href={uriValue}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-cyan-100"
+                      >
+                        {getReferenceIcon(uriValue)}
+                      </a>
+                      <a
+                        href={uriValue}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-cyan-100 text-sm truncate"
+                      >
+                        {uriValue}
+                      </a>
+                    </div>
+                  ) : null;
+                })}
               </div>
-            </div>
-          )}
-          {paymentAddress && getValue(paymentAddress) && (
-            <div className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl">
-              <p className="text-lg font-semibold">Payment Address</p>
-              <p>
-                <CopyButton text={getValue(paymentAddress)} />
-                <Link className="text-primary hover:text-cyan-100" to={`/wallet/${getValue(paymentAddress)}`}>
-                  {shortener(getValue(paymentAddress))}
-                </Link>
-              </p>
             </div>
           )}
         </div>
@@ -274,24 +284,24 @@ function DRepPage() {
         {votes.length > 0 ? (
           <>
             <div className="overflow-x-auto">
-              <table className="table w-full">
+              <table className="table table-compact w-full">
                 <thead>
                   <tr>
-                    <th>Transaction Hash</th>
-                    <th>Certificate Index</th>
-                    <th>Vote</th>
+                    <th className="text-sm py-2">Transaction Hash</th>
+                    <th className="text-sm py-2">Cert Index</th>
+                    <th className="text-sm py-2"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentVotes.map((vote, index) => (
                     <tr key={index}>
-                      <td>
+                      <td className="py-1">
                         <CopyButton text={vote.tx_hash} />
-                        <span className="text-primary hover:text-cyan-100">{shortener(vote.tx_hash)}</span>
+                        <span className="text-primary hover:text-cyan-100 text-sm">{shortener(vote.tx_hash)}</span>
                       </td>
-                      <td>{vote.cert_index}</td>
-                      <td>
-                        <span className={`badge ${
+                      <td className="py-1 text-sm">{vote.cert_index}</td>
+                      <td className="py-1">
+                        <span className={`badge badge-sm ${
                           vote.vote === 'yes' ? 'badge-success' : 
                           vote.vote === 'no' ? 'badge-error' : 
                           'badge-warning'
@@ -325,9 +335,6 @@ function DRepPage() {
   const amountInAda = data?.amount ? (Number(data.amount) / 1000000).toFixed(2) : "0";
   const drepName = getValue(data?.metadata?.body?.givenName) || 'Unnamed';
   const paymentAddress = getValue(data?.metadata?.body?.paymentAddress);
-
-  // Débogage pour vérifier la valeur de paymentAddress
-  console.log('paymentAddress:', paymentAddress, typeof paymentAddress);
 
   return (
     <div className="container mx-auto p-6 text-base-content">
