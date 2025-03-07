@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_CONFIG } from '../utils/apiConfig';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import Pagination from '../components/Pagination'; // Import du composant Pagination
+import Pagination from '../components/Pagination';
 import { shortener, convertLovelaceToAda } from '../utils/utils';
 
 const SaturationBar = ({ saturation }) => {
@@ -22,7 +22,7 @@ const SaturationBar = ({ saturation }) => {
 
   return (
     <div className="w-full">
-      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
         <div
           className={`h-full ${getColor()} transition-all duration-300`}
           style={{ width: `${displayWidth}%` }}
@@ -40,10 +40,7 @@ function PoolsPage() {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-
-  // État local pour le champ de recherche
   const [inputTicker, setInputTicker] = useState(searchParams.get('ticker') || '');
-  // Délai de debounce pour la recherche
   const searchTimeout = useRef(null);
 
   const page = parseInt(searchParams.get('page')) || 1;
@@ -53,7 +50,6 @@ function PoolsPage() {
 
   const ITEMS_PER_PAGE = 100;
 
-  // Fonction de fetch des données
   const fetchPoolsData = async (params) => {
     try {
       setLoading(true);
@@ -63,8 +59,8 @@ function PoolsPage() {
           order: params.sortOrder,
           page: params.page,
           limit: ITEMS_PER_PAGE,
-          ticker: params.searchTicker || undefined
-        }
+          ticker: params.searchTicker || undefined,
+        },
       });
 
       if (!response.data || response.data.status !== 'success' || !response.data.pagination) {
@@ -87,32 +83,20 @@ function PoolsPage() {
     }
   };
 
-  // Effet pour charger les données initiales et lors des changements de page/tri
   useEffect(() => {
-    fetchPoolsData({
-      sortBy,
-      sortOrder,
-      page,
-      searchTicker
-    });
+    fetchPoolsData({ sortBy, sortOrder, page, searchTicker });
   }, [page, sortBy, sortOrder, searchTicker]);
 
   const handleSort = (newSortBy) => {
     if (newSortBy === sortBy) {
       const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
       setSortOrder(newOrder);
-
-      fetchPoolsData({
-        sortBy,
-        sortOrder: newOrder,
-        page,
-        searchTicker
-      });
+      fetchPoolsData({ sortBy, sortOrder: newOrder, page, searchTicker });
     } else {
       setSearchParams({
         page: '1',
         sort: newSortBy,
-        ...(searchTicker && { ticker: searchTicker })
+        ...(searchTicker && { ticker: searchTicker }),
       });
       setSortOrder('desc');
     }
@@ -123,54 +107,49 @@ function PoolsPage() {
       setSearchParams({
         page: newPage.toString(),
         sort: sortBy,
-        ...(searchTicker && { ticker: searchTicker })
+        ...(searchTicker && { ticker: searchTicker }),
       });
     }
   };
 
-  // Gestion des changements dans le champ de recherche avec debounce
   const handleSearchChange = (e) => {
     const newValue = e.target.value;
     setInputTicker(newValue);
-
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
-    }
-
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
       setSearchParams({
         page: '1',
         sort: sortBy,
-        ...(newValue && { ticker: newValue })
+        ...(newValue && { ticker: newValue }),
       });
     }, 500);
   };
 
-  // Fonction pour générer les lignes de tableau pour le chargement
-  const renderSkeletonRows = () => {
-    return Array(10).fill(0).map((_, index) => (
-      <tr key={`skeleton-${index}`} className="border-t animate-pulse">
-        <td className="px-4 py-2 w-1/4">
-          <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-32"></div>
-        </td>
-        <td className="px-4 py-2 w-1/5">
-          <div className="h-5 bg-gray-200 rounded w-20 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-20"></div>
-        </td>
-        <td className="px-4 py-2 w-1/8">
-          <div className="h-5 bg-gray-200 rounded w-12"></div>
-        </td>
-        <td className="px-4 py-2 w-1/8">
-          <div className="h-5 bg-gray-200 rounded w-12"></div>
-        </td>
-        <td className="px-4 py-2 w-1/4">
-          <div className="h-4 bg-gray-200 rounded-full w-full mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-10 ml-auto"></div>
-        </td>
-      </tr>
-    ));
-  };
+  const renderSkeletonRows = () =>
+    Array(10)
+      .fill(0)
+      .map((_, index) => (
+        <tr key={`skeleton-${index}`} className="border-t border-gray-300 animate-pulse">
+          <td className="px-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
+          </td>
+          <td className="px-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-20 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-20"></div>
+          </td>
+          <td className="px-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-12"></div>
+          </td>
+          <td className="px-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-12"></div>
+          </td>
+          <td className="px-4 py-2">
+            <div className="h-4 bg-gray-200 rounded-full w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-10 ml-auto"></div>
+          </td>
+        </tr>
+      ));
 
   if (error) {
     return (
@@ -181,108 +160,132 @@ function PoolsPage() {
     );
   }
 
-  // Styles pour les en-têtes de colonnes
   const columnStyles = {
-    tickerColumn: "w-1/4 min-w-[200px]",
-    stakeColumn: "w-1/5 min-w-[160px]",
-    delegatorsColumn: "w-1/8 min-w-[100px]",
-    blocksColumn: "w-1/8 min-w-[100px]",
-    saturationColumn: "w-1/4 min-w-[160px]"
+    tickerColumn: 'w-1/4 min-w-[200px]',
+    stakeColumn: 'w-1/5 min-w-[160px]',
+    delegatorsColumn: 'w-1/8 min-w-[100px]',
+    blocksColumn: 'w-1/8 min-w-[100px]',
+    saturationColumn: 'w-1/4 min-w-[160px]',
   };
 
   return (
     <div className="container mx-auto p-4 text-base-content">
       <h1 className="text-2xl font-bold mb-4">Pools</h1>
-
       <div className="mb-2">
         <input
           type="text"
           value={inputTicker}
           onChange={handleSearchChange}
           placeholder="Search by ticker (e.g., YOADA)"
-          className="w-full max-w-[240px] p-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full max-w-[240px] p-2 text-black border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
-
       <div className="mb-4 text-sm text-gray-600">
         {loading ? (
           <span>Searching pools...</span>
         ) : (
           <span>
-            {totalResults} pool{totalResults !== 1 ? 's' : ''} found{searchTicker ? ` for "${searchTicker}"` : ''}
+            {totalResults} pool{totalResults !== 1 ? 's' : ''} found
+            {searchTicker ? ` for "${searchTicker}"` : ''}
           </span>
         )}
       </div>
-
       {poolsData.length === 0 && !loading ? (
-        <div className="mt-4">No valid pool data available{searchTicker ? ` for "${searchTicker}"` : ''}.</div>
+        <div className="mt-4">
+          No valid pool data available{searchTicker ? ` for "${searchTicker}"` : ''}.
+        </div>
       ) : (
         <>
           <div className="overflow-x-auto mt-4">
-            <table className="min-w-full border border-grey-500/50 rounded-lg table-fixed">
-              <colgroup>
-                <col className={columnStyles.tickerColumn} />
-                <col className={columnStyles.stakeColumn} />
-                <col className={columnStyles.delegatorsColumn} />
-                <col className={columnStyles.blocksColumn} />
-                <col className={columnStyles.saturationColumn} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th className={`px-4 py-2 text-left ${columnStyles.tickerColumn}`}>Ticker & Name</th>
-                  <th className={`px-4 py-2 text-left ${columnStyles.stakeColumn}`}>
-                    Live Stake<br />
-                    Active Stake
-                  </th>
-                  <th
-                    className={`px-4 py-2 cursor-pointer text-center ${columnStyles.delegatorsColumn}`}
-                    onClick={() => handleSort('live_delegators')}
-                  >
-                    Delegators {sortBy === 'live_delegators' && (sortOrder === 'desc' ? '↓' : '↑')}
-                  </th>
-                  <th
-                    className={`px-4 py-2 cursor-pointer text-center ${columnStyles.blocksColumn}`}
-                    onClick={() => handleSort('blocks_minted')}
-                  >
-                    Blocks {sortBy === 'blocks_minted' && (sortOrder === 'desc' ? '↓' : '↑')}
-                  </th>
-                  <th
-                    className={`px-4 py-2 cursor-pointer ${columnStyles.saturationColumn}`}
-                    onClick={() => handleSort('live_saturation')}
-                  >
-                    Saturation {sortBy === 'live_saturation' && (sortOrder === 'desc' ? '↓' : '↑')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? renderSkeletonRows() : poolsData.map((pool) => (
-                  <tr key={pool.pool_id} className="border-t">
-                    <td className={`px-4 py-2 ${columnStyles.tickerColumn}`}>
-                      <Link to={`/pool/${pool.pool_id}`} className="text-sky-500 underline">
-                        {pool.ticker || shortener(pool.pool_id)}
-                      </Link>
+            <div className="max-h-[70vh] overflow-y-auto border border-gray-300 rounded-lg">
+              <table className="min-w-full table-fixed border-collapse">
+                <colgroup>
+                  <col className={columnStyles.tickerColumn} />
+                  <col className={columnStyles.stakeColumn} />
+                  <col className={columnStyles.delegatorsColumn} />
+                  <col className={columnStyles.blocksColumn} />
+                  <col className={columnStyles.saturationColumn} />
+                </colgroup>
+                <thead className="bg-base-100">
+                  <tr className="border-b border-gray-300">
+                    <th
+                      className={`px-4 py-2 text-left sticky top-0 bg-base-100 z-10 border-r border-gray-300 ${columnStyles.tickerColumn}`}
+                    >
+                      Ticker & Name
+                    </th>
+                    <th
+                      className={`px-4 py-2 text-left sticky top-0 bg-base-100 z-10 border-r border-gray-300 ${columnStyles.stakeColumn}`}
+                    >
+                      Live Stake
                       <br />
-                      <span className="text-sm truncate block">{pool.name || ''}</span>
-                    </td>
-                    <td className={`px-4 py-2 ${columnStyles.stakeColumn}`}>
-                      {convertLovelaceToAda(pool.live_stake)} ₳<br />
-                      {convertLovelaceToAda(pool.active_stake)} ₳
-                    </td>
-                    <td className={`px-4 py-2 text-center ${columnStyles.delegatorsColumn}`}>
-                      {pool.live_delegators}
-                    </td>
-                    <td className={`px-4 py-2 text-center ${columnStyles.blocksColumn}`}>
-                      {pool.blocks_minted}
-                    </td>
-                    <td className={`px-4 py-2 ${columnStyles.saturationColumn}`}>
-                      <SaturationBar saturation={pool.live_saturation} />
-                    </td>
+                      Active Stake
+                    </th>
+                    <th
+                      className={`px-4 py-2 cursor-pointer text-center sticky top-0 bg-base-100 z-10 border-r border-gray-300 ${columnStyles.delegatorsColumn}`}
+                      onClick={() => handleSort('live_delegators')}
+                    >
+                      Delegators{' '}
+                      {sortBy === 'live_delegators' && (sortOrder === 'desc' ? '↓' : '↑')}
+                    </th>
+                    <th
+                      className={`px-4 py-2 cursor-pointer text-center sticky top-0 bg-base-100 z-10 border-r border-gray-300 ${columnStyles.blocksColumn}`}
+                      onClick={() => handleSort('blocks_minted')}
+                    >
+                      Blocks {sortBy === 'blocks_minted' && (sortOrder === 'desc' ? '↓' : '↑')}
+                    </th>
+                    <th
+                      className={`px-4 py-2 cursor-pointer sticky top-0 bg-base-100 z-10 ${columnStyles.saturationColumn}`}
+                      onClick={() => handleSort('live_saturation')}
+                    >
+                      Saturation{' '}
+                      {sortBy === 'live_saturation' && (sortOrder === 'desc' ? '↓' : '↑')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {loading
+                    ? renderSkeletonRows()
+                    : poolsData.map((pool) => (
+                        <tr key={pool.pool_id} className="border-t border-gray-300">
+                          <td
+                            className={`px-4 py-2 border-r border-gray-300 ${columnStyles.tickerColumn}`}
+                          >
+                            <Link
+                              to={`/pool/${pool.pool_id}`}
+                              className="text-sky-500 underline"
+                            >
+                              {pool.ticker || shortener(pool.pool_id)}
+                            </Link>
+                            <br />
+                            <span className="text-sm truncate block">{pool.name || ''}</span>
+                          </td>
+                          <td
+                            className={`px-4 py-2 border-r border-gray-300 ${columnStyles.stakeColumn}`}
+                          >
+                            {convertLovelaceToAda(pool.live_stake)} ₳
+                            <br />
+                            {convertLovelaceToAda(pool.active_stake)} ₳
+                          </td>
+                          <td
+                            className={`px-4 py-2 text-center border-r border-gray-300 ${columnStyles.delegatorsColumn}`}
+                          >
+                            {pool.live_delegators}
+                          </td>
+                          <td
+                            className={`px-4 py-2 text-center border-r border-gray-300 ${columnStyles.blocksColumn}`}
+                          >
+                            {pool.blocks_minted}
+                          </td>
+                          <td className={`px-4 py-2 ${columnStyles.saturationColumn}`}>
+                            <SaturationBar saturation={pool.live_saturation} />
+                          </td>
+                        </tr>
+                      ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <Pagination
               currentPage={page}
               totalPages={totalPages}

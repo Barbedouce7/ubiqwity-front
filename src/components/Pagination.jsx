@@ -27,8 +27,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 my-4">
       <div className="text-sm text-base-content">
-        Affichage {(currentPage - 1) * itemsPerPage + 1}-
-        {Math.min(currentPage * itemsPerPage, totalItems)} sur {totalItems}
+        {(currentPage - 1) * itemsPerPage + 1}-
+        {Math.min(currentPage * itemsPerPage, totalItems)} | total : {totalItems}
       </div>
       
       <div className="flex items-center gap-2">
@@ -36,7 +36,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           className="btn btn-sm btn-ghost p-1"
-          title="Première page"
+          title="First"
         >
           <ChevronDoubleLeftIcon className="w-5 h-5" />
         </button>
@@ -45,7 +45,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="btn btn-sm btn-ghost p-1"
-          title="Page précédente"
+          title="Previous"
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
@@ -64,7 +64,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="btn btn-sm btn-ghost p-1"
-          title="Page suivante"
+          title="Next"
         >
           <ChevronRightIcon className="w-5 h-5" />
         </button>
@@ -73,7 +73,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           className="btn btn-sm btn-ghost p-1"
-          title="Dernière page"
+          title="Last"
         >
           <ChevronDoubleRightIcon className="w-5 h-5" />
         </button>

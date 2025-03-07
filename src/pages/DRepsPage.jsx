@@ -23,66 +23,32 @@ function DrepsPage() {
 
   const ITEMS_PER_PAGE = 100;
 
-  // Fonction pour transformer en chaîne avec logs
+  // Ensure a value is a string, with fallback
   const ensureString = (value, fallback = 'N/A') => {
-    console.log('ensureString called with:', value);
-    try {
-      if (value === null || value === undefined) return fallback;
-      if (typeof value === 'string') return value;
-      if (typeof value === 'number') return String(value);
-      if (typeof value === 'boolean') return String(value);
-      if (Array.isArray(value)) return value.map(item => ensureString(item, '')).join(', ');
-      if (typeof value === 'object' && '@value' in value) {
-        console.log('Found @value object:', value);
-        return ensureString(value['@value'], fallback);
-      }
-      if (typeof value === 'object') {
-        console.log('Converting object to string:', value);
-        return JSON.stringify(value);
-      }
-      return String(value);
-    } catch (err) {
-      console.error('ensureString error:', err, 'Value:', value);
-      return fallback;
-    }
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (Array.isArray(value)) return value.map(item => ensureString(item, '')).join(', ');
+    if (typeof value === 'object' && '@value' in value) return ensureString(value['@value'], fallback);
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
   };
 
-  // Normalisation avec logs détaillés
+  // Normalize DRep data, including givenName
   const normalizeDrepData = (rawData) => {
-    console.log('normalizeDrepData started with rawData:', rawData);
-    if (!Array.isArray(rawData)) {
-      console.error('normalizeDrepData: Expected array, got:', typeof rawData, rawData);
-      return [];
-    }
-
-    return rawData.map((drep, index) => {
-      console.log(`Normalizing Drep ${index}:`, drep);
-      try {
-        const normalized = {
-          drep_id: ensureString(drep?.drep_id, 'Unknown ID'),
-          hex: ensureString(drep?.hex, 'Unknown Hex'),
-          amount: Number(drep?.amount) || 0,
-          active_epoch: ensureString(drep?.active_epoch, 'N/A'),
-          active: Boolean(drep?.active),
-        };
-        console.log(`Normalized Drep ${index}:`, normalized);
-        return normalized;
-      } catch (error) {
-        console.error(`Error normalizing Drep ${index}:`, error, drep);
-        return {
-          drep_id: 'Error',
-          hex: 'Error processing data',
-          amount: 0,
-          active_epoch: 'N/A',
-          active: false,
-        };
-      }
-    });
+    if (!Array.isArray(rawData)) return [];
+    return rawData.map(drep => ({
+      drep_id: ensureString(drep?.drep_id, ''),
+      hex: ensureString(drep?.hex, ''),
+      givenName: ensureString(drep?.givenName, ''),
+      amount: Number(drep?.amount) || 0,
+      active_epoch: ensureString(drep?.active_epoch, 'N/A'),
+      active: Boolean(drep?.active),
+    }));
   };
 
-  // Récupération des données avec logs
+  // Fetch DReps data
   const fetchDrepsData = async (params) => {
-    console.log('fetchDrepsData started with params:', params);
     try {
       setLoading(true);
       const response = await axios.get(`${API_CONFIG.baseUrl}dreps`, {
@@ -94,39 +60,24 @@ function DrepsPage() {
           hex: params.searchHex || undefined,
         },
       });
-      console.log('Raw API response:', response.data);
 
-      const data = response?.data;
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid API response');
-      }
-
-      const { status, data: dreps, pagination } = data;
-      console.log('API status:', status, 'dreps:', dreps, 'pagination:', pagination);
+      const { status, data: dreps, pagination } = response.data;
       if (status !== 'success' || !Array.isArray(dreps) || !pagination) {
-        throw new Error(data?.message || 'Invalid API response structure');
+        throw new Error(response.data?.message || 'Invalid API response');
       }
 
-      const normalizedData = normalizeDrepData(dreps);
-      console.log('Normalized data:', normalizedData);
-      setDrepsData(normalizedData);
+      setDrepsData(normalizeDrepData(dreps));
       setTotalPages(Number(pagination.pages) || 1);
       setTotalResults(Number(pagination.total) || 0);
     } catch (err) {
-      console.error('fetchDrepsData Error:', err);
       setError(`Failed to load DReps: ${err.message}`);
       setDrepsData([]);
-      setTotalPages(1);
-      setTotalResults(0);
     } finally {
       setLoading(false);
-      console.log('fetchDrepsData completed');
     }
   };
 
-  // Effet avec log
   useEffect(() => {
-    console.log('useEffect triggered with:', { sortBy, sortOrder, page, searchHex });
     fetchDrepsData({ sortBy, sortOrder, page, searchHex });
   }, [sortBy, sortOrder, page, searchHex]);
 
@@ -151,29 +102,29 @@ function DrepsPage() {
     }, 500);
   };
 
+  // Skeleton loading rows
   const renderSkeletonRows = () =>
     Array(5)
       .fill(0)
       .map((_, index) => (
-        <tr key={`skeleton-${index}`} className="border-t animate-pulse">
-          <td className="px-4 py-2 w-2/5">
-            <div className="h-5 bg-gray-200 rounded w-32 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-48"></div>
+        <tr key={`skeleton-${index}`} className="border-t border-gray-300 animate-pulse">
+          <td className="p-4 border-r border-gray-300">
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </td>
-          <td className="px-4 py-2 w-1/5">
-            <div className="h-5 bg-gray-200 rounded w-20"></div>
+          <td className="p-4 border-r border-gray-300">
+            <div className="h-5 bg-gray-200 rounded w-full"></div>
           </td>
-          <td className="px-4 py-2 w-1/5">
-            <div className="h-5 bg-gray-200 rounded w-12"></div>
+          <td className="p-4 border-r border-gray-300">
+            <div className="h-5 bg-gray-200 rounded w-full"></div>
           </td>
-          <td className="px-4 py-2 w-1/5">
-            <div className="h-5 bg-gray-200 rounded w-12"></div>
+          <td className="p-4">
+            <div className="h-5 bg-gray-200 rounded w-full"></div>
           </td>
         </tr>
       ));
 
   if (error) {
-    console.log('Rendering error state:', error);
     return (
       <div className="container mx-auto p-4 text-base-content">
         <h1 className="text-2xl font-bold mb-4">DReps</h1>
@@ -181,8 +132,6 @@ function DrepsPage() {
       </div>
     );
   }
-
-  console.log('Rendering main component, drepsData:', drepsData);
 
   return (
     <div className="container mx-auto p-4 text-base-content">
@@ -193,52 +142,60 @@ function DrepsPage() {
           value={inputHex}
           onChange={handleSearchChange}
           placeholder="Search by hex (e.g., db1bc)"
-          className="w-full max-w-[240px] p-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full sm:w-60 p-2 text-black border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
       <div className="mb-4 text-sm text-gray-600">
         {loading ? 'Searching DReps...' : `${totalResults} DRep${totalResults !== 1 ? 's' : ''} found`}
       </div>
       <div className="overflow-x-auto mt-4">
-        <table className="min-w-full border border-grey-500/50 rounded-lg table-fixed">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 text-left w-2/5">DRep ID & Hex</th>
-              <th
-                className="px-4 py-2 cursor-pointer text-center w-1/5"
-                onClick={() => handleSort('amount')}
-              >
-                Amount {sortBy === 'amount' && (sortOrder === 'desc' ? '↓' : '↑')}
-              </th>
-              <th
-                className="px-4 py-2 cursor-pointer text-center w-1/5"
-                onClick={() => handleSort('active_epoch')}
-              >
-                Active Epoch {sortBy === 'active_epoch' && (sortOrder === 'desc' ? '↓' : '↑')}
-              </th>
-              <th className="px-4 py-2 text-center w-1/5">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              renderSkeletonRows()
-            ) : drepsData.length > 0 ? (
-              drepsData.map((drep, index) => {
-                console.log(`Rendering Drep ${index}:`, drep);
-                return (
-                  <tr key={`drep-${index}-${drep.drep_id}`} className="border-t">
-                    <td className="px-4 py-2 w-2/5">
+        <div className="max-h-[70vh] overflow-y-auto border border-gray-300 rounded-lg">
+          <table className="min-w-full border-collapse">
+            <thead className="bg-base-100">
+              <tr className="border-b border-gray-300">
+                <th className="p-4 text-left sticky top-0 bg-base-100 z-10 border-r border-gray-300">
+                  Name & DRep ID
+                </th>
+                <th
+                  className="p-4 text-center cursor-pointer sticky top-0 bg-base-100 z-10 border-r border-gray-300"
+                  onClick={() => handleSort('amount')}
+                >
+                  Amount {sortBy === 'amount' && (sortOrder === 'desc' ? '↓' : '↑')}
+                </th>
+                <th
+                  className="p-4 text-center cursor-pointer sticky top-0 bg-base-100 z-10 border-r border-gray-300"
+                  onClick={() => handleSort('active_epoch')}
+                >
+                  Active Epoch {sortBy === 'active_epoch' && (sortOrder === 'desc' ? '↓' : '↑')}
+                </th>
+                <th className="p-4 text-center sticky top-0 bg-base-100 z-10">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                renderSkeletonRows()
+              ) : drepsData.length > 0 ? (
+                drepsData.map((drep, index) => (
+                  <tr key={`drep-${index}-${drep.drep_id}`} className="border-t border-gray-300">
+                    <td className="p-4 border-r border-gray-300">
                       <Link to={`/drep/${drep.drep_id}`} className="text-primary underline">
-                        {drep.drep_id}
+                        <span className="truncate block">
+                          {drep.givenName ? drep.givenName : shortener(drep.hex, 8)}
+                        </span>
+                        ({shortener(drep.drep_id, 12)})
                       </Link>
-                      <br />
-                      <span className="text-sm truncate block opacity-80">{drep.hex}</span>
                     </td>
-                    <td className="px-4 py-2 text-center w-1/5">{drep.amount} ₳</td>
-                    <td className="px-4 py-2 text-center w-1/5">{drep.active_epoch}</td>
-                    <td className="px-4 py-2 text-center w-1/5">
+                    <td className="p-4 text-center border-r border-gray-300">
+                      {convertLovelaceToAda(drep.amount)} ₳
+                    </td>
+                    <td className="p-4 text-center border-r border-gray-300">
+                      {drep.active_epoch}
+                    </td>
+                    <td className="p-4 text-center">
                       <span
-                        className={`inline-block px-2 py-1 rounded ${
+                        className={`inline-block px-2 py-1 rounded border border-gray-300 ${
                           drep.active ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
                         }`}
                       >
@@ -246,20 +203,20 @@ function DrepsPage() {
                       </span>
                     </td>
                   </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="4" className="px-4 py-2 text-center">
-                  No DReps found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                ))
+              ) : (
+                <tr className="border-t border-gray-300">
+                  <td colSpan="4" className="p-4 text-center">
+                    No DReps found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       {!loading && drepsData.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Pagination
             currentPage={page}
             totalPages={totalPages}
