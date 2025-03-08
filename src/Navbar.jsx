@@ -8,6 +8,7 @@ import { API_CONFIG } from './utils/apiConfig';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import WalletConnect from './components/WalletConnect';
 
+
 function Navbar({ handleSearch }) {
   const [searchInput, setSearchInput] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -262,6 +263,7 @@ function Navbar({ handleSearch }) {
                   )}
                 </div>
                       <WalletConnect />
+
                   <div className="flex justify-center mx-auto w-auto mt-20">
                       <h3 className="mx-auto text-lg font-medium flex"><img src={isDarkMode ? logow : logob} className="logo w-14 mb-4 mr-4" alt="Ubiqwity logo" /> Ubiqwity</h3>
                   </div>

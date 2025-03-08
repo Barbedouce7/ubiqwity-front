@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Token envoyé:', token);
       const userResponse = await axios.get(`${API_CONFIG.baseUrl}profil`, { 
         headers: {
-          Authorization: token ? `Bearer ${token}` : undefined, // Toujours envoyer via Authorization
+          Authorization: token ? `Bearer ${token}` : undefined,
         },
         validateStatus: (status) => true
       });
@@ -61,23 +61,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const authenticateWallet = async (stakeAddress, signature, message) => {
+  const authenticateWallet = async (stakeAddress, signature, message, publicKey) => {
     try {
       const response = await axios.post(`${API_CONFIG.baseUrl}login`, 
-        { stakeAddress, signature, message },
+        { stakeAddress, signature, message, publicKey }, // Ajout de publicKey
         { 
           headers: { 'Content-Type': 'application/json' },
-          withCredentials: true // Garder pour récupérer le cookie initial si nécessaire
+          withCredentials: true // Pour récupérer le cookie
         }
       );
       
       if (response.status === 200) {
         console.log('Login response data:', response.data);
         
-        // Supposons que le token est dans response.data.token
-        const token = response.data.token || response.data.accessToken; // Ajuste selon la structure
+        const token = response.data.token || response.data.accessToken;
         if (token) {
-          setCookie('authToken', token, 7); // Stocker le token
+          setCookie('authToken', token, 7);
           console.log('Token stocké:', getCookie('authToken'));
         } else {
           console.warn('Aucun token trouvé dans la réponse de /login');
@@ -106,7 +105,7 @@ export const AuthProvider = ({ children }) => {
         },
         withCredentials: true
       });
-      setCookie('authToken', '', -1); // Supprimer le cookie
+      setCookie('authToken', '', -1);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

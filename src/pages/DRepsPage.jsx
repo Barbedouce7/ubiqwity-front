@@ -13,12 +13,12 @@ function DrepsPage() {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const [inputHex, setInputHex] = useState(searchParams.get('hex') || '');
+  const [inputHex, setInputHex] = useState(searchParams.get('givenName') || '');
   const searchTimeout = useRef(null);
 
   const page = parseInt(searchParams.get('page')) || 1;
   const sortBy = searchParams.get('sort') || 'amount';
-  const searchHex = searchParams.get('hex') || '';
+  const searchName = searchParams.get('hex') || '';
   const [sortOrder, setSortOrder] = useState('desc');
 
   const ITEMS_PER_PAGE = 100;
@@ -57,7 +57,7 @@ function DrepsPage() {
           order: params.sortOrder,
           page: params.page,
           limit: ITEMS_PER_PAGE,
-          hex: params.searchHex || undefined,
+          givenName: params.searchName || undefined,
         },
       });
 
@@ -78,18 +78,18 @@ function DrepsPage() {
   };
 
   useEffect(() => {
-    fetchDrepsData({ sortBy, sortOrder, page, searchHex });
-  }, [sortBy, sortOrder, page, searchHex]);
+    fetchDrepsData({ sortBy, sortOrder, page, searchName });
+  }, [sortBy, sortOrder, page, searchName]);
 
   const handleSort = (newSortBy) => {
     const newOrder = newSortBy === sortBy && sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newOrder);
-    setSearchParams({ page: '1', sort: newSortBy, ...(searchHex && { hex: searchHex }) });
+    setSearchParams({ page: '1', sort: newSortBy, ...(searchName && { hex: searchName }) });
   };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setSearchParams({ page: String(newPage), sort: sortBy, ...(searchHex && { hex: searchHex }) });
+      setSearchParams({ page: String(newPage), sort: sortBy, ...(searchName && { hex: searchName }) });
     }
   };
 
@@ -141,7 +141,7 @@ function DrepsPage() {
           type="text"
           value={inputHex}
           onChange={handleSearchChange}
-          placeholder="Search by hex (e.g., db1bc)"
+          placeholder="Search by name"
           className="w-full sm:w-60 p-2 text-black border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
