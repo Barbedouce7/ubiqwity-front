@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logow from '/logo-white.svg';
 import logob from '/logo-black.svg';
-import { ServerIcon, HomeIcon, UserGroupIcon, FingerPrintIcon, BanknotesIcon, UserIcon, ShieldCheckIcon, PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ServerIcon, HomeIcon, UserGroupIcon, FingerPrintIcon, BanknotesIcon, UserIcon, ShieldCheckIcon, PencilSquareIcon, XMarkIcon, NewspaperIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 import { API_CONFIG } from './utils/apiConfig';
 import { AuthProvider, useAuth } from './utils/AuthContext';
@@ -222,6 +222,7 @@ function Navbar({ handleSearch }) {
                     <ServerIcon className="w-5 h-5 mr-3"/>
                     Pools
                   </Link> 
+
                   <Link 
                     to="/dreps"
                     className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
@@ -229,6 +230,14 @@ function Navbar({ handleSearch }) {
                   >
                     <UserGroupIcon className="w-5 h-5 mr-3"/>
                     Dreps
+                  </Link> 
+                  <Link 
+                    to="/proposals"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <NewspaperIcon className="w-5 h-5 mr-3"/>
+                    Proposals
                   </Link> 
                   <Link 
                     to="/about"

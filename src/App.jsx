@@ -10,6 +10,8 @@ import AssetPage from './pages/AssetPage';
 import PoolPage from './pages/PoolPage';
 import PoolsPage from './pages/PoolsPage';
 import DRepsPage from './pages/DRepsPage';
+import ProposalPage from './pages/ProposalPage';
+import ProposalsPage from './pages/ProposalsPage';
 import PricesPage from './pages/PricesPage';
 import WalletPage from './pages/WalletPage';
 import DRepPage from './pages/DRepPage';
@@ -104,6 +106,8 @@ const handleSearch = async (searchTerm) => {
         <Route path="/pool/:poolId" element={<PoolPage />} />
         <Route path="/drep/:drepId" element={<DRepPage />} />
         <Route path="/dreps" element={<DRepsPage />} />
+        <Route path="/proposal/:txHash/:certIndex?" element={<ProposalPage />} />
+        <Route path="/proposals" element={<ProposalsPage />} />
         <Route path="/wallet/:walletAddress" element={<WalletPage />} />
         <Route path="/datum/:datumHash" element={<DatumPage />} />
         <Route path="/communitynotes" element={<CommunityNotesPage />} />
