@@ -28,15 +28,15 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const token = getCookie('authToken');
-      console.log('Token envoyé:', token);
+      //console.log('Token envoyé:', token);
       const userResponse = await axios.get(`${API_CONFIG.baseUrl}profil`, { 
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },
         validateStatus: (status) => true
       });
-      console.log('Requête /profil - Statut:', userResponse.status);
-      console.log('Requête /profil - Réponse:', userResponse.data);
+      //console.log('Requête /profil - Statut:', userResponse.status);
+      //console.log('Requête /profil - Réponse:', userResponse.data);
 
       const authenticated = userResponse.status === 200;
       setIsAuthenticated(authenticated);

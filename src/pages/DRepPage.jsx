@@ -179,7 +179,7 @@ function DRepPage() {
     };
 
     return (
-      <div className="bg-base-400 rounded-lg p-4">
+      <div className="bg-base-400 rounded-lg">
         <h2 className="text-xl font-semibold text-primary mb-4">Delegators</h2>
         <p className="mb-4">Total Amount Delegated: <span className="font-bold text-sky-500">{formattedTotalAmount} ₳</span></p>
         {delegators.length > 0 ? (
@@ -214,7 +214,7 @@ function DRepPage() {
     const { objectives, motivations, qualifications, references } = data.metadata.body;
 
     return (
-      <div className="bg-base-400 rounded-lg p-4">
+      <div className="rounded-lg">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {objectives && getValue(objectives) && (
             <div className="mb-4 rounded-lg bg-base-100 p-4 shadow-xl">
@@ -279,7 +279,7 @@ function DRepPage() {
     const currentVotes = votes.slice(startIndex, endIndex);
 
     return (
-      <div className="bg-base-400 rounded-lg p-4">
+      <div className="bg-base-400 rounded-lg">
         <h2 className="text-xl font-semibold text-primary mb-4">Votes</h2>
         {votes.length > 0 ? (
           <>
@@ -337,9 +337,9 @@ function DRepPage() {
   const paymentAddress = getValue(data?.metadata?.body?.paymentAddress);
 
   return (
-    <div className="container mx-auto p-6 text-base-content">
-      <h1 className="text-3xl font-bold text-center text-sky-500 mb-6">DRep: {drepName}</h1>
-      <div className="text-center mb-6 mt-6">
+    <div className="container mx-auto text-base-content">
+      <h1 className="text-3xl font-bold text-center text-sky-500 mb-6 pt-6">DRep: {drepName}</h1>
+      <div className="text-center mb-6 mt-6 p-4">
         <p className="text-lg">DRep ID: <CopyButton text={data.drep_id} /><span className="font-bold text-sky-500">{shortener(data.drep_id)}</span></p>
         <p className="text-lg">Hex: <CopyButton text={data.hex} /><span className="font-bold text-sky-500">{shortener(data.hex)}</span></p>
         {paymentAddress && typeof paymentAddress === 'string' && paymentAddress.trim() !== '' && (

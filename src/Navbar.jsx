@@ -190,6 +190,7 @@ function Navbar({ handleSearch }) {
                 </div>
                 
                 <div className="p-3 space-y-1">
+               
                   <Link 
                     to="/"
                     className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
@@ -239,14 +240,7 @@ function Navbar({ handleSearch }) {
                     <NewspaperIcon className="w-5 h-5 mr-3"/>
                     Proposals
                   </Link> 
-                  <Link 
-                    to="/about"
-                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FingerPrintIcon className="w-5 h-5 mr-3" />
-                    About
-                  </Link>
+
                   
                   {/* Conditional links based on authentication */}
                   {isAuthenticated && (
@@ -270,8 +264,17 @@ function Navbar({ handleSearch }) {
                       Moderation
                     </Link>
                   )}
+                  <Link 
+                    to="/about"
+                    className="flex items-center px-4 py-3 text-sm rounded-md hover:bg-gray-400/20 transition-colors duration-150"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FingerPrintIcon className="w-5 h-5 mr-3" />
+                    About
+                  </Link>
                 </div>
-                      <WalletConnect />
+ <WalletConnect />
+                      
 
                   <div className="flex justify-center mx-auto w-auto mt-20">
                       <h3 className="mx-auto text-lg font-medium flex"><img src={isDarkMode ? logow : logob} className="logo w-14 mb-4 mr-4" alt="Ubiqwity logo" /> Ubiqwity</h3>

@@ -35,7 +35,7 @@ class ErrorBoundary extends Component {
         </div>
       );
     }
-    console.log('ErrorBoundary: Rendering children');
+    //console.log('ErrorBoundary: Rendering children');
     return this.props.children;
   }
 }
