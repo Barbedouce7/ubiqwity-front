@@ -13,6 +13,7 @@ const wallets = [
     { name: 'Nami', id: 'nami' },
     { name: 'GeroWallet', id: 'gerowallet' },
     { name: 'NuFi', id: 'nufi' },
+    { name: 'Begin', id: 'begin' },
 ];
 
 // Utility function to convert hex to bytes
