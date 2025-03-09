@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2"; // Ajouté pour le donut chart
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
 import scriptMappings from '../utils/scriptMapping';
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+// Enregistrement des composants Chart.js nécessaires
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const generateAppColors = (apps, theme) => {
   const baseColors = {
@@ -134,7 +136,6 @@ const ActivityCharts = ({ detailsData }) => {
     weekDay: new Date(item.timestamp * 1000).getUTCDay()
   }));
 
-  // Mettre 'no-script' en premier
   const uniqueApps = ['normal', ...new Set(transactionsWithApps.flatMap(item => item.apps).filter(app => app !== 'normal'))];
   const appColors = generateAppColors(uniqueApps, theme);
 
@@ -277,7 +278,6 @@ const ActivityCharts = ({ detailsData }) => {
         mode: 'index',
         callbacks: {
           label: function(context) {
-            // Ne pas montrer l'élément si la valeur est 0
             if (context.raw === 0) return null;
             return context.dataset.label + ': ' + context.raw;
           }
@@ -302,7 +302,6 @@ const ActivityCharts = ({ detailsData }) => {
         mode: 'index',
         callbacks: {
           label: function(context) {
-            // Ne pas montrer l'élément si la valeur est 0
             if (context.raw === 0) return null;
             return context.dataset.label + ': ' + context.raw;
           }
@@ -311,35 +310,43 @@ const ActivityCharts = ({ detailsData }) => {
     }
   };
 
-  const basicChartOptions = {
+  const donutChartOptions = {
     maintainAspectRatio: false,
+    responsive: true,
+    cutout: '70%', // Épaisseur du donut
     plugins: {
       legend: {
-        display: true,
+        position: 'top',
         labels: {
           color: colorText,
           font: { size: 14 },
+          padding: 20,
+          boxWidth: 20,
+          usePointStyle: true, // Points ronds dans la légende
         },
       },
       tooltip: {
-        backgroundColor: themeColors[theme].background,
-        titleColor: colorText,
-        bodyColor: colorText,
+        enabled: true,
+        backgroundColor: theme === 'dark' ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+        titleFont: { size: 16, weight: 'bold' },
+        bodyFont: { size: 14 },
+        padding: 12,
+        cornerRadius: 8,
+        borderWidth: 1,
+        borderColor: theme === 'dark' ? '#60A5FA' : '#34A5E6',
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            return `${label}: ${value} transactions`;
+          },
+        },
       },
     },
-    scales: {
-      x: {
-        ticks: { color: colorText },
-        grid: { color: themeColors[theme].gridLines },
-      },
-      y: {
-        ticks: { color: colorText },
-        grid: { color: themeColors[theme].gridLines },
-      },
+    animation: {
+      animateScale: true,
+      animateRotate: true,
     },
-    datasets: {
-      bar: roundedBarOptions
-    }
   };
 
   const createStackedChartData = (data, labelKey) => {
@@ -364,7 +371,9 @@ const ActivityCharts = ({ detailsData }) => {
       label: 'Number of transactions',
       data: appUsage.map(item => item.count),
       backgroundColor: appUsage.map(item => appColors[item.app]),
-      ...roundedBarOptions
+      borderWidth: 2,
+      borderColor: theme === 'dark' ? '#374151' : '#FFFFFF',
+      hoverOffset: 10,
     }]
   });
 
@@ -385,16 +394,18 @@ const ActivityCharts = ({ detailsData }) => {
           options={globalChartOptions}
         />
       </div>
-    {hasMultipleApps && (<>
-      <div className="h-20"></div>
-      <div className="w-full h-80">
-        <h3 className="text-lg font-semibold mb-4">App Usage Frequency</h3>
-        <Bar 
-          key={`app-usage-${theme}`}
-          data={createAppUsageChartData()}
-          options={basicChartOptions}
-        />
-      </div></>
+      {hasMultipleApps && (
+        <>
+          <div className="h-20"></div>
+          <div className="w-full h-80">
+            <h3 className="text-lg font-semibold mb-4">App Usage Frequency</h3>
+            <Doughnut 
+              key={`app-usage-${theme}`}
+              data={createAppUsageChartData()}
+              options={donutChartOptions}
+            />
+          </div>
+        </>
       )}
       <div className="min-h-20"></div>
       
