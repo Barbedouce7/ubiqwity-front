@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TokenContext } from '../utils/TokenContext';
+import { shortener } from '../utils/utils'; // Ajout de l'import
 import Pagination from '../components/Pagination';
 
 const TokenList = ({ activeTooltip, setActiveTooltip }) => {
@@ -26,10 +27,17 @@ const TokenList = ({ activeTooltip, setActiveTooltip }) => {
     return token.assetName || '???';
   };
 
-  const displayTokens = fungibleTokens.map(token => ({
-    ...token,
-    displayName: getDisplayName(token)
-  }));
+  const displayTokens = fungibleTokens.map(token => {
+    let displayName = getDisplayName(token);
+    // Vérification de la longueur et application de shortener si nécessaire
+    if (displayName.length > 30) {
+      displayName = shortener(displayName);
+    }
+    return {
+      ...token,
+      displayName: displayName
+    };
+  });
 
   const totalPages = Math.ceil(displayTokens.length / itemsPerPage);
   const paginatedTokens = displayTokens.slice(
