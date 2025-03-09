@@ -94,6 +94,7 @@ const scriptMappings = {
   '6ec4acc3fbbd570ada625f24902777cec5d7a349fa0f3c7ba87b0cff': 'Dexhunter', // dexhunter stop loss contract
   '1af84a9e697e1e7b042a0a06f061e88182feb9e9ada950b36a916bd5': 'Saturnswap', // swap contract
   'a76f0fb801a29f591e9871576508d85b0b5f3c38774f65032f58fdad': 'Wayup', // wayup marketplace contract
+  '00000000000410c2d9e01e8ec78ab1dc6bbc383fae76cbe2689beb02': 'butane',
 };
 
 export const getScriptName = (scriptHash) => {
