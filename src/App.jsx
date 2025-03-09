@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Route, Routes, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ThemeToggle from './components/ThemeToggle';
 import Footer from './components/Footer';
@@ -51,46 +51,43 @@ function App() {
 
 
   useEffect(() => {
-    const cleanPath = location.pathname + location.search;
-    if (window.location.hash) {
-      window.history.replaceState({}, document.title, cleanPath);
+    if (location.pathname === '/' && location.state?.from404) {
+      navigate(location.state.from404, { replace: true });
     }
-  }, [location]);
+  }, [location, navigate]);
 
-  const handleSearch = async (searchTerm) => {
+const handleSearch = async (searchTerm) => {
+    // Vérifie si le terme commence par stake, addr, ae, ddz ou drep
     const walletPrefixes = /^(stake|addr|ae|ddz)/i;
     const termLength = searchTerm.length;
     
+    // Conditions pour wallet en priorité
     let searchUrl;
     if (searchTerm.startsWith('drep')) {
-      searchUrl = `/drep/${searchTerm}`;
+        searchUrl = `/drep/${searchTerm}`;
     } else if (
-      walletPrefixes.test(searchTerm) ||
-      termLength < 20 ||
-      termLength === 103 ||
-      termLength === 56 ||
-      termLength === 64
+        walletPrefixes.test(searchTerm) ||        // Commence par stake, addr, ae ou ddz
+        termLength < 20 ||                        // Moins de 20 caractères
+        termLength === 103 ||                     // Exactement 103 caractères
+        termLength === 56 ||                      // Garder la condition existante pour pool
+        termLength === 64                         // Garder la condition existante pour tx
     ) {
-      if (termLength === 56) {
-        searchUrl = `/pool/${searchTerm}`;
-      } else if (termLength === 64) {
-        searchUrl = `/tx/${searchTerm}`;
-      } else {
-        searchUrl = `/wallet/${searchTerm}`;
-      }
+        if (termLength === 56) {
+            searchUrl = `/pool/${searchTerm}`;
+        } else if (termLength === 64) {
+            searchUrl = `/tx/${searchTerm}`;
+        } else {
+            searchUrl = `/wallet/${searchTerm}`;
+        }
     } else {
-      searchUrl = `/asset/${searchTerm}`;
+        searchUrl = `/asset/${searchTerm}`;
     }
-
     try {
       const response = await axios.get(`${API_CONFIG.baseUrl}${searchUrl}`);
       navigate(searchUrl, { state: { data: response.data, from404: searchUrl } });
-      // Nettoyer l'URL après navigation
-      window.history.replaceState({}, document.title, searchUrl);
     } catch (error) {
       console.error("Nothing here... ", error);
       navigate('/', { state: { from404: searchUrl } });
-      window.history.replaceState({}, document.title, '/');
     }
   };
 
