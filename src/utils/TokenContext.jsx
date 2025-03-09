@@ -57,6 +57,11 @@ export const TokenProvider = ({ children }) => {
     }
   }, [tokenMetadata, failedTokens]);
 
+  const cleanTokenName = (name) => {
+    if (!name || name === "null") return null;
+    return String(name).replace(/^"(.*)"$/, '$1').trim();
+  };
+
   const splitPolicyAndAsset = (unit) => {
     const policyId = unit.slice(0, 56);
     const assetNameHex = unit.slice(56);
@@ -144,7 +149,6 @@ export const TokenProvider = ({ children }) => {
     const cid = ipfsUrl.replace('ipfs://', '');
     const gateways = [
       `https://ipfs.io/ipfs/${cid}`,
-      `https://dweb.link/ipfs/${cid}`,
       `https://cloudflare-ipfs.com/ipfs/${cid}`
     ];
     for (const gatewayUrl of gateways) {
@@ -171,9 +175,13 @@ export const TokenProvider = ({ children }) => {
           `${API_CONFIG.baseUrl}tokenmetadata/${unit}`,
           { timeout: 5000, retries: 1 }
         );
+        
+        const { assetName } = splitPolicyAndAsset(unit);
+        const fallbackName = cleanTokenName(assetName) || "Unknown Token";
+
         const newMetadata = {
-          ticker: response.data.ticker || unit,
-          name: response.data.name || "No name",
+          ticker: cleanTokenName(response.data.ticker) || unit,
+          name: cleanTokenName(response.data.name) || fallbackName,
           decimals: response.data.decimals || 0,
           policy: unit,
           logo: response.data.logo || 0,
@@ -182,12 +190,15 @@ export const TokenProvider = ({ children }) => {
         setTokenMetadata(prev => ({ ...prev, [unit]: newMetadata }));
         return newMetadata;
       } catch (error) {
+        const { assetName } = splitPolicyAndAsset(unit);
+        const fallbackName = cleanTokenName(assetName) || "Unknown Token";
+        
         const isNetworkError = error.code === 'ERR_NETWORK' || 
                              error.code === 'ECONNABORTED' ||
                              error.message === 'Network Error';
         const retryTime = isNetworkError ? Date.now() + RETRY_DELAY : Date.now() + CACHE_DURATION;
         setFailedTokens(prev => ({ ...prev, [unit]: retryTime }));
-        return DEFAULT_METADATA;
+        return { ...DEFAULT_METADATA, name: fallbackName, policy: unit };
       } finally {
         setPendingRequests(prev => {
           const newMap = new Map(prev);
@@ -223,12 +234,11 @@ export const TokenProvider = ({ children }) => {
     let allNftTokens = [];
     let allFungibleTokens = [];
 
-    // Traitement par lots de 3
     for (let i = 0; i < tokenList.length; i += BATCH_SIZE) {
       const batch = tokenList.slice(i, i + BATCH_SIZE);
       const initialTokens = await Promise.all(
         batch.map(async (holding, index) => {
-          await delay(Math.min(index * 10, 100)); // Réduction du délai pour accélérer
+          await delay(Math.min(index * 10, 100));
           const { policyId, assetName } = splitPolicyAndAsset(holding.unit);
           return {
             unit: holding.unit,
@@ -265,11 +275,15 @@ export const TokenProvider = ({ children }) => {
               }
             }
 
+            const cleanName = cleanTokenName(metadata?.name) || 
+                            cleanTokenName(token.assetName) || 
+                            "Unknown Token";
+
             return {
               ...token,
               decimals: metadata?.decimals || 0,
-              name: metadata?.name,
-              ticker: metadata?.ticker,
+              name: cleanName,
+              ticker: cleanTokenName(metadata?.ticker) || token.assetName,
               logo: logoUrl,
               hasMetadata: !!metadata,
               onchainMetadata: metadata?.onchainMetadata,
@@ -278,7 +292,12 @@ export const TokenProvider = ({ children }) => {
             };
           } catch (error) {
             console.error(`Error processing token ${token.unit}:`, error);
-            return { ...token, isLoadingMetadata: false };
+            const fallbackName = cleanTokenName(token.assetName) || "Unknown Token";
+            return { 
+              ...token, 
+              name: fallbackName,
+              isLoadingMetadata: false 
+            };
           }
         })
       );
@@ -293,16 +312,14 @@ export const TokenProvider = ({ children }) => {
       allNftTokens = allTokens.filter(token => token.isNFT);
       allFungibleTokens = allTokens.filter(token => !token.isNFT);
 
-      // Mise à jour progressive de l'état après chaque lot
       setProcessedHoldings({
         tokens: allTokens,
         nftTokens: allNftTokens,
         fungibleTokens: allFungibleTokens
       });
 
-      // Petit délai entre les lots pour éviter de surcharger le réseau
       if (i + BATCH_SIZE < tokenList.length) {
-        await delay(50); // Délai minimal entre les lots
+        await delay(50);
       }
     }
 
