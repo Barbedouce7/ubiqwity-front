@@ -168,7 +168,7 @@ export const TokenProvider = ({ children }) => {
     const promise = (async () => {
       try {
         const response = await axios.get(
-          `${API_CONFIG.baseUrl}tokenmetadatatest/${unit}`,
+          `${API_CONFIG.baseUrl}tokenmetadata/${unit}`,
           { timeout: 5000, retries: 1 }
         );
         const newMetadata = {
