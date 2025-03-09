@@ -30,7 +30,7 @@ function WalletPage() {
   const [isDetailsFetching, setIsDetailsFetching] = useState(false);
 
   // Constants
-  const TRANSACTION_LIMIT = 3000;
+  const TRANSACTION_LIMIT = 4000;
   const detailsTabs = ['historic', 'activity', 'friends', 'transactions'];
 
   // Computed states using useMemo
