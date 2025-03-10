@@ -4,7 +4,7 @@ import { API_CONFIG } from '../utils/apiConfig';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Pagination from '../components/Pagination';
-import { shortener, convertLovelaceToAda } from '../utils/utils';
+import { shortener, convertLovelaceToAda, addSpaces } from '../utils/utils';
 
 function DrepsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -188,7 +188,7 @@ function DrepsPage() {
                       </Link>
                     </td>
                     <td className="p-4 text-center border-r border-gray-300">
-                      {convertLovelaceToAda(drep.amount)} ₳
+                      {addSpaces(convertLovelaceToAda(drep.amount))} ₳
                     </td>
                     <td className="p-4 text-center border-r border-gray-300">
                       {drep.active_epoch}

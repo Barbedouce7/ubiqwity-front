@@ -5,7 +5,7 @@ import { TokenContext } from '../utils/TokenContext';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import CopyButton from '../components/CopyButton';
 import Pagination from '../components/Pagination';
-import { shortener } from '../utils/utils';
+import { shortener, addSpaces } from '../utils/utils';
 import { 
   GlobeAltIcon, 
   XMarkIcon, 
@@ -126,7 +126,7 @@ function DRepPage() {
     if (drepId.includes('_')) return null;
 
     const totalAmount = delegators.reduce((sum, delegator) => sum + BigInt(delegator.amount), BigInt(0));
-    const formattedTotalAmount = (Number(totalAmount) / 1000000).toFixed(2);
+    const formattedTotalAmount = addSpaces((Number(totalAmount) / 1000000).toFixed(2));
     const totalItems = delegators.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -168,7 +168,7 @@ function DRepPage() {
             label: (context) => {
               const index = context.dataIndex;
               const delegator = delegators[index];
-              return [`Address: ${shortener(delegator.address)}`, `Amount: ${(Number(delegator.amount) / 1000000).toFixed(2)} ₳`];
+              return [`Address: ${shortener(delegator.address)}`, `Amount: ${addSpaces((Number(delegator.amount) / 1000000).toFixed(2))} ₳`];
             }
           }
         }
@@ -193,7 +193,7 @@ function DRepPage() {
                   {currentDelegators.map((delegator, index) => (
                     <tr key={index}>
                       <td><CopyButton text={delegator.address} /><Link className="text-primary hover:text-cyan-100" to={`/wallet/${delegator.address}`} style={{ color: delegatorColors[delegator.address] }}>{shortener(delegator.address)}</Link></td>
-                      <td>{(Number(delegator.amount) / 1000000).toFixed(2)} ₳</td>
+                      <td>{addSpaces((Number(delegator.amount) / 1000000).toFixed(2))} ₳</td>
                     </tr>
                   ))}
                 </tbody>
@@ -332,7 +332,7 @@ function DRepPage() {
   if (loading) return <div className="animate-spin rounded-full mx-auto h-6 w-6 border-b-2 border-sky-500 mt-40 mb-40"></div>;
   if (error) return <div>{error}</div>;
 
-  const amountInAda = data?.amount ? (Number(data.amount) / 1000000).toFixed(2) : "0";
+  const amountInAda = data?.amount ? addSpaces((Number(data.amount) / 1000000).toFixed(2)) : "0";
   const drepName = getValue(data?.metadata?.body?.givenName) || 'Unnamed';
   const paymentAddress = getValue(data?.metadata?.body?.paymentAddress);
 

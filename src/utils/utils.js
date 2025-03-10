@@ -15,6 +15,11 @@ export const convertLovelaceToAda = (lovelace) => {
   return (parseInt(lovelace) / 1_000_000).toFixed(2) + '';
 };
 
+export const addSpaces = (number) => {
+  if (number === null || number === undefined || isNaN(number)) return '0';
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+};
+
 export const shortener = (input) => {
   if (!input || typeof input !== 'string' || input.length <= 20) {
     return input || ''; // Retourne l'input tel quel s'il est trop court ou invalide
