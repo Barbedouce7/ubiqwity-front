@@ -16,7 +16,7 @@ const getCookie = (name) => {
 // Sous-composant pour le tableau
 const NotesTable = ({ searchQuery, statusFilter, currentPage, isModerator, onDeleteNote, onApproveNote }) => {
   const [notes, setNotes] = useState([]);
-  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 100, pages: 1 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
