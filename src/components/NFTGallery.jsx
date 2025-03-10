@@ -24,16 +24,21 @@ const NFTGallery = ({ activeNFTDetails, setActiveNFTDetails }) => {
     currentPage * itemsPerPage
   );
 
+  // Only show pagination if there is more than one page
+  const showPagination = totalPages > 1;
+
   return (
     <div>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        setItemsPerPage={setItemsPerPage}
-        totalItems={nftTokens.length}
-      />
+      {showPagination && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          totalItems={nftTokens.length}
+        />
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {paginatedNFTs.map(token => (
@@ -125,14 +130,16 @@ const NFTGallery = ({ activeNFTDetails, setActiveNFTDetails }) => {
         ))}
       </div>
       
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        setItemsPerPage={setItemsPerPage}
-        totalItems={nftTokens.length}
-      />
+      {showPagination && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          totalItems={nftTokens.length}
+        />
+      )}
     </div>
   );
 };

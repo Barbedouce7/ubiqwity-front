@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/solid';
+import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { API_CONFIG } from '../utils/apiConfig';
 import { useAuth } from '../utils/AuthContext'; 
 
@@ -20,6 +21,7 @@ const WalletCommunityNotes = ({ walletAddress }) => {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('approved');
   const [newNote, setNewNote] = useState('');
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const fetchWalletData = useCallback(async () => {
     try {
@@ -124,10 +126,23 @@ const WalletCommunityNotes = ({ walletAddress }) => {
     <div className="mx-auto max-w-4xl">
       <div className="mt-10 mb-10">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Community Notes</h1>
-          <div className="badge badge-primary badge-lg">Beta</div>
+          <div className="flex items-center relative">
+            <h1 className="text-2xl font-bold">Community Notes</h1>
+            <div className="inline-block">
+              <QuestionMarkCircleIcon 
+                className="w-5 h-5 inline-block align-middle cursor-pointer text-gray-500 hover:text-blue-500 ml-1 mr-1 mb-1"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              />
+              
+              {showTooltip && (
+                <div className="absolute z-10 w-64 p-2 text-sm text-gray-700 bg-base-100 border border-sky-300/30 rounded-lg shadow-lg tooltip left-0 top-8">
+                  This is what the community noted about this wallet. Take care with this informations.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <p className="text-sm max-w-lg mx-auto mb-4">This is what the community noted about this wallet.<br />Take care with this informations.</p>
 
         {loading && <div className="flex justify-center my-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div></div>}
         {error && (

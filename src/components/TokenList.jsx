@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TokenContext } from '../utils/TokenContext';
-import { shortener } from '../utils/utils'; // Ajout de l'import
+import { shortener } from '../utils/utils';
 import Pagination from '../components/Pagination';
 
 const TokenList = ({ activeTooltip, setActiveTooltip }) => {
@@ -29,7 +29,6 @@ const TokenList = ({ activeTooltip, setActiveTooltip }) => {
 
   const displayTokens = fungibleTokens.map(token => {
     let displayName = getDisplayName(token);
-    // Vérification de la longueur et application de shortener si nécessaire
     if (displayName.length > 30) {
       displayName = shortener(displayName);
     }
@@ -47,14 +46,16 @@ const TokenList = ({ activeTooltip, setActiveTooltip }) => {
 
   return (
     <div className="max-w-full mx-auto">
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        setItemsPerPage={setItemsPerPage}
-        totalItems={displayTokens.length}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          totalItems={displayTokens.length}
+        />
+      )}
       
       <div className="overflow-x-auto p-4">
         <table className="w-full">
@@ -105,14 +106,16 @@ const TokenList = ({ activeTooltip, setActiveTooltip }) => {
         </table>
       </div>
       
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        setItemsPerPage={setItemsPerPage}
-        totalItems={displayTokens.length}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          totalItems={displayTokens.length}
+        />
+      )}
     </div>
   );
 };
