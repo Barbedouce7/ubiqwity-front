@@ -327,7 +327,6 @@ const ActivityCharts = ({ detailsData }) => {
       },
       tooltip: {
         enabled: true,
-        backgroundColor: theme === 'dark' ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
         titleFont: { size: 16, weight: 'bold' },
         bodyFont: { size: 14 },
         padding: 12,
