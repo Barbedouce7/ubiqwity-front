@@ -65,16 +65,15 @@ const handleSearch = async (searchTerm) => {
     let searchUrl;
     if (searchTerm.startsWith('drep')) {
         searchUrl = `/drep/${searchTerm}`;
+    } else if(searchTerm.startsWith('pool')) {
+        searchUrl = `/pool/${searchTerm}`;
     } else if (
         walletPrefixes.test(searchTerm) ||        // Commence par stake, addr, ae ou ddz
         termLength < 20 ||                        // Moins de 20 caractères
         termLength === 103 ||                     // Exactement 103 caractères
-        termLength === 56 ||                      // Garder la condition existante pour pool
         termLength === 64                         // Garder la condition existante pour tx
     ) {
-        if (termLength === 56) {
-            searchUrl = `/pool/${searchTerm}`;
-        } else if (termLength === 64) {
+       if (termLength === 64) {
             searchUrl = `/tx/${searchTerm}`;
         } else {
             searchUrl = `/wallet/${searchTerm}`;

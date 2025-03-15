@@ -5,6 +5,7 @@ const scriptMappings = {
   'a23793f529179e09cefb3c37fc6ae081e0e99e99be5cdb55a00941a5': 'Indigo staking',
   '8110c6ae9c92962f01ce98611656c05ea69aa5a709f4ea89c588bbdb': 'Indigo staking',
   'a473cb8eb0b61c03b8696fceab1c1a89fa3ec834572850e7c2abe783': 'Indigo SP',
+  '88e0299018563dd10c4860d9f34eda56fdb77f302da0e3980620535c': 'Indigo SP',
   'de1585e046f16fdf79767300233c1affbe9d30340656acfde45e9142': 'Indigo CDP',
   '443c51db609bba8b2aa4c8af248bf797cbfcfa1e413c443296a50813': 'Indigo SP',
   'c1af46643698bc73f9857a0cc21ec949ce6919974b435d057dc448b8': 'Indigo SP', // Indigo  pool ?
