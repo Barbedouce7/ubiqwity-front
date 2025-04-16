@@ -75,7 +75,7 @@ function WalletPage() {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const tooltipRef = useRef(null);
 
-  const TRANSACTION_LIMIT = 4000;
+  const TRANSACTION_LIMIT = 40000;
   const allTabs = ['details', 'holdings', 'delegations', 'historic', 'activity', 'friends', 'transactions'];
 
   // Computed states
