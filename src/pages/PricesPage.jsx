@@ -1,38 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import CurrencyListWithCharts from '../components/CurrencyListWithCharts';
-import { API_CONFIG } from '../utils/apiConfig';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import CurrencyListWithCharts from "../components/CurrencyListWithCharts";
+import StablecoinChart from "../components/StablecoinChart";
+import { API_CONFIG } from "../utils/apiConfig";
 
 const PricesPage = () => {
   const [pricesData, setPricesData] = useState([]);
+  const [stablecoinData, setStablecoinData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [circulatingSupply, setCirculatingSupply] = useState(0);
 
   useEffect(() => {
-    const fetchPriceData = async () => {
+    const fetchData = async () => {
       try {
-        // Récupérer les données de prix
+        // Set dynamic date range (last 4 days)
+        const endDate = new Date().toISOString(); // Current date and time
+        const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(); // 4 days ago
+
+        // Fetch price data
         const pricesResponse = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
         
-        // Récupérer également le circulating_supply depuis l'endpoint epochcontext
+        // Fetch circulating supply
         const epochContextResponse = await axios.get(`${API_CONFIG.baseUrl}epochcontext/`);
         
-        // Traitement des données de prix (inversée pour afficher les plus récentes en premier)
+        // Fetch stablecoin data
+        const stablecoinResponse = await axios.get(
+          `${API_CONFIG.baseUrl}stable?startDate=${startDate}&endDate=${endDate}`
+        );
+
+        // Log the raw response for debugging
+        console.log("Stablecoin API response:", stablecoinResponse.data);
+
+        // Process price data
         const formattedPricesData = Object.values(pricesResponse.data || {}).reverse();
         
-        // Mise à jour des états
+        // Process stablecoin data
+        let formattedStablecoinData = [];
+        if (Array.isArray(stablecoinResponse.data)) {
+          formattedStablecoinData = stablecoinResponse.data;
+        } else if (stablecoinResponse.data?.stablecoins) {
+          formattedStablecoinData = stablecoinResponse.data.stablecoins;
+        } else {
+          console.warn("Unexpected stablecoin data format:", stablecoinResponse.data);
+        }
+
+        // Log the formatted data
+        console.log("Formatted stablecoin data:", formattedStablecoinData);
+
+        // Update states
         setPricesData(formattedPricesData);
+        setStablecoinData(formattedStablecoinData);
         setCirculatingSupply(epochContextResponse.data?.circulating_supply || 0);
         setIsLoading(false);
       } catch (error) {
-        console.error("Erreur lors de la récupération des données de prix:", error);
-        setError("Impossible de charger les données de prix");
+        console.error("Error fetching data:", error);
+        setError("Unable to load data");
         setIsLoading(false);
       }
     };
 
-    fetchPriceData();
+    fetchData();
   }, []);
 
   if (error) {
@@ -50,11 +78,15 @@ const PricesPage = () => {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
         </div>
       ) : (
-        <CurrencyListWithCharts data={pricesData} circulatingSupply={circulatingSupply} />
-
+        <>
+          <CurrencyListWithCharts data={pricesData} circulatingSupply={circulatingSupply} />
+          <p className="text-base-content text-center">
+            <img src="/assets/orcfax.svg" alt="Orcfax" className="w-24 mx-auto" />
+            Prices from Orcfax public feed.
+          </p>
+          <StablecoinChart data={stablecoinData} />
+        </>
       )}
-              <p className="text-base-content"><img src="/assets/orcfax.svg" className="w-24 mx-auto" />
-          Prices from Orcfax public feed.</p>
     </div>
   );
 };
