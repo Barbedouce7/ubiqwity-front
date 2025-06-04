@@ -183,14 +183,6 @@ const StablecoinChart = ({ data }) => {
                     yMax: 1,
                     borderColor: "rgba(255, 0, 0, 1)", // Red line
                     borderWidth: 1,
-                    label: {
-                      content: "PEG: $1",
-                      display: true,
-                      position: "end",
-                      backgroundColor: "rgba(255, 0, 0, 0.8)",
-                      color: "white",
-                      font: { size: 12 },
-                    },
                   },
                 },
               },
