@@ -16,7 +16,7 @@ const PricesPage = () => {
       try {
         // Set dynamic date range (last 4 days)
         const endDate = new Date().toISOString(); // Current date and time
-        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // 4 days ago
+        const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(); 
 
         // Fetch price data
         const pricesResponse = await axios.get(`${API_CONFIG.baseUrl}last24prices/`);
